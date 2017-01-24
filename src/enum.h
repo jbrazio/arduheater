@@ -17,5 +17,32 @@
  *
  */
 
-// This file is just a placeholder for Arduino's IDE.
-// The magic starts at main.cpp.
+#ifndef __ENUM_H__
+#define __ENUM_H__
+
+enum message_type_t {
+  MESSAGE_TYPE_UNKNOWN,
+  MESSAGE_TYPE_BUTTON
+};
+
+enum key_type_t {
+  KEY_TYPE_UNKNOWN,
+  KEY_TYPE_LEFT,
+  KEY_TYPE_RIGHT,
+  KEY_TYPE_OK
+};
+
+enum key_state_t {
+  KEY_STATE_UNKNOWN,
+  KEY_STATE_DOWN_LONG,
+  KEY_STATE_DOWN,
+};
+
+enum menu_page_t {
+  PAGE_UNKNOWN,
+  PAGE_BLANK,
+  PAGE_BOOTSCREEN,
+  PAGE_HOME,
+};
+
+#endif

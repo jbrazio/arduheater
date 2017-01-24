@@ -17,19 +17,25 @@
  *
  */
 
-#ifndef __OBSERVER_H__
-#define __OBSERVER_H__
+#ifndef __PCINT_H__
+#define __PCINT_H__
 
-#include "main.h"
-
-/**
- * Abstract observer/subscriber class
- */
-template <typename T>
-class Observer
+ISR(PCINT0_vect)
 {
-public:
-  virtual void update(const T& val) = 0;
-};
+  // #define PB 2
+  keypad::single::instance().isr(2);
+}
+
+ISR(PCINT1_vect)
+{
+  // #define PC 3
+  keypad::single::instance().isr(3);
+}
+
+ISR(PCINT2_vect)
+{
+  // #define PD 4
+  keypad::single::instance().isr(4);
+}
 
 #endif

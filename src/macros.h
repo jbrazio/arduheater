@@ -17,5 +17,17 @@
  *
  */
 
-// This file is just a placeholder for Arduino's IDE.
-// The magic starts at main.cpp.
+#ifndef __MACROS_H__
+#define __MACROS_H__
+
+#define array_size(a) sizeof(a) / sizeof(*a)
+
+#define SERIAL_SPACE serial_print_PGM(string_space)
+#define SERIAL_COMMA serial_print_PGM(string_comma)
+#define SERIAL_EOL   serial_print_PGM(string_eol);
+
+#define SERIAL_BANNER serial_print_PGM(PSTR(PROGRAM_NAME)); SERIAL_SPACE; \
+                      serial_print_PGM(PSTR(SHORT_BUILD_VERSION)); SERIAL_SPACE; \
+                      serial_print_PGM(string_serial_start); SERIAL_EOL;
+
+#endif

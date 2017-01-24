@@ -17,5 +17,20 @@
  *
  */
 
-// This file is just a placeholder for Arduino's IDE.
-// The magic starts at main.cpp.
+#ifndef __ASSERT_H__
+#define __ASSERT_H__
+
+/**
+ * Validate the micro processor
+ */
+#if !defined(__AVR_ATmega328__) && !defined(__AVR_ATmega328P__)
+  #error "Only ATmega328 boards are currently supported"
+#endif
+
+/**
+ * Assert that the user selected keys are on valid PCI pins
+ */
+static_assert((digitalPinToPCICR(UI_KEYPAD_A_PIN) != NULL), "UI_KEYPAD_A_PIN is not interrupt-capable");
+static_assert((digitalPinToPCICR(UI_KEYPAD_B_PIN) != NULL), "UI_KEYPAD_B_PIN is not interrupt-capable");
+
+#endif

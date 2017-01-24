@@ -20,16 +20,12 @@
 #ifndef __SUBJECT_H__
 #define __SUBJECT_H__
 
-#include "main.h"
-
 /**
  * Abstract subject/publisher class
  */
-template <typename T>
-class Subject
+template <typename T> class Subject
 {
 private:
-  T m_value;
   Observer<T>* p_observer;
 
 public:
@@ -40,9 +36,10 @@ public:
     p_observer = nullptr;
   }
 
+  virtual void init() = 0;
+
   /**
-   * Register an observer within our subject
-   * @param obs the Observer object
+   * Register an observer for our subject
    */
   void attach(Observer<T>* obs)
   {
@@ -59,16 +56,15 @@ public:
       p_observer = nullptr;
   }
 
+protected:
   /**
    * Notify the observer
    */
-  void notify()
+  void notify(const T& message)
   {
-      if (p_observer != nullptr)
-        p_observer->update(m_value);
+    if (p_observer != nullptr)
+      p_observer->update(message);
   }
-
-  virtual void set(const T& val) = 0;
 };
 
 #endif

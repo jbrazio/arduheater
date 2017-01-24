@@ -17,5 +17,17 @@
  *
  */
 
-// This file is just a placeholder for Arduino's IDE.
-// The magic starts at main.cpp.
+#ifndef __VERSION_H__
+#define __VERSION_H__
+
+/**
+ * Arduheater "public" visible identifier
+ */
+#define PROGRAM_NAME "Arduheater"
+
+/**
+ * Astro-Focuser release version identifier
+ */
+#define SHORT_BUILD_VERSION "0.0.2-beta"
+
+#endif

@@ -17,5 +17,42 @@
  *
  */
 
-// This file is just a placeholder for Arduino's IDE.
-// The magic starts at main.cpp.
+#include "main.h"
+
+void setup() {
+  DDRB |= 0x20; // Enable D13 as output
+  Serial.begin(BAUDRATE);
+  SERIAL_BANNER;
+
+
+  ui::single::instance().init();
+
+  keypad::single::instance().init(UI_KEYPAD_A_PIN, UI_KEYPAD_B_PIN);
+  keypad::single::instance().attach(&ui::single::instance());
+
+  timer1_isr_setup();
+
+  /*
+  GUI::single::instance().selectPage(PAGE_BOOTSCREEN);
+  delay(1000);
+  GUI::single::instance().selectPage(PAGE_HOME);
+  */
+}
+
+volatile uint32_t test_counter = 0;
+
+void loop() {
+  /*
+  uint32_t now = millis();
+  static unsigned long wait_ui = now + 1000L;
+
+  if ((uint32_t) (now >= wait_ui)) {
+    cli();
+    wait_ui = now + 1000L;
+    serial_print_uint32_base10(test_counter);
+    test_counter = 0;
+    SERIAL_EOL;
+    sei();
+  }
+  */
+}

@@ -17,5 +17,34 @@
  *
  */
 
-// This file is just a placeholder for Arduino's IDE.
-// The magic starts at main.cpp.
+#ifndef __CONFIG_H__
+#define __CONFIG_H__
+
+#define VERBOSE
+#define BAUDRATE 57600
+
+/**
+ * User interface options
+ */
+#define UI_LCD_TYPE U8GLIB_SSD1306_128X64
+#define UI_LCD_OPTIONS U8G_I2C_OPT_FAST
+#define UI_LCD_ROTATION 180 // 90, 180, 270
+
+//#define UI_ENCODER_ENABLE
+#define UI_KEYPAD_ENABLE
+#define UI_KEYPAD_A_PIN 12
+#define UI_KEYPAD_B_PIN 8
+
+// ----------------------------------------------------------------------------
+
+//#define NOAA_DEW_FUNCTION
+
+#define AMBIENT_SENSOR_DHT22
+#define AMBIENT_PIN 7
+
+#define STRIP_SENSOR1_PIN 4
+#define STRIP_SENSOR2_PIN 2
+//#define STRIP_SENSOR2_PIN 9
+//#define STRIP_SENSOR2_PIN 9
+
+#endif
