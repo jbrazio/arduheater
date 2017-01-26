@@ -31,12 +31,9 @@ private:
 public:
   typedef Singleton<keypad> single;
 
-  keypad() {;}
-
   void init() {;}
 
-  __attribute__((optimize ("Os")))
-  void init(uint8_t pin_A, uint8_t pin_B) {
+  void init(const uint8_t& pin_A, const uint8_t& pin_B) {
     m_key[0].pin = pin_A;
     m_key[1].pin = pin_B;
 
@@ -47,7 +44,6 @@ public:
     }
   }
 
-  __attribute__((optimize ("O3")))
   void isr(const uint8_t& port)
   {
     PORTB |= 0x20;
@@ -76,7 +72,6 @@ public:
   }
 
   __attribute__((always_inline))
-  __attribute__((optimize ("O3")))
   void worker() {
     for (size_t i = 0; i < 2; i++) {
       if (m_key[i].timeout) {
@@ -86,14 +81,14 @@ public:
           const uint8_t reg  = *portInputRegister(port);
           const uint8_t mask = digitalPinToBitMask(m_key[i].pin);
 
-          if (m_key[i].state == KEY_STATE_DOWN_LONG && (reg & mask)) {
-            m_key[i].state = KEY_STATE_UNKNOWN;
+          if (m_key[i].state == KEYPRESS_LONG && (reg & mask)) {
+            m_key[i].state = KEYPRESS_UNKNOWN;
             m_key[i].timeout = 0;
             return;
           }
 
-          if (reg & mask) m_key[i].state = KEY_STATE_DOWN;
-          else            m_key[i].state = KEY_STATE_DOWN_LONG;
+          if (reg & mask) m_key[i].state = KEYPRESS_SHORT;
+          else            m_key[i].state = KEYPRESS_LONG;
 
           m_key[i].timeout = 0;
 
@@ -108,16 +103,15 @@ public:
 
           notify(payload);
 
-          if (m_key[i].state != KEY_STATE_DOWN_LONG)
-            m_key[i].state = KEY_STATE_UNKNOWN;
+          if (m_key[i].state != KEYPRESS_LONG)
+            m_key[i].state = KEYPRESS_UNKNOWN;
         }
       }
     }
   }
 
 protected:
-  __attribute__((always_inline))
-  void attachPinChangeInterrupt(uint8_t pin)
+  void attachPinChangeInterrupt(const uint8_t& pin)
   {
     cli();
     PCIFR |= bit (digitalPinToPCICRbit(pin)); // clear any outstanding interrupt

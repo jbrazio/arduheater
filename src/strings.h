@@ -23,8 +23,10 @@
 // Special characters
 const char string_eol               [] PROGMEM = { 0x0a, 0x00 };
 const char string_space             [] PROGMEM = { 0x20, 0x00 };
-const char string_comma             [] PROGMEM = { 0x2c, 0x00 };
 const char string_percent           [] PROGMEM = { 0x25, 0x00 };
+const char string_comma             [] PROGMEM = { 0x2c, 0x00 };
+const char string_minus             [] PROGMEM = { 0x2d, 0x00 };
+const char string_zero              [] PROGMEM = { 0x30, 0x00 };
 
 // Serial strings
 const char string_serial_start      [] PROGMEM = { "is starting" };

@@ -22,12 +22,11 @@
 
 #define array_size(a) sizeof(a) / sizeof(*a)
 
-#define SERIAL_SPACE serial_print_PGM(string_space)
-#define SERIAL_COMMA serial_print_PGM(string_comma)
-#define SERIAL_EOL   serial_print_PGM(string_eol);
-
-#define SERIAL_BANNER serial_print_PGM(PSTR(PROGRAM_NAME)); SERIAL_SPACE; \
-                      serial_print_PGM(PSTR(SHORT_BUILD_VERSION)); SERIAL_SPACE; \
-                      serial_print_PGM(string_serial_start); SERIAL_EOL;
+#define SERIAL_BANNER serial::print::PGM(PSTR(PROGRAM_NAME));         \
+                      serial::print::chr::space();                    \
+                      serial::print::PGM(PSTR(SHORT_BUILD_VERSION));  \
+                      serial::print::chr::space();                    \
+                      serial::print::PGM(string_serial_start);        \
+                      serial::print::chr::eol();
 
 #endif

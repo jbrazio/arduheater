@@ -32,10 +32,10 @@ enum key_type_t {
   KEY_TYPE_OK
 };
 
-enum key_state_t {
-  KEY_STATE_UNKNOWN,
-  KEY_STATE_DOWN_LONG,
-  KEY_STATE_DOWN,
+enum keypress_t {
+  KEYPRESS_UNKNOWN,
+  KEYPRESS_SHORT,
+  KEYPRESS_LONG,
 };
 
 enum menu_page_t {
@@ -43,6 +43,13 @@ enum menu_page_t {
   PAGE_BLANK,
   PAGE_BOOTSCREEN,
   PAGE_HOME,
+  PAGE_TEST_A,
+  PAGE_TEST_B
+};
+
+enum menu_font_t {
+  FONT_SMALL,
+  FONT_BIG
 };
 
 #endif

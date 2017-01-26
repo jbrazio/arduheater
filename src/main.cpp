@@ -24,19 +24,13 @@ void setup() {
   Serial.begin(BAUDRATE);
   SERIAL_BANNER;
 
-
-  ui::single::instance().init();
+  ui::single::instance().select_page(PAGE_BOOTSCREEN, 500, PAGE_HOME);
 
   keypad::single::instance().init(UI_KEYPAD_A_PIN, UI_KEYPAD_B_PIN);
   keypad::single::instance().attach(&ui::single::instance());
 
-  timer1_isr_setup();
+  timer1::init();
 
-  /*
-  GUI::single::instance().selectPage(PAGE_BOOTSCREEN);
-  delay(1000);
-  GUI::single::instance().selectPage(PAGE_HOME);
-  */
 }
 
 volatile uint32_t test_counter = 0;

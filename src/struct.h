@@ -34,19 +34,9 @@ struct message_t {
 };
 
 struct key_t {
-  int8_t      pin;
-  key_state_t state;
-  uint8_t     timeout;
+  int8_t     pin;
+  keypress_t state;
+  uint8_t    timeout;
 };
-
-/*
-struct menuitem_t {
-  const char* const label;
-  menuitem_fn execute;
-  menuitem_t* child;
-  menuitem_t* next;
-  menuitem_t* prev;
-};
-*/
 
 #endif

@@ -23,12 +23,21 @@
 #define VERBOSE
 #define BAUDRATE 57600
 
+/*
+ * Timer1 heartbeat in milliseconds
+ * Note: Changing the value here is not enough, timer1 must be updated also.
+ */
+#define HEARTBEAT 50
+
 /**
  * User interface options
  */
 #define UI_LCD_TYPE U8GLIB_SSD1306_128X64
 #define UI_LCD_OPTIONS U8G_I2C_OPT_FAST
 #define UI_LCD_ROTATION 180 // 90, 180, 270
+
+#define UI_LCD_BIG_FONT u8g_font_profont29r
+#define UI_LCD_SMALL_FONT u8g_font_profont11r
 
 //#define UI_ENCODER_ENABLE
 #define UI_KEYPAD_ENABLE

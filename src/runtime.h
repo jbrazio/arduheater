@@ -1,6 +1,6 @@
 /**
  * Arduheater - Telescope heat controller
- * Copyright (C) 2016 João Brázio [joao@brazio.org]
+ * Copyright (C) 2017 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,30 +17,24 @@
  *
  */
 
-#ifndef __ARDUHEATER_H__
-#define __ARDUHEATER_H__
+#ifndef __RUNTIME_H__
+#define __RUNTIME_H__
 
-#include <Arduino.h>
-#include <u8glib.h>
-#include <avr/pgmspace.h>
+class runtime
+{
+public:
+  typedef Singleton<runtime> single;
 
-#include "config.h"
-#include "assert.h"
+  struct runtime_lcd_t {
+    struct page_t {
+      volatile bool v_outdated;
+      volatile uint8_t v_timeout;
+      volatile menu_page_t v_next;
+      volatile menu_page_t v_current;
+    } page;
+  } lcd;
 
-#include "types.h"
-#include "macros.h"
-#include "version.h"
-#include "strings.h"
-#include "print.h"
-#include "observer.h"
-#include "subject.h"
-#include "enum.h"
-#include "struct.h"
-#include "singleton.h"
-#include "runtime.h"
-#include "keypad.h"
-#include "ui.h"
-#include "pcint.h"
-#include "timer1.h"
+  void init() {;}
+};
 
 #endif

@@ -20,22 +20,24 @@
 #ifndef __PCINT_H__
 #define __PCINT_H__
 
-ISR(PCINT0_vect)
-{
-  // #define PB 2
-  keypad::single::instance().isr(2);
-}
+namespace pcint {
+  ISR(PCINT0_vect)
+  {
+    // #define PB 2
+    keypad::single::instance().isr(2);
+  }
 
-ISR(PCINT1_vect)
-{
-  // #define PC 3
-  keypad::single::instance().isr(3);
-}
+  ISR(PCINT1_vect)
+  {
+    // #define PC 3
+    keypad::single::instance().isr(3);
+  }
 
-ISR(PCINT2_vect)
-{
-  // #define PD 4
-  keypad::single::instance().isr(4);
-}
+  ISR(PCINT2_vect)
+  {
+    // #define PD 4
+    keypad::single::instance().isr(4);
+  }
+};
 
 #endif
