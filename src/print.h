@@ -1,6 +1,6 @@
 /**
  * Arduheater - Telescope heat controller
- * Copyright (C) 2016 João Brázio [joao@brazio.org]
+ * Copyright (C) 2017 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,10 @@
 
 #ifndef __PRINT_H__
 #define __PRINT_H__
+
+#include <Arduino.h>
+#include <avr/pgmspace.h>
+#include "strings.h"
 
 namespace serial {
   namespace print {
@@ -57,21 +61,7 @@ namespace serial {
       }
     }
 
-    void number(uint32_t n, const uint8_t& base, const uint8_t& digits) {
-      unsigned char buf[digits];
-      uint8_t i = 0;
-
-      for (; i < digits; i++) {
-        buf[i] = n % base;
-        n /= base;
-      }
-
-      for (; i > 0; i--) {
-        if (i < digits && base == 2 && !((digits - i) % 4))
-          serial::print::chr::space();
-        Serial.write('0' + buf[i - 1]);
-      }
-    }
+    void number(uint32_t n, const uint8_t& base, const uint8_t& digits);
 
     inline void number(const uint32_t& n, const uint8_t& base) {
       if (!n) {
@@ -127,51 +117,7 @@ namespace serial {
       } else serial::print::uint32(n);
     }
 
-    void float32(float n, const uint8_t& decimal_places) {
-      if (n < 0) {
-        serial::print::PGM(PSTR("-"));
-        n = -n;
-      }
-
-      uint8_t decimals = decimal_places;
-
-      // Quickly convert values expected to be E0 to E-4.
-      while (decimals >= 2) {
-        n *= 100;
-        decimals -= 2;
-      }
-
-      if (decimals) { n *= 10; }
-      n += 0.5; // Add rounding factor. Ensures carryover through entire value.
-
-      // Generate digits backwards and store in string.
-      unsigned char buf[10];
-      uint8_t i = 0;
-      uint32_t a = (long)n;
-
-      // Place decimal point, even if decimal places are zero.
-      buf[decimal_places] = '.';
-
-      while(a > 0) {
-        if (i == decimal_places) { i++; } // Skip decimal point location
-        buf[i++] = (a % 10) + '0'; // Get digit
-        a /= 10;
-      }
-
-      // Fill in zeros to decimal point for (n < 1)
-      while (i < decimal_places)
-        buf[i++] = '0';
-
-      // Fill in leading zero, if needed.
-      if (i == decimal_places) {
-        i++;
-        buf[i++] = '0';
-      }
-
-      // Print the generated string.
-      for (; i > 0; i--)
-        Serial.write(buf[i-1]);
-    }
+    void float32(float n, const uint8_t& decimal_places);
 
     namespace base2 {
       inline void uint8(const uint8_t& n) {

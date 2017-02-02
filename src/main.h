@@ -17,30 +17,7 @@
  *
  */
 
-#ifndef __ARDUHEATER_H__
-#define __ARDUHEATER_H__
-
-#include <Arduino.h>
-#include <u8glib.h>
-#include <avr/pgmspace.h>
-
-#include "config.h"
-#include "assert.h"
-
-#include "types.h"
-#include "macros.h"
-#include "version.h"
-#include "strings.h"
-#include "print.h"
-#include "observer.h"
-#include "subject.h"
-#include "enum.h"
-#include "struct.h"
-#include "singleton.h"
-#include "runtime.h"
-#include "keypad.h"
-#include "ui.h"
-#include "pcint.h"
-#include "timer1.h"
+#ifndef __MAIN_H__
+#define __MAIN_H__
 
 #endif

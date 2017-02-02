@@ -20,6 +20,14 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
+class config
+{
+public:
+  struct serial_t {
+     const uint32_t baudrate = 57600;
+  } static serial;
+};
+
 #define VERBOSE
 #define BAUDRATE 57600
 
