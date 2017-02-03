@@ -20,6 +20,9 @@
 #ifndef __STRUCT_H__
 #define __STRUCT_H__
 
+#include <Arduino.h>
+#include "enum.h"
+
 struct message_t {
   message_type_t type;
   union {

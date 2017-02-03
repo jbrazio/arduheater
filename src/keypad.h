@@ -20,6 +20,11 @@
 #ifndef __KEYPAD_H__
 #define __KEYPAD_H__
 
+#include <Arduino.h>
+#include "subject.h"
+#include "struct.h"
+#include "singleton.h"
+
 extern volatile uint32_t test_counter;
 
 class keypad : public Subject<message_t>

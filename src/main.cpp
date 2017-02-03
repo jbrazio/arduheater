@@ -20,10 +20,13 @@
 #include <Arduino.h>
 #include "main.h"
 #include "config.h"
+#include "macros.h"
+#include "keypad.h"
+#include "ui.h"
 
 void setup() {
   DDRB |= 0x20; // Enable D13 as output
-  Serial.begin(config::serial::baudrate);
+  Serial.begin(config::serial.baudrate);
   SERIAL_BANNER;
 
   ui::single::instance().select_page(PAGE_BOOTSCREEN, 500, PAGE_HOME);

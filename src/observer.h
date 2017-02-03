@@ -20,6 +20,8 @@
 #ifndef __OBSERVER_H__
 #define __OBSERVER_H__
 
+#include <Arduino.h>
+
 /**
  * Abstract observer/subscriber class
  */

@@ -18,8 +18,6 @@
  */
 
 #include <Arduino.h>
-#include <avr/pgmspace.h>
-#include "strings.h"
 #include "print.h"
 
 void serial::print::number(uint32_t n, const uint8_t& base, const uint8_t& digits) {
@@ -40,7 +38,7 @@ void serial::print::number(uint32_t n, const uint8_t& base, const uint8_t& digit
 
 void serial::print::float32(float n, const uint8_t& decimal_places) {
   if (n < 0) {
-    serial::print::PGM(PSTR("-"));
+    serial::print::chr::minus();
     n = -n;
   }
 

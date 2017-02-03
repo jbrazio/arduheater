@@ -20,6 +20,10 @@
 #ifndef __TIMER1_H__
 #define __TIMER1_H__
 
+#include <Arduino.h>
+#include "keypad.h"
+#include "ui.h"
+
 namespace timer1 {
   /**
   * Enable the timer1 ISR in compare match mode with a 20Hz rate

@@ -20,6 +20,11 @@
 #ifndef __MACROS_H__
 #define __MACROS_H__
 
+#include <Arduino.h>
+#include "print.h"
+#include "strings.h"
+#include "version.h"
+
 #define array_size(a) sizeof(a) / sizeof(*a)
 
 #define SERIAL_BANNER serial::print::PGM(PSTR(PROGRAM_NAME));         \

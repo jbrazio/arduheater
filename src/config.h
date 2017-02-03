@@ -20,16 +20,20 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
+#include <Arduino.h>
+
 class config
 {
 public:
-  struct serial_t {
-     const uint32_t baudrate = 57600;
-  } static serial;
+  static const bool verbose = false;
+  static const uint32_t heartbeat = 50;
+  static struct serial_t {
+     const static uint32_t baudrate = 57600;
+  } serial;
 };
 
-#define VERBOSE
-#define BAUDRATE 57600
+//#define VERBOSE
+//#define BAUDRATE 57600
 
 /*
  * Timer1 heartbeat in milliseconds

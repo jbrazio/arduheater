@@ -20,6 +20,13 @@
 #ifndef __UI_H__
 #define __UI_H__
 
+#include <Arduino.h>
+#include <U8glib.h>
+#include "observer.h"
+#include "struct.h"
+#include "singleton.h"
+#include "config.h"
+#include "runtime.h"
 #include "../bitmap/bootlogo.h"
 
 class ui : public Observer<message_t>

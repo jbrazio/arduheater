@@ -20,6 +20,8 @@
 #ifndef __SINGLETON_H__
 #define __SINGLETON_H__
 
+#include <Arduino.h>
+
 /**
  * Singleton class
  * This class follows the Meyer's Singleton Pattern using variadic template

@@ -20,6 +20,10 @@
 #ifndef __RUNTIME_H__
 #define __RUNTIME_H__
 
+#include <Arduino.h>
+#include "singleton.h"
+#include "timer1.h"
+
 class runtime
 {
 public:
