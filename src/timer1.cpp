@@ -1,6 +1,6 @@
 /**
  * Arduheater - Telescope heat controller
- * Copyright (C) 2016 João Brázio [joao@brazio.org]
+ * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,5 +17,28 @@
  *
  */
 
-// This file is just a placeholder for Arduino's IDE.
-// The magic starts at main.cpp.
+#ifndef __TIMER1_H__
+#define __TIMER1_H__
+
+#include <Arduino.h>
+#include "keypad.h"
+#include "timer1.h"
+#include "ui.h"
+
+/**
+ * Timer1 interrupt handler
+ */
+ISR(TIMER1_COMPA_vect) {
+  static volatile uint8_t busy = false; // Binary semaphore
+  if (busy) { return; }                 // Prevent ISR (re)triggering
+  PORTB |= 0x20;                        // Set D13 high
+  busy = true;                          // Acquire the lock
+
+  keypad::single::instance().worker();
+  ui::single::instance().worker();
+
+  busy = false;   // Release the lock
+  PORTB &= ~0x20; // Set D13 low
+}
+
+#endif

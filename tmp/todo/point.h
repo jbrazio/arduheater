@@ -1,6 +1,6 @@
 /**
  * Arduheater - Telescope heat controller
- * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
+ * Copyright (C) 2016 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,21 +17,30 @@
  *
  */
 
-#ifndef __MACROS_H__
-#define __MACROS_H__
+#ifndef __POINT_T__
+#define __POINT_T__
 
-#include <Arduino.h>
-#include "print.h"
-#include "strings.h"
-#include "version.h"
+/**
+ * @brief Cartesian Point
+ * @details Represents a two dimensional point on Cartesian coordinate system.
+ *
+ * @param x The x-coordinate of the point.
+ * @param y The y-coordinate of the point.
+ */
+struct point_t {
+  int16_t x;
+  int16_t y;
 
-#define array_size(a) sizeof(a) / sizeof(*a)
+  /**
+   * @brief Two dimensional point constructor
+   *
+   * @param x The x-coordinate of the point.
+   * @param y The y-coordinate of the point.
+   */
+  point_t(int16_t const &x, int16_t const &y) {
+    this->x = x;
+    this->y = y;
+  }
+};
 
-#define SERIAL_BANNER serial::print::PGM(PSTR(PROGRAM_NAME));         \
-                      serial::print::chr::space();                    \
-                      serial::print::PGM(PSTR(SHORT_BUILD_VERSION));  \
-                      serial::print::chr::space();                    \
-                      serial::print::PGM(string_serial_start);        \
-                      serial::print::chr::eol();
-
-#endif
+#endif // __POINT_T__

@@ -1,6 +1,6 @@
 /**
  * Arduheater - Telescope heat controller
- * Copyright (C) 2016 João Brázio [joao@brazio.org]
+ * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,10 +18,11 @@
  */
 
 #include <Arduino.h>
-#include "main.h"
 #include "config.h"
-#include "macros.h"
+#include "enum.h"
 #include "keypad.h"
+#include "macros.h"
+#include "main.h"
 #include "ui.h"
 
 void setup() {
@@ -29,29 +30,25 @@ void setup() {
   Serial.begin(config::serial.baudrate);
   SERIAL_BANNER;
 
-  ui::single::instance().select_page(PAGE_BOOTSCREEN, 500, PAGE_HOME);
+  //ui::single::instance().select_page(PAGE_BOOTSCREEN, 500, PAGE_HOME);
 
+  ui::single::instance().show(CARD_SPLASH, 10000L);
   keypad::single::instance().init(UI_KEYPAD_A_PIN, UI_KEYPAD_B_PIN);
   keypad::single::instance().attach(&ui::single::instance());
-
   timer1::init();
-
 }
 
 volatile uint32_t test_counter = 0;
 
 void loop() {
-  /*
   uint32_t now = millis();
-  static unsigned long wait_ui = now + 1000L;
+  static unsigned long wait_ui = now + 5000L;
 
   if ((uint32_t) (now >= wait_ui)) {
     cli();
-    wait_ui = now + 1000L;
-    serial_print_uint32_base10(test_counter);
+    wait_ui = now + 5000L;
+    serial::println::uint32((uint32_t) test_counter);
     test_counter = 0;
-    SERIAL_EOL;
     sei();
-  }
-  */
+  } else { ++test_counter; }
 }

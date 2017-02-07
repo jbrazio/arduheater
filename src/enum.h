@@ -1,6 +1,6 @@
 /**
  * Arduheater - Telescope heat controller
- * Copyright (C) 2016 João Brázio [joao@brazio.org]
+ * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,18 +38,10 @@ enum keypress_t {
   KEYPRESS_LONG,
 };
 
-enum menu_page_t {
-  PAGE_UNKNOWN,
-  PAGE_BLANK,
-  PAGE_BOOTSCREEN,
-  PAGE_HOME,
-  PAGE_TEST_A,
-  PAGE_TEST_B
-};
-
-enum menu_font_t {
-  FONT_SMALL,
-  FONT_BIG
+enum card_index_t {
+  CARD_BLANK,
+  CARD_SPLASH,
+  CARD_HOME,
 };
 
 #endif

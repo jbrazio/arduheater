@@ -1,6 +1,6 @@
 /**
  * Arduheater - Telescope heat controller
- * Copyright (C) 2016 João Brázio [joao@brazio.org]
+ * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,9 @@
 #ifndef __STRINGS_H__
 #define __STRINGS_H__
 
+#include <Arduino.h>
+#include <avr/pgmspace.h>
+
 // Special characters
 const char string_eol               [] PROGMEM = { 0x0a, 0x00 };
 const char string_space             [] PROGMEM = { 0x20, 0x00 };
@@ -34,9 +37,9 @@ const char string_no_pci            [] PROGMEM = { "PIN is not interrupt-capable
 
 
 // LCD strig
-const char string_lcd_temperature   [] PROGMEM = { "Ambient" };
+const char string_lcd_ambient       [] PROGMEM = { "Ambient" };
 const char string_lcd_dew_point     [] PROGMEM = { "Dew point" };
-const char string_lcd_humidity      [] PROGMEM = { "RH" };
+const char string_lcd_humidity      [] PROGMEM = { "Humidity" };
 const char string_lcd_unit_C        [] PROGMEM = { "C" };
 
 // Menu items

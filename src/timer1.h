@@ -1,6 +1,6 @@
 /**
  * Arduheater - Telescope heat controller
- * Copyright (C) 2016 João Brázio [joao@brazio.org]
+ * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,14 +21,18 @@
 #define __TIMER1_H__
 
 #include <Arduino.h>
-#include "keypad.h"
-#include "ui.h"
+
+/*
+ * Timer1 heartbeat in milliseconds
+ * Note: Changing the value here is not enough, timer1 must be updated also.
+ */
+#define HEARTBEAT 50
 
 namespace timer1 {
   /**
   * Enable the timer1 ISR in compare match mode with a 20Hz rate
   */
-  void init() {
+  inline void init() {
     cli();
     TCCR1A = TCCR1B = TCNT1 = 0;
 
@@ -37,21 +41,6 @@ namespace timer1 {
     TCCR1B |= (1 << CS12);    // 256 prescaler
     TIMSK1 |= (1 << OCIE1A);  // enable timer compare interrupt
     sei();
-  }
-
-  /**
-   * Timer1 interrupt handler
-   */
-  ISR(TIMER1_COMPA_vect) {
-    static volatile uint8_t busy = false;  // Binary semaphore
-    if (busy) { return; }                  // Prevent ISR (re)triggering
-    busy = true;                           // Acquire the lock
-
-    keypad::single::instance().worker();
-    ui::single::instance().worker();
-
-    busy = false;                   // Release the lock
-    //PORTB ^= 0x20;                // Set D13 low
   }
 };
 

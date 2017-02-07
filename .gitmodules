@@ -1,3 +1,0 @@
-[submodule ".piolib/u8glib"]
-	path = .piolib/u8glib
-	url = https://github.com/olikraus/U8glib_Arduino.git

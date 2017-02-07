@@ -17,21 +17,31 @@
  *
  */
 
-#ifndef __MACROS_H__
-#define __MACROS_H__
+#ifndef __CARD_H__
+#define __CARD_H__
 
 #include <Arduino.h>
-#include "print.h"
-#include "strings.h"
-#include "version.h"
+#include <U8glib.h>
 
-#define array_size(a) sizeof(a) / sizeof(*a)
+class Card {
+public:
+  Card()
+    : m_needs_drawing(true)
+  {;}
 
-#define SERIAL_BANNER serial::print::PGM(PSTR(PROGRAM_NAME));         \
-                      serial::print::chr::space();                    \
-                      serial::print::PGM(PSTR(SHORT_BUILD_VERSION));  \
-                      serial::print::chr::space();                    \
-                      serial::print::PGM(string_serial_start);        \
-                      serial::print::chr::eol();
+  virtual ~Card() {;}
+
+public:
+  bool m_needs_drawing;
+  card_index_t m_timeout_card;
+
+public:
+  virtual void draw()    {;}
+  virtual void init()    {;}
+  virtual void left()    {;}
+  virtual void press()   {;}
+  virtual void right()   {;}
+  virtual void timeout() {;}
+};
 
 #endif

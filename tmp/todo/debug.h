@@ -1,6 +1,6 @@
 /**
  * Arduheater - Telescope heat controller
- * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
+ * Copyright (C) 2016 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,21 +17,25 @@
  *
  */
 
-#ifndef __MACROS_H__
-#define __MACROS_H__
+#ifndef __DEBUG_H__
+#define __DEBUG_H__
+#ifdef DEBUG___
 
-#include <Arduino.h>
-#include "print.h"
-#include "strings.h"
-#include "version.h"
+  #include <avr/pgmspace.h>
 
-#define array_size(a) sizeof(a) / sizeof(*a)
+  static void debugP(const char *str) {
+    char c;
 
-#define SERIAL_BANNER serial::print::PGM(PSTR(PROGRAM_NAME));         \
-                      serial::print::chr::space();                    \
-                      serial::print::PGM(PSTR(SHORT_BUILD_VERSION));  \
-                      serial::print::chr::space();                    \
-                      serial::print::PGM(string_serial_start);        \
-                      serial::print::chr::eol();
+    while ((c = pgm_read_byte(str))) {
+      Serial.write(c);
+      str++;
+    }
+  }
 
+  static void debugLineP(const char *str) {
+    debugP(str);
+    Serial.write("\n");
+  }
+
+#endif
 #endif

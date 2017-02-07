@@ -1,6 +1,6 @@
 /**
  * Arduheater - Telescope heat controller
- * Copyright (C) 2017 João Brázio [joao@brazio.org]
+ * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -142,6 +142,89 @@ namespace serial {
 
       inline void int32(const int32_t& n) {
         serial::print::number(n, 2, 32);
+      }
+    }
+  }
+
+  namespace println {
+    inline void string(const char* s) {
+      serial::print::string(s);
+      serial::print::chr::eol();
+    }
+
+    inline void PGM(const char* s) {
+      serial::print::PGM(s);
+      serial::print::chr::eol();
+    }
+
+    inline void number(uint32_t n, const uint8_t& base, const uint8_t& digits) {
+      serial::print::number(n, base, digits);
+      serial::print::chr::eol();
+    }
+
+    inline void number(const uint32_t& n, const uint8_t& base) {
+      serial::print::number(n, base);
+      serial::print::chr::eol();
+    }
+
+    inline void uint8(const uint8_t& n) {
+      serial::print::uint8(n);
+      serial::print::chr::eol();
+    }
+
+    inline void int8(const int8_t& n) {
+      serial::print::int8(n);
+      serial::print::chr::eol();
+    }
+
+    inline void uint16(const uint16_t& n) {
+      serial::print::uint16(n);
+      serial::print::chr::eol();
+    }
+
+    inline void int16(const int16_t& n) {
+      serial::print::int16(n);
+      serial::print::chr::eol();
+    }
+
+    inline void uint32(const uint32_t& n) {
+      serial::print::uint32(n);
+      serial::print::chr::eol();
+    }
+
+    inline void int32(const int32_t& n) {
+      serial::print::int32(n);
+      serial::print::chr::eol();
+    }
+
+    inline void float32(float n, const uint8_t& decimal_places) {
+      serial::print::float32(n, decimal_places);
+      serial::print::chr::eol();
+    }
+
+    namespace base2 {
+      inline void uint8(const uint8_t& n) {
+        serial::print::uint8(n);
+      }
+
+      inline void int8(const int8_t& n) {
+        serial::print::int8(n);
+      }
+
+      inline void uint16(const uint16_t& n) {
+        serial::print::uint16(n);
+      }
+
+      inline void int16(const int16_t& n) {
+        serial::print::int16(n);
+      }
+
+      inline void uint32(const uint32_t& n) {
+        serial::print::uint32(n);
+      }
+
+      inline void int32(const int32_t& n) {
+        serial::print::int32(n);
       }
     }
   }

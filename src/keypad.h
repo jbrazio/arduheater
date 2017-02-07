@@ -1,6 +1,6 @@
 /**
  * Arduheater - Telescope heat controller
- * Copyright (C) 2016 João Brázio [joao@brazio.org]
+ * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,9 +21,9 @@
 #define __KEYPAD_H__
 
 #include <Arduino.h>
-#include "subject.h"
-#include "struct.h"
 #include "singleton.h"
+#include "struct.h"
+#include "subject.h"
 
 extern volatile uint32_t test_counter;
 
@@ -51,8 +51,6 @@ public:
 
   void isr(const uint8_t& port)
   {
-    PORTB |= 0x20;
-
     const uint8_t index  = port - 2;
     const uint8_t reg    = *portInputRegister(port);
     const uint8_t change = (v_cache[index] ^ reg);
@@ -73,7 +71,6 @@ public:
     }
 
     v_cache[index] = reg;
-    PORTB ^= 0x20;
   }
 
   __attribute__((always_inline))

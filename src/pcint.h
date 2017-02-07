@@ -1,6 +1,6 @@
 /**
  * Arduheater - Telescope heat controller
- * Copyright (C) 2016 João Brázio [joao@brazio.org]
+ * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,24 +20,25 @@
 #ifndef __PCINT_H__
 #define __PCINT_H__
 
-namespace pcint {
-  ISR(PCINT0_vect)
-  {
-    // #define PB 2
-    keypad::single::instance().isr(2);
-  }
+#include <Arduino.h>
+#include "keypad.h"
 
-  ISR(PCINT1_vect)
-  {
-    // #define PC 3
-    keypad::single::instance().isr(3);
-  }
+ISR(PCINT0_vect)
+{
+  // #define PB 2
+  keypad::single::instance().isr(2);
+}
 
-  ISR(PCINT2_vect)
-  {
-    // #define PD 4
-    keypad::single::instance().isr(4);
-  }
-};
+ISR(PCINT1_vect)
+{
+  // #define PC 3
+  keypad::single::instance().isr(3);
+}
+
+ISR(PCINT2_vect)
+{
+  // #define PD 4
+  keypad::single::instance().isr(4);
+}
 
 #endif

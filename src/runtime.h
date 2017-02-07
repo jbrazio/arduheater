@@ -1,6 +1,6 @@
 /**
  * Arduheater - Telescope heat controller
- * Copyright (C) 2017 João Brázio [joao@brazio.org]
+ * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,12 +30,14 @@ public:
   typedef Singleton<runtime> single;
 
   struct runtime_lcd_t {
+    /*
     struct page_t {
       volatile bool v_outdated;
       volatile uint8_t v_timeout;
       volatile menu_page_t v_next;
       volatile menu_page_t v_current;
     } page;
+    */
   } lcd;
 
   void init() {;}

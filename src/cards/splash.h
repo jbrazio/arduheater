@@ -17,21 +17,38 @@
  *
  */
 
-#ifndef __MACROS_H__
-#define __MACROS_H__
+#ifndef __CARD_SPLASH_H__
+#define __CARD_SPLASH_H__
 
 #include <Arduino.h>
+#include "bitmaps/bootlogo.h"
+#include "card.h"
+#include "enum.h"
 #include "print.h"
-#include "strings.h"
-#include "version.h"
+#include "struct.h"
 
-#define array_size(a) sizeof(a) / sizeof(*a)
+class CardSplash : public Card {
+public:
+  CardSplash() {;}
+  virtual ~CardSplash() {;}
 
-#define SERIAL_BANNER serial::print::PGM(PSTR(PROGRAM_NAME));         \
-                      serial::print::chr::space();                    \
-                      serial::print::PGM(PSTR(SHORT_BUILD_VERSION));  \
-                      serial::print::chr::space();                    \
-                      serial::print::PGM(string_serial_start);        \
-                      serial::print::chr::eol();
+public:
+  void draw() {
+    Painter::instance()->firstPage();
+    do {
+      Painter::instance()->setColorIndex(1);
+      Painter::instance()->drawBitmapP(0, 0, 16, 64, bitmap_bootlogo);
+    } while(Painter::instance()->nextPage());
+  }
+
+  void init() {
+    m_timeout_card = CARD_HOME;
+  }
+
+  void timeout() {
+    serial::println::string("CardSplash::timeout()");
+    delay(3000);
+  }
+};
 
 #endif

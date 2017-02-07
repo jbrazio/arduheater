@@ -1,6 +1,6 @@
 /**
  * Arduheater - Telescope heat controller
- * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
+ * Copyright (C) 2016 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,21 +17,13 @@
  *
  */
 
-#ifndef __MACROS_H__
-#define __MACROS_H__
+#ifndef __SENSOR_DATA_H__
+#define __SENSOR_DATA_H__
 
-#include <Arduino.h>
-#include "print.h"
-#include "strings.h"
-#include "version.h"
-
-#define array_size(a) sizeof(a) / sizeof(*a)
-
-#define SERIAL_BANNER serial::print::PGM(PSTR(PROGRAM_NAME));         \
-                      serial::print::chr::space();                    \
-                      serial::print::PGM(PSTR(SHORT_BUILD_VERSION));  \
-                      serial::print::chr::space();                    \
-                      serial::print::PGM(string_serial_start);        \
-                      serial::print::chr::eol();
+enum SENSOR_DATA_t {
+  TEMPERATURE,
+  HUMIDITY,
+  DEW
+};
 
 #endif

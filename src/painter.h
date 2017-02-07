@@ -17,21 +17,43 @@
  *
  */
 
-#ifndef __MACROS_H__
-#define __MACROS_H__
+#ifndef __PAINTER_H__
+#define __PAINTER_H__
 
 #include <Arduino.h>
-#include "print.h"
-#include "strings.h"
-#include "version.h"
+#include <U8glib.h>
+#include "config.h"
 
-#define array_size(a) sizeof(a) / sizeof(*a)
+class Painter {
+private:
+  Painter() {;}
+  ~Painter() {;}
 
-#define SERIAL_BANNER serial::print::PGM(PSTR(PROGRAM_NAME));         \
-                      serial::print::chr::space();                    \
-                      serial::print::PGM(PSTR(SHORT_BUILD_VERSION));  \
-                      serial::print::chr::space();                    \
-                      serial::print::PGM(string_serial_start);        \
-                      serial::print::chr::eol();
+public:
+  static U8GLIB* instance() {
+    static UI_LCD_TYPE s_painter(UI_LCD_OPTIONS);
+    static bool s_needs_init = true;
+
+    if (s_needs_init) {
+      s_painter.begin();
+
+      #ifdef UI_LCD_CONTRAST
+      s_painter.setContrast(UI_LCD_CONTRAST);
+      #endif
+
+      #ifdef UI_LCD_ROTATED
+      s_painter.setRot180();
+      #endif
+
+      s_needs_init = false;
+    }
+
+    return &s_painter;
+  }
+
+  static inline u8g_fntpgm_uint8_t* get_font() {
+    return (u8g_fntpgm_uint8_t*) UI_LCD_FONT;
+  }
+};
 
 #endif

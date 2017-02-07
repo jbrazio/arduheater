@@ -17,21 +17,24 @@
  *
  */
 
-#ifndef __MACROS_H__
-#define __MACROS_H__
+#ifndef __CARD_BLANK_H__
+#define __CARD_BLANK_H__
 
 #include <Arduino.h>
+#include "card.h"
+#include "painter.h"
 #include "print.h"
-#include "strings.h"
-#include "version.h"
 
-#define array_size(a) sizeof(a) / sizeof(*a)
+class CardBlank : public Card {
+public:
+  CardBlank() {;}
+  virtual ~CardBlank() {;}
 
-#define SERIAL_BANNER serial::print::PGM(PSTR(PROGRAM_NAME));         \
-                      serial::print::chr::space();                    \
-                      serial::print::PGM(PSTR(SHORT_BUILD_VERSION));  \
-                      serial::print::chr::space();                    \
-                      serial::print::PGM(string_serial_start);        \
-                      serial::print::chr::eol();
+public:
+  void draw() {
+    Painter::instance()->firstPage();
+    do {;} while(Painter::instance()->nextPage());
+  }
+};
 
 #endif

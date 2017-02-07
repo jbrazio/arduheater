@@ -1,6 +1,6 @@
 /**
  * Arduheater - Telescope heat controller
- * Copyright (C) 2017 João Brázio [joao@brazio.org]
+ * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,8 @@
 
 #ifndef __TYPES_H__
 #define __TYPES_H__
+
+#include <Arduino.h>
 
 typedef void (*menuitem_fn)(void);
 typedef uint32_t millis_t;
