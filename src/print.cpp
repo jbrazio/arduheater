@@ -32,7 +32,7 @@ void serial::print::number(uint32_t n, const uint8_t& base, const uint8_t& digit
   for (; i > 0; i--) {
     if (i < digits && base == 2 && !((digits - i) % 4))
       serial::print::chr::space();
-    Serial.write('0' + buf[i - 1]);
+    serial::write('0' + buf[i - 1]);
   }
 }
 
@@ -79,5 +79,5 @@ void serial::print::float32(float n, const uint8_t& decimal_places) {
 
   // Print the generated string.
   for (; i > 0; i--)
-    Serial.write(buf[i-1]);
+    serial::write(buf[i-1]);
 }

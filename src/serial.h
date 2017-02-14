@@ -17,28 +17,40 @@
  *
  */
 
-#ifndef __MACROS_H__
-#define __MACROS_H__
+#ifndef __SERIAL_H__
+#define __SERIAL_H__
 
 #include <Arduino.h>
-#include "print.h"
-#include "strings.h"
-#include "version.h"
+#include "circularqueue.h"
 
-#define array_size(a) sizeof(a) / sizeof(*a)
-
-#ifdef VERBOSE
-  #define DEBUGPRN(a) serial::println::PGM(PSTR(a))
-#else
-  #define DEBUGPRN(a) do {} while(0)
+#ifndef RX_BUFFER_SIZE
+  #define RX_BUFFER_SIZE 128
 #endif
 
+#ifndef TX_BUFFER_SIZE
+  #define TX_BUFFER_SIZE 64
+#endif
 
-#define SERIAL_BANNER serial::print::PGM(PSTR(PROGRAM_NAME));         \
-                      serial::print::chr::space();                    \
-                      serial::print::PGM(PSTR(SHORT_BUILD_VERSION));  \
-                      serial::print::chr::space();                    \
-                      serial::print::PGM(string_serial_start);        \
-                      serial::print::chr::eol();
+#ifndef BAUDRATE
+  #define BAUDRATE 57600
+#endif
+
+#ifndef SERIAL_NO_DATA
+  #define SERIAL_NO_DATA 0xff
+#endif
+
+namespace serial {
+  extern CircularQueue<uint8_t, RX_BUFFER_SIZE> rx_buffer;
+  extern CircularQueue<uint8_t, TX_BUFFER_SIZE> tx_buffer;
+
+  void init();
+
+  inline uint8_t read() {
+    return (rx_buffer.isEmpty())
+      ? SERIAL_NO_DATA : rx_buffer.dequeue();
+  }
+
+  void write(const uint8_t& s);
+};
 
 #endif

@@ -27,12 +27,21 @@
 
 #include "dht22.h"
 #include "runtime.h"
+#include "circularqueue.h"
+#include "serial.h"
 
 void setup() {
   DDRB |= 0x20; // Enable D13 as output
-  Serial.begin(config::serial.baudrate);
+
+  serial::init();
   ui::single::instance().show(CARD_SPLASH, 750L);
   SERIAL_BANNER;
+
+
+  CircularQueue<uint8_t, 32> foo;
+  for (size_t i = 0; i < 128; i++) { foo.enqueue(i); }
+  while (foo.count() > 0) { serial::println::uint8(foo.dequeue()); }
+
 
   keypad::single::instance().init(UI_KEYPAD_A_PIN, UI_KEYPAD_B_PIN);
   keypad::single::instance().attach(&ui::single::instance());

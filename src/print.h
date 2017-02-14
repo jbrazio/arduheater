@@ -22,19 +22,20 @@
 
 #include <Arduino.h>
 #include <avr/pgmspace.h>
+#include "serial.h"
 #include "strings.h"
 
 namespace serial {
   namespace print {
     inline void string(const char* s) {
       while (*s)
-        Serial.write(*s++);
+        serial::write(*s++);
     }
 
     inline void PGM(const char* s) {
       char c;
       while ((c = pgm_read_byte(s))) {
-        Serial.write(c);
+        serial::write(c);
         ++s;
       }
     }

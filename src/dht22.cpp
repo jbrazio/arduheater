@@ -96,6 +96,7 @@ void DHT22::worker() {
   switch (m_sensor_state) {
     case SENSOR_TIMEOUT:
     case SENSOR_ERROR: {
+      DEBUGPRN("DHT22::worker(): SENSOR_ERROR/TIMEOUT");
       reset();
       break;
     }
