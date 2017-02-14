@@ -1,6 +1,6 @@
 /**
  * Arduheater - Telescope heat controller
- * Copyright (C) 2016 João Brázio [joao@brazio.org]
+ * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,14 +17,46 @@
  *
  */
 
-#ifndef __OUTPUT_H__
-#define __OUTPUT_H__
+#ifndef __SENSOR_H__
+#define __SENSOR_H__
 
-#include "main.h"
+#include <Arduino.h>
+#include "enum.h"
+#include "struct.h"
 
-struct output_t {
-  output_type_t type = OUTPUT_UNKNOWN;
-  sensor_type_t sensor = SENSOR_UNKNOWN;
+class Sensor {
+protected:
+  Sensor()
+    : m_needs_updating(true)
+  {;}
+
+public:
+  virtual ~Sensor() {;}
+
+public:
+  bool m_needs_updating;
+
+protected:
+  sensor_state_t m_sensor_state;
+  hb_timer_t s_sleep;
+
+protected:
+  virtual void update()  {;}
+
+public:
+  virtual void init()    {;}
+  virtual void timeout() {;}
+  virtual void worker()  {;}
+
+public:
+  virtual inline void reset() {
+    m_sensor_state   = SENSOR_SLEEP;
+    s_sleep.timeleft = s_sleep.period;
+  }
+
+  virtual inline sensor_state_t state() {
+    return m_sensor_state;
+  }
 };
 
 #endif

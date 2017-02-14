@@ -21,26 +21,31 @@
 #define __RUNTIME_H__
 
 #include <Arduino.h>
+#include "observer.h"
 #include "singleton.h"
-#include "timer1.h"
+#include "smooth_mm.h"
+#include "struct.h"
 
-class runtime
-{
+class runtime : public Observer<message_t> {
+public:
+  runtime()
+    : m_lcd_needs_refresh(true)
+  {;}
+
 public:
   typedef Singleton<runtime> single;
 
-  struct runtime_lcd_t {
-    /*
-    struct page_t {
-      volatile bool v_outdated;
-      volatile uint8_t v_timeout;
-      volatile menu_page_t v_next;
-      volatile menu_page_t v_current;
-    } page;
-    */
-  } lcd;
+public:
+  bool m_lcd_needs_refresh;
 
-  void init() {;}
+  struct ambient_data_t {
+    mmsmooth_t<int16_t, 10> dew;
+    mmsmooth_t<int16_t, 10> rh;
+    mmsmooth_t<int16_t, 10> t;
+  } m_ambient;
+
+public:
+  void update(const message_t&);
 };
 
 #endif

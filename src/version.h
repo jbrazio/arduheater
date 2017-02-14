@@ -21,12 +21,12 @@
 #define __VERSION_H__
 
 /**
- * Arduheater "public" visible identifier
+ * Product identifier
  */
-#define PROGRAM_NAME "Arduheater"
+#define PROGRAM_NAME "Astroheater"
 
 /**
- * Astro-Focuser release version identifier
+ * Release version identifier
  */
 #define SHORT_BUILD_VERSION "0.0.2-beta"
 

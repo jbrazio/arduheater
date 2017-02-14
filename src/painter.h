@@ -51,8 +51,10 @@ public:
     return &s_painter;
   }
 
-  static inline u8g_fntpgm_uint8_t* get_font() {
-    return (u8g_fntpgm_uint8_t*) UI_LCD_FONT;
+  static inline void init() {
+    instance()->setFont(UI_LCD_FONT);
+    instance()->setFontPosTop();
+    instance()->setFontRefHeightExtendedText();
   }
 };
 

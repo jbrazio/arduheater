@@ -21,15 +21,13 @@
 #define __UI_H__
 
 #include <Arduino.h>
-#include <U8glib.h>
 #include "card.h"
 #include "enum.h"
 #include "observer.h"
 #include "singleton.h"
 #include "struct.h"
 
-class ui : public Observer<message_t>
-{
+class ui : public Observer<message_t> {
 private:
   Card* m_active_card;
   card_index_t m_active_index;
@@ -39,7 +37,7 @@ private:
   // accounting the max number of seconds for a card to timeout is ~32s which
   // is the max value of a int16 vartype.
   uint16_t m_active_timeout;
-  int16_t  m_active_time_left;
+  int16_t  m_active_timeleft;
 
 public:
   typedef Singleton<ui> single;
@@ -49,10 +47,17 @@ public:
   virtual ~ui() {;}
 
 public:
-  void show(const card_index_t& card_index);
-  void show(const card_index_t& card_index, const uint16_t& card_timeout);
-  void update(const message_t& message);
+  inline void show(const card_index_t& card_index) {
+    show(card_index, 0);
+  }
+
+public:
+  void show(const card_index_t&, const uint16_t&);
+  void update(const message_t&);
   void worker();
+
+protected:
+  void process_keypress(const message_t&);
 };
 
 #endif

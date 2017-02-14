@@ -21,10 +21,11 @@
 #define __CARD_HOME_H__
 
 #include <Arduino.h>
+#include <stdlib.h>
 #include "card.h"
-#include "print.h"
-
 #include "config.h"
+#include "print.h"
+#include "runtime.h"
 
 class CardHome : public Card {
 public:
@@ -33,43 +34,67 @@ public:
 
 public:
   void draw() {
-    int16_t val;
-    uint8_t x, y;
     char buffer[4];
+    uint8_t x, y, a, b;
 
     Painter::instance()->firstPage();
     do {
-      Painter::instance()->setFont(Painter::get_font());
-      Painter::instance()->setFontPosTop();
-      Painter::instance()->setFontRefHeightExtendedText();
+      // this method should be called at the start of the drawing process
+      // it will ensure a consistent font/char init.
+      Painter::init();
 
       const uint8_t border = 2;
       const uint8_t fh = Painter::instance()->getFontLineSpacing() +2;
 
+      x = y = 0;
+      a = Painter::instance()->getWidth();
+      b = fh + 2 * border;
       Painter::instance()->setColorIndex(1);
-      Painter::instance()->drawBox(0, 0, Painter::instance()->getWidth(), fh + 2 * border);
+      Painter::instance()->drawBox(x, y, a, b);
 
-      // Draw the temperature indicator
-      y = fh * 0.75;
       Painter::instance()->setScale2x2();
-      itoa(roundf(22.0f), buffer, 10);
-      x = (Painter::instance()->getWidth() /8.0) - ((Painter::instance()->getStrWidth(buffer)
-        + Painter::instance()->getStrWidthP((u8g_pgm_uint8_t*) string_lcd_unit_C)) /2.0);
+
+      // Draw the temperature indicator ----------------------------------------
+      itoa(roundf(runtime::single::instance().m_ambient.t()), buffer, 10);
+
+      // split the screen into 4 equal parts
+      x = (Painter::instance()->getWidth() /4.0);
+
+      // calculates the total string width and then find it's middle point
+      x -= (Painter::instance()->getStrWidth(buffer)
+        + Painter::instance()->getStrWidthP((u8g_pgm_uint8_t*) string_lcd_unit_C)) /2.0;
+
+      y = fh * 0.75;
+
       x += Painter::instance()->drawStr(x, y, buffer);
       x += Painter::instance()->drawStrP(x, y, (u8g_pgm_uint8_t*) string_lcd_unit_C);
 
-      // Draw the humidity indicator
-      itoa(roundf(10.0f), buffer, 10);
-      x = (Painter::instance()->getWidth() *3 /8.0) - ((Painter::instance()->getStrWidth(buffer)
-        + Painter::instance()->getStrWidthP((u8g_pgm_uint8_t*) string_percent)) /2.0);
+      // Draw the humidity indicator -------------------------------------------
+      itoa(roundf(runtime::single::instance().m_ambient.rh()), buffer, 10);
+
+      // split the screen into 4 equal parts
+      x = (Painter::instance()->getWidth() /4.0);
+
+      // position the text on the last 3/4 of the screen.
+      x *= 3;
+
+      // calculates the total string width and then find it's middle point
+      x -= (Painter::instance()->getStrWidth(buffer)
+        + Painter::instance()->getStrWidthP((u8g_pgm_uint8_t*) string_percent)) /2.0;
+
       x += Painter::instance()->drawStr(x, y, buffer);
       x += Painter::instance()->drawStrP(x, y, (u8g_pgm_uint8_t*) string_percent);
+
       Painter::instance()->undoScale();
 
+      // Draw the titles -------------------------------------------------------
       Painter::instance()->setColorIndex(0);
-      Painter::instance()->drawBox(Painter::instance()->getWidth() /2.0 - border /2.0, border, border, fh);
 
-      Painter::instance()->setColorIndex(0);
+      x = (Painter::instance()->getWidth() - border) /2.0;
+      y = a = border;
+      b = fh;
+      Painter::instance()->drawBox(x, y, a, b);
+
       x = Painter::instance()->getStrWidthP((u8g_pgm_uint8_t*) string_lcd_ambient);
       Painter::instance()->drawStrP((Painter::instance()->getWidth() /4.0) - (x /2.0), 2,
         (const u8g_pgm_uint8_t*) string_lcd_ambient);
@@ -77,6 +102,14 @@ public:
       x = Painter::instance()->getStrWidthP((u8g_pgm_uint8_t*) string_lcd_humidity);
       Painter::instance()->drawStrP((Painter::instance()->getWidth() *3 /4.0) - (x /2.0), 2,
         (const u8g_pgm_uint8_t*) string_lcd_humidity);
+
+
+      // debug
+      Painter::instance()->setColorIndex(1);
+      x = Painter::instance()->getWidth() /2.0;
+      y = Painter::instance()->getHeight() /2.0;
+      Painter::instance()->drawPixel(x, y);
+
     } while(Painter::instance()->nextPage());
   }
 };

@@ -1,6 +1,6 @@
 /**
  * Arduheater - Telescope heat controller
- * Copyright (C) 2016 João Brázio [joao@brazio.org]
+ * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,42 +17,17 @@
  *
  */
 
-#ifndef __ENUM_H__
-#define __ENUM_H__
+#ifndef __WEATHER_H__
+#define __WEATHER_H__
 
-enum output_type_t {
-  OUTPUT_UNKNOWN,
-  OUTPUT_WITH_SENSOR,
-  OUTPUT_WITHOUT_SENSOR
-};
+#include <Arduino.h>
 
-enum sensor_type_t {
-  SENSOR_UNKNOWN,
-  SENSOR_NONE,
-  SENSOR_NTC_100K_1_3950,
-  SENSOR_NTC_010K_5_3950,
-  SENSOR_DS18B20,
-  SENSOR_DHT22
-};
+#define NOAA_DEW_FUNCTION true
 
-enum menu_page_t {
-  PAGE_UNKNOWN,
-  PAGE_BLANK,
-  PAGE_BOOTSCREEN,
-  PAGE_HOME,
-  COUNT_menu_page_t
-};
-
-enum key_state_t {
-  KEY_UNKNOWN,
-  KEY_PRESSED,
-  KEY_RELEASED
-};
-
-enum key_type_t {
-  KEY_NONE,
-  KEY_LEFT,
-  KEY_RIGHT
+namespace weather {
+  namespace calc {
+    float dew(const float& t, const float& rh);
+  };
 };
 
 #endif

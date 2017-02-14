@@ -27,6 +27,13 @@
 
 #define array_size(a) sizeof(a) / sizeof(*a)
 
+#ifdef DEBUG
+  #define DEBUGPRN(a) serial::println::PGM(PSTR(a))
+#else
+  #define DEBUGPRN(a) do {} while(0)
+#endif
+
+
 #define SERIAL_BANNER serial::print::PGM(PSTR(PROGRAM_NAME));         \
                       serial::print::chr::space();                    \
                       serial::print::PGM(PSTR(SHORT_BUILD_VERSION));  \

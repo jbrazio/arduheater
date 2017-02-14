@@ -24,8 +24,8 @@
 #include "bitmaps/bootlogo.h"
 #include "card.h"
 #include "enum.h"
+#include "macros.h"
 #include "print.h"
-#include "struct.h"
 
 class CardSplash : public Card {
 public:
@@ -46,8 +46,7 @@ public:
   }
 
   void timeout() {
-    serial::println::string("CardSplash::timeout()");
-    delay(3000);
+    DEBUGPRN("CardSplash::timeout()");
   }
 };
 

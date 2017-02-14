@@ -25,30 +25,40 @@
 #include "main.h"
 #include "ui.h"
 
+#include "dht22.h"
+#include "runtime.h"
+
 void setup() {
   DDRB |= 0x20; // Enable D13 as output
   Serial.begin(config::serial.baudrate);
+  ui::single::instance().show(CARD_SPLASH, 750L);
   SERIAL_BANNER;
 
-  //ui::single::instance().select_page(PAGE_BOOTSCREEN, 500, PAGE_HOME);
-
-  ui::single::instance().show(CARD_SPLASH, 10000L);
   keypad::single::instance().init(UI_KEYPAD_A_PIN, UI_KEYPAD_B_PIN);
   keypad::single::instance().attach(&ui::single::instance());
+  DHT22::single::instance().init(AMBIENT_PIN);
+  DHT22::single::instance().attach(&runtime::single::instance());
   timer1::init();
 }
 
 volatile uint32_t test_counter = 0;
 
 void loop() {
+  //++test_counter;
   uint32_t now = millis();
-  static unsigned long wait_ui = now + 5000L;
+  static unsigned long wait_ui = now;
 
   if ((uint32_t) (now >= wait_ui)) {
     cli();
-    wait_ui = now + 5000L;
-    serial::println::uint32((uint32_t) test_counter);
-    test_counter = 0;
+    wait_ui = now + 1000L;
+    //serial::println::uint32((uint32_t) test_counter);
+    //test_counter = 0;
+
+    if (test_counter++ > 2) {
+      test_counter = 0;
+      DHT22::single::instance().m_needs_updating = true;
+    }
+
     sei();
-  } else { ++test_counter; }
+  }
 }

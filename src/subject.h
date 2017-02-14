@@ -31,16 +31,14 @@ template <typename T> class Subject
 private:
   Observer<T>* p_observer;
 
-public:
-  /**
-   * Class constructor
-   */
+protected:
   Subject() {
     p_observer = nullptr;
   }
 
-  virtual void init() = 0;
+  virtual ~Subject() {;}
 
+public:
   /**
    * Register an observer for our subject
    */

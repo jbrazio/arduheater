@@ -21,6 +21,7 @@
 #define __TIMER1_H__
 
 #include <Arduino.h>
+#include "dht22.h"
 #include "keypad.h"
 #include "timer1.h"
 #include "ui.h"
@@ -35,6 +36,7 @@ ISR(TIMER1_COMPA_vect) {
   busy = true;                          // Acquire the lock
 
   keypad::single::instance().worker();
+  DHT22::single::instance().worker();
   ui::single::instance().worker();
 
   busy = false;   // Release the lock

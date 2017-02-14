@@ -18,10 +18,12 @@
  */
 
 #include <Arduino.h>
+#include "macros.h"
 #include "print.h"
 #include "struct.h"
 #include "timer1.h"
 #include "ui.h"
+#include "weather.h"
 
 #include "cards/blank.h"
 #include "cards/home.h"
@@ -30,75 +32,89 @@
 ui::ui()
   : m_active_card(nullptr)
 {
-  serial::println::string("ui::ui()");
   show(CARD_BLANK); // clears the screen
 }
 
 void ui::update(const message_t& message) {
-  serial::println::string("ui::update()");
-
-  switch(message.type) {
-    case MESSAGE_TYPE_UNKNOWN:
+  switch (message.category) {
+    case MSG_CAT_KEYPAD: {
+      DEBUGPRN("ui::update(): MSG_CAT_KEYPAD");
+      process_keypress(message);
       break;
+    }
 
-    case MESSAGE_TYPE_BUTTON:
-      key_type_t button = static_cast<key_type_t>(message.data.ub[0]);
-      keypress_t state  = static_cast<keypress_t>(message.data.ub[1]);
-
-      serial::print::PGM(PSTR("buton("));
-      serial::print::uint8(button);
-      serial::print::PGM(PSTR("): "));
-      serial::println::uint8(state);
-      break;
+    default: { break; }
   }
 }
 
 void ui::worker() {
-  //serial::println::string("ui::worker()");
+  // this guard will prevent meltdown when the ptr is undef
+  if (m_active_card) {
+    // allow runtime outsiders to request a lcd refresh
+    if (runtime::single::instance().m_lcd_needs_refresh) {
+      DEBUGPRN("ui::worker(): m_lcd_needs_refresh");
+      runtime::single::instance().m_lcd_needs_refresh = false;
+      m_active_card->m_needs_drawing = true;
+    }
 
-  // the first guard will prevent meltdown when the ptr is undef
-  if (m_active_card && m_active_card->m_needs_drawing) {
-    m_active_card->m_needs_drawing = false;
-    m_active_card->draw();
-  }
+    // refresh the active card
+    if (m_active_card->m_needs_drawing) {
+      DEBUGPRN("ui::worker(): m_needs_drawing");
+      m_active_card->m_needs_drawing = false;
+      m_active_card->draw();
+    }
 
-  // do time accounting for card's timeout
-  if (m_active_card && m_active_timeout) {
-    if (m_active_time_left > 0) { m_active_time_left -= HEARTBEAT; }
-    else {
-      m_active_card->timeout();
-      show(m_active_card->m_timeout_card);
+    // do time accounting for card's timeout
+    if (m_active_timeout) {
+      if (m_active_timeleft > 0) { m_active_timeleft -= HEARTBEAT; }
+      else {
+        m_active_card->timeout();
+        show(m_active_card->m_timeout_card);
+      }
     }
   }
 }
 
-void ui::show(const card_index_t& card_index) {
-  show(card_index, 0);
-}
-
 void ui::show(const card_index_t& card_index, const uint16_t& card_timeout) {
-  serial::println::string("ui::show()");
-
   delete m_active_card; // free the active card's memory
-  m_active_index     = card_index; // active card tracker
-  m_active_timeout   = card_timeout; // set the card's timeout
-  m_active_time_left = card_timeout; // zero the counter
+  m_active_index    = card_index; // active card tracker
+  m_active_timeout  = card_timeout; // set the card's timeout
+  m_active_timeleft = card_timeout; // zero the counter
 
   // simple card factory
   switch (card_index) {
-    case CARD_BLANK:
+    case CARD_BLANK: {
+      DEBUGPRN("ui::show(): new CardBlank()");
       m_active_card = new CardBlank();
       break;
+    }
 
-    case CARD_SPLASH:
+    case CARD_SPLASH: {
+      DEBUGPRN("ui::show(): new CardSplash()");
       m_active_card = new CardSplash();
       break;
+    }
 
-    case CARD_HOME:
+    case CARD_HOME: {
+      DEBUGPRN("ui::show(): new CardHome()");
       m_active_card = new CardHome();
       break;
+    }
   }
 
   // init() is virtual so, if uneeded, cards may not define it
   m_active_card->init();
+}
+
+void ui::process_keypress(const message_t& message) {
+  keycode_t  button = static_cast<keycode_t>(message.data[0].dw);
+  keypress_t state  = static_cast<keypress_t>(message.data[1].dw);
+
+  serial::print::PGM(PSTR("buton("));
+  serial::print::uint8(button);
+  serial::print::PGM(PSTR("): "));
+  serial::println::uint8(state);
+
+  // reset the card's timeout if needed
+  if (m_active_timeout) m_active_timeleft = m_active_timeout;
 }

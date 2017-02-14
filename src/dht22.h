@@ -1,6 +1,6 @@
 /**
  * Arduheater - Telescope heat controller
- * Copyright (C) 2016 João Brázio [joao@brazio.org]
+ * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,16 +17,45 @@
  *
  */
 
+#ifndef __DHT22_H__
+#define __DHT22_H__
 
-#ifndef __WEATHER_DATA_H__
-#define __WEATHER_DATA_H__
+#include <Arduino.h>
+#include "enum.h"
+#include "macros.h"
+#include "sensor.h"
+#include "singleton.h"
+#include "struct.h"
+#include "subject.h"
 
-#include "smooth_mm.h"
+#define DHT22_SLEEP_TIME 1999L
 
-struct weather_data_t {
-  mmsmooth_t<float, 10> temperature;
-  mmsmooth_t<float, 10> humidity;
-  mmsmooth_t<float, 10> dew;
+class DHT22
+  : public Sensor
+  , public Subject<message_t>
+{
+protected:
+  uint8_t m_pin;
+  float m_cache[2];
+
+public:
+  typedef Singleton<DHT22> single;
+
+protected:
+  void update();
+
+public:
+  void init(const uint8_t&);
+  void worker();
+
+public:
+  inline float get_humidity() {
+    return m_cache[1];
+  }
+
+  inline float get_temperature() {
+    return m_cache[0];
+  }
 };
 
 #endif

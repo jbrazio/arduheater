@@ -41,8 +41,8 @@ public:
  */
 #define UI_LCD_TYPE U8GLIB_SSD1306_128X64
 #define UI_LCD_OPTIONS U8G_I2C_OPT_DEV_0|U8G_I2C_OPT_FAST
-#define UI_LCD_ROTATED
 #define UI_LCD_FONT u8g_font_profont11r
+#define UI_LCD_ROTATED true
 //#define UI_LCD_CONTRAST 255
 
 //#define UI_ENCODER_ENABLE

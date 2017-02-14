@@ -20,16 +20,17 @@
 #ifndef __ENUM_H__
 #define __ENUM_H__
 
-enum message_type_t {
-  MESSAGE_TYPE_UNKNOWN,
-  MESSAGE_TYPE_BUTTON
+enum msg_category_t {
+  MSG_CAT_UNKNOWN,
+  MSG_CAT_KEYPAD,
+  MSG_CAT_WEATHER,
 };
 
-enum key_type_t {
-  KEY_TYPE_UNKNOWN,
-  KEY_TYPE_LEFT,
-  KEY_TYPE_RIGHT,
-  KEY_TYPE_OK
+enum keycode_t {
+  KEYCODE_UNKNOWN,
+  KEYCODE_LEFT,
+  KEYCODE_RIGHT,
+  KEYCODE_OK,
 };
 
 enum keypress_t {
@@ -42,6 +43,15 @@ enum card_index_t {
   CARD_BLANK,
   CARD_SPLASH,
   CARD_HOME,
+};
+
+enum sensor_state_t {
+  SENSOR_UNKNOWN,
+  SENSOR_READY,
+  SENSOR_BUSY,
+  SENSOR_TIMEOUT,
+  SENSOR_ERROR,
+  SENSOR_SLEEP,
 };
 
 #endif

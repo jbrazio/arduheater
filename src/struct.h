@@ -24,22 +24,31 @@
 #include "enum.h"
 
 struct message_t {
-  message_type_t type;
+  msg_category_t category;
   union {
-    float    f;
-    int32_t  dw;
-    int16_t  w[2];
-    int8_t   b[4];
-    uint32_t udw;
-    uint16_t uw[2];
-    uint8_t  ub[4];
-  } data;
+    float        f; // float
+    int32_t     dw; // double word
+    uint32_t   udw; // unsigned double word
+    int16_t   w[2]; // word
+    uint16_t uw[2]; // unsigned word
+    int8_t    b[4]; // byte
+    uint8_t  ub[4]; // unsigned byte
+  } data[2];
 };
 
 struct key_t {
   int8_t     pin;
   keypress_t state;
   uint8_t    timeout;
+};
+
+// heartbeat timer
+struct hb_timer_t {
+  // uint16_t will allow up to ~65s periods but due to the way we do time
+  // accounting the max value is capped to ~32s which is the max value of
+  // a int16 vartype.
+  uint16_t period;
+  int16_t  timeleft;
 };
 
 #endif

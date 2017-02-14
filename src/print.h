@@ -52,6 +52,10 @@ namespace serial {
         serial::print::PGM(string_comma);
       }
 
+      inline void colon() {
+        serial::print::PGM(string_colon);
+      }
+
       inline void minus() {
         serial::print::PGM(string_minus);
       }
@@ -142,6 +146,64 @@ namespace serial {
 
       inline void int32(const int32_t& n) {
         serial::print::number(n, 2, 32);
+      }
+    }
+
+    namespace pair {
+      inline void uint8(const char* s, const uint8_t& n) {
+        serial::print::PGM(s);
+        serial::print::chr::colon();
+        serial::print::chr::space();
+        serial::print::uint8(n);
+        serial::print::chr::eol();
+      }
+
+      inline void int8(const char* s, const int8_t& n) {
+        serial::print::PGM(s);
+        serial::print::chr::colon();
+        serial::print::chr::space();
+        serial::print::int8(n);
+        serial::print::chr::eol();
+      }
+
+      inline void uint16(const char* s, const uint16_t& n) {
+        serial::print::PGM(s);
+        serial::print::chr::colon();
+        serial::print::chr::space();
+        serial::print::uint16(n);
+        serial::print::chr::eol();
+      }
+
+      inline void int16(const char* s, const int16_t& n) {
+        serial::print::PGM(s);
+        serial::print::chr::colon();
+        serial::print::chr::space();
+        serial::print::int16(n);
+        serial::print::chr::eol();
+      }
+
+      inline void uint32(const char* s, const uint32_t& n) {
+        serial::print::PGM(s);
+        serial::print::chr::colon();
+        serial::print::chr::space();
+        serial::print::uint32(n);
+        serial::print::chr::eol();
+      }
+
+      inline void int32(const char* s, const int32_t& n) {
+        serial::print::PGM(s);
+        serial::print::chr::colon();
+        serial::print::chr::space();
+        serial::print::int32(n);
+        serial::print::chr::eol();
+      }
+
+      inline void float32(const char* s, float n, const uint8_t& decimal_places) {
+        serial::print::PGM(s);
+        serial::print::chr::colon();
+        serial::print::chr::space();
+        serial::print::float32(n, decimal_places);
+        serial::print::chr::eol();
       }
     }
   }

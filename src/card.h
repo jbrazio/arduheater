@@ -21,14 +21,14 @@
 #define __CARD_H__
 
 #include <Arduino.h>
-#include <U8glib.h>
 
 class Card {
-public:
+protected:
   Card()
     : m_needs_drawing(true)
   {;}
 
+public:
   virtual ~Card() {;}
 
 public:
