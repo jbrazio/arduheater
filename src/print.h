@@ -40,6 +40,8 @@ namespace serial {
       }
     }
 
+    void banner();
+
     namespace chr {
       inline void eol() {
         serial::print::PGM(string_eol);

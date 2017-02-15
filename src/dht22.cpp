@@ -92,7 +92,7 @@ void DHT22::update() {
   notify(payload);
 }
 
-void DHT22::worker() {
+void DHT22::irq() {
   switch (m_sensor_state) {
     case SENSOR_TIMEOUT:
     case SENSOR_ERROR: {

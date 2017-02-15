@@ -64,16 +64,14 @@ public:
     m_index         = 1;
     m_values[0]     = value;
     m_sum_of_values = value;
-    return *this;
+    return (*this);
   }
 
   inline mmsmooth_t& operator+=(const T &value) {
-    if (isnan(value)) return *this;
+    if (isnan(value)) return (*this);
     operator()(value);
-    return *this;
+    return (*this);
   }
-
-
 };
 
 #endif

@@ -47,7 +47,7 @@ void ui::update(const message_t& message) {
   }
 }
 
-void ui::worker() {
+void ui::irq() {
   // this guard will prevent meltdown when the ptr is undef
   if (m_active_card) {
     // allow runtime outsiders to request a lcd refresh

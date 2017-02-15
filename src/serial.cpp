@@ -24,10 +24,10 @@ CircularQueue<uint8_t, RX_BUFFER_SIZE> serial::rx_buffer;
 CircularQueue<uint8_t, TX_BUFFER_SIZE> serial::tx_buffer;
 
 void serial::init() {
-  // Set baud rate
+  // set baud rate
   #if BAUDRATE < 57600
     uint16_t UBRR0_value = ((F_CPU / (8L * BAUDRATE)) - 1)/2 ;
-    UCSR0A &= ~(1 << U2X0); // baud doubler off  - Only needed on Uno XXX
+    UCSR0A &= ~(1 << U2X0); // baud doubler off  - Only needed on Uno
   #else
     uint16_t UBRR0_value = ((F_CPU / (4L * BAUDRATE)) - 1)/2;
     UCSR0A |= (1 << U2X0);  // baud doubler on for high baud rates, i.e. 115200
@@ -36,47 +36,65 @@ void serial::init() {
   UBRR0L = UBRR0_value;
 
   // enable rx and tx
-  UCSR0B |= 1<<RXEN0;
-  UCSR0B |= 1<<TXEN0;
+  UCSR0B |= (1<<RXEN0);
+  UCSR0B |= (1<<TXEN0);
 
   // enable interrupt on complete reception of a byte
-  UCSR0B |= 1<<RXCIE0;
+  UCSR0B |= (1<<RXCIE0);
 
   // defaults to 8-bit, no parity, 1 stop bit
 }
 
-void serial::write(const uint8_t& data) {
-/*
-  // Wait until there is space in the buffer
-  while (tx_buffer.isFull()) {
-    __asm__("nop\n\t");
-  }
-*/
+inline uint8_t serial::read() {
+  return (serial::rx_buffer.empty())
+    ? SERIAL_NO_DATA : rx_buffer.dequeue();
+}
 
-  tx_buffer.enqueue(data);
+void serial::write(const uint8_t& data) {
+  // wait until there is space in the buffer
+  while (!serial::tx_buffer.enqueue(data)) {
+    // at this point interrupts are disabled so we need to
+    // manually poll the data register empty flag
+    if (bit_is_clear(SREG, SREG_I)) {
+      if (bit_is_set(UCSR0A, UDRE0)) { serial::irq::tx(); }
+    }
+  }
 
   // Enable Data Register Empty Interrupt
   // to make sure tx-streaming is running
-  UCSR0B |=  (1 << UDRIE0);
+  UCSR0B |= (1 << UDRIE0);
 }
 
-ISR(USART_RX_vect) {
-  uint8_t data = UDR0;
+void serial::irq::rx() {
+  // check for parity errors
+  if (bit_is_clear(UCSR0A, UPE0)) {
+    uint8_t data = UDR0; // read a byte
 
-  switch (data) {
-    default:
-      // Write data to buffer unless it is full
-      //TODO: else alarm on overflow?
-      serial::rx_buffer.enqueue(data);
-  }
+    switch (data) {
+      default: {
+        // write data to buffer unless it is full
+        //TODO: trigger an alarm or overflow
+        serial::rx_buffer.enqueue(data);
+        break;
+      }
+    }
+  } else { /* discard */ UDR0; }
 }
 
-// Data Register Empty Interrupt handler
-ISR(USART_UDRE_vect) {
-  // Send a byte from the buffer
+void serial::irq::tx() {
+  // send a byte from the buffer
   UDR0 = serial::tx_buffer.dequeue();
 
-  // Turn off Data Register Empty Interrupt
-  //  to stop tx-streaming if this concludes the transfer
-  if (serial::tx_buffer.isEmpty()) { UCSR0B &= ~(1 << UDRIE0); }
+  UCSR0A |= (1 << TXC0);
+
+  // turn off Data Register Empty Interrupt
+  // to stop tx-streaming if this concludes the transfer
+  if (serial::tx_buffer.empty()) { UCSR0B &= ~(1 << UDRIE0); }
 }
+
+
+// RX Interrupt handler
+ISR(USART_RX_vect) { serial::irq::rx(); }
+
+// Data Register Empty Interrupt handler
+ISR(USART_UDRE_vect) { serial::irq::tx(); }

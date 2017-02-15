@@ -21,6 +21,7 @@
 #define __TIMER1_H__
 
 #include <Arduino.h>
+#include "macros.h"
 
 /*
  * Timer1 heartbeat in milliseconds
@@ -33,6 +34,8 @@ namespace timer1 {
   * Enable the timer1 ISR in compare match mode with a 20Hz rate
   */
   inline void init() {
+    DEBUGPRN("timer1::init()");
+
     cli();
     TCCR1A = TCCR1B = TCNT1 = 0;
 

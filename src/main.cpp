@@ -21,7 +21,6 @@
 #include "config.h"
 #include "enum.h"
 #include "keypad.h"
-#include "macros.h"
 #include "main.h"
 #include "ui.h"
 
@@ -34,14 +33,32 @@ void setup() {
   DDRB |= 0x20; // Enable D13 as output
 
   serial::init();
+
+  /*
+  serial::print::banner();
+  for (size_t j = 0; j < 100; j++)
+    for (size_t i = 0; i < 10; i++)
+      serial::print::banner();
+
+  PORTB |= 0x20;
+  while (true) {;}
+*/
+
+
+
+
+
+
+
+  serial::print::banner();
+
   ui::single::instance().show(CARD_SPLASH, 750L);
-  SERIAL_BANNER;
 
-
+/*
   CircularQueue<uint8_t, 32> foo;
   for (size_t i = 0; i < 128; i++) { foo.enqueue(i); }
   while (foo.count() > 0) { serial::println::uint8(foo.dequeue()); }
-
+*/
 
   keypad::single::instance().init(UI_KEYPAD_A_PIN, UI_KEYPAD_B_PIN);
   keypad::single::instance().attach(&ui::single::instance());

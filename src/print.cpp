@@ -19,6 +19,7 @@
 
 #include <Arduino.h>
 #include "print.h"
+#include "version.h"
 
 void serial::print::number(uint32_t n, const uint8_t& base, const uint8_t& digits) {
   unsigned char buf[digits];
@@ -80,4 +81,13 @@ void serial::print::float32(float n, const uint8_t& decimal_places) {
   // Print the generated string.
   for (; i > 0; i--)
     serial::write(buf[i-1]);
+}
+
+void serial::print::banner() {
+  serial::print::PGM(PSTR(PROGRAM_NAME));
+  serial::print::chr::space();
+  serial::print::PGM(PSTR(SHORT_BUILD_VERSION));
+  serial::print::chr::space();
+  serial::print::PGM(string_serial_start);
+  serial::print::chr::eol();
 }

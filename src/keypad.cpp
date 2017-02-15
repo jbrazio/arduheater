@@ -58,7 +58,7 @@ void keypad::isr(const uint8_t& port)
   v_cache[index] = reg;
 }
 
-void keypad::worker() {
+void keypad::irq() {
   for (size_t i = 0; i < 2; i++) {
     if (m_key[i].timeout) {
       --m_key[i].timeout;

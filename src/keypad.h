@@ -39,8 +39,8 @@ protected:
 
 public:
   void init(const uint8_t& pin_A, const uint8_t& pin_B);
+  void irq();
   void isr(const uint8_t& port);
-  void worker();
 };
 
 #endif

@@ -46,7 +46,7 @@ protected:
 
 public:
   void init(const uint8_t&);
-  void worker();
+  void irq();
 
 public:
   inline float get_humidity() {

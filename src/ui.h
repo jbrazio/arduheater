@@ -52,9 +52,9 @@ public:
   }
 
 public:
+  void irq();
   void show(const card_index_t&, const uint16_t&);
   void update(const message_t&);
-  void worker();
 
 protected:
   void process_keypress(const message_t&);

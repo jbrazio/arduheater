@@ -24,7 +24,7 @@
 #include "circularqueue.h"
 
 #ifndef RX_BUFFER_SIZE
-  #define RX_BUFFER_SIZE 128
+  #define RX_BUFFER_SIZE 16
 #endif
 
 #ifndef TX_BUFFER_SIZE
@@ -43,14 +43,14 @@ namespace serial {
   extern CircularQueue<uint8_t, RX_BUFFER_SIZE> rx_buffer;
   extern CircularQueue<uint8_t, TX_BUFFER_SIZE> tx_buffer;
 
+  inline uint8_t read();
   void init();
-
-  inline uint8_t read() {
-    return (rx_buffer.isEmpty())
-      ? SERIAL_NO_DATA : rx_buffer.dequeue();
-  }
-
   void write(const uint8_t& s);
+
+  namespace irq {
+    void rx();
+    void tx();
+  }
 };
 
 #endif

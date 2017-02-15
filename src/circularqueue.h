@@ -26,19 +26,17 @@
  * @brief   Circular Queue class
  * @details Implementation of the classic ring buffer data structure
  */
-template<typename T, uint8_t N> class CircularQueue {
+template<typename T, uint8_t N> class  CircularQueue {
 private:
   /**
    * @brief   Buffer structure
    * @details This structure consolidates all the overhead required to handle
    *          a circular queue such as the pointers and the buffer vector.
    */
-  volatile struct {
+  struct {
     T queue[N];
-    uint8_t count;
     uint8_t head;
-    uint8_t size;
-    uint8_t tail;
+    volatile uint8_t tail;
   } m_buffer;
 
 public:
@@ -48,19 +46,10 @@ public:
    *          of item this queue will handle and N defines the maximum number of
    *          items that can be stored on the queue.
    */
-   CircularQueue<T, N>() {
-     m_buffer.count = 0;
-     m_buffer.head  = 0;
-     m_buffer.size  = N;
-     m_buffer.tail  = 0;
-   }
-
-   /**
-    * @brief Gets the number of items on the queue
-    * @details Returns the current number of items stored on the queue.
-    * @return number of items in the queue
-    */
-   inline uint8_t count() { return m_buffer.count; }
+  CircularQueue() {
+    m_buffer.head = 0;
+    m_buffer.tail = 0;
+  }
 
   /**
    * @brief   Adds an item to the queue
@@ -69,56 +58,55 @@ public:
    * @param   item Item to be added to the queue
    * @return  true if the operation was successful
    */
-   bool enqueue(T const &item) {
-     if (isFull()) { return false; }
-     ++m_buffer.count;
-     m_buffer.queue[m_buffer.tail] = item;
-     if (++m_buffer.tail == m_buffer.size) { m_buffer.tail = 0; }
-     return true;
-   }
+  bool enqueue(T const &item) {
+    if (full()) { return false; }
+    m_buffer.queue[m_buffer.tail] = item;
+    m_buffer.tail = (m_buffer.tail +1) % N;
+    return true;
+  }
 
   /**
    * @brief   Checks if the queue has no items
    * @details Returns true if there are no items on the queue, false otherwise.
    * @return  true if queue is empty
    */
-  inline bool isEmpty() { return (m_buffer.count == 0); }
+  inline bool empty() { return (abs(m_buffer.head == m_buffer.tail)); }
 
   /**
    * @brief   Checks if the queue is full
    * @details Returns true if the queue is full, false otherwise.
    * @return  true if queue is full
    */
-  inline bool isFull() { return (m_buffer.count == m_buffer.size); }
+  inline bool full() { return (m_buffer.head == (m_buffer.tail +1) % N); }
 
   /**
-   * @brief   Gets the next item from the queue without removing it
-   * @details Returns the next item in the queue without removing it
+   * @brief   Gets the next element from the queue without removing it
+   * @details Returns the next element in the queue without removing it
    *          or updating the pointers.
-   * @return  first item in the queue
+   * @return  first elements in the queue
    */
   inline T peek() { return m_buffer.queue[m_buffer.head]; }
 
   /**
-   * @brief   Gets the queue size
-   * @details Returns the maximum number of items a queue can have.
-   * @return  the queue size
+   * @brief   Gets the number of elements on the queue
+   * @details Returns the number of elements in the underlying container,
+   *          that is, the number of elements in queue[].
+   * @return  the number of elements in the container
    */
-  inline uint8_t size() { return m_buffer.size; }
+  inline uint8_t size() { return (m_buffer.tail - m_buffer.head); }
 
   /**
-   * @brief   Removes and returns a item from the queue
-   * @details Removes the oldest item on the queue, pointed to by the
-   *          buffer_t head field. The item is returned to the caller.
-   * @return  type T item
+   * @brief   Removes and returns a element from the queue
+   * @details Removes the oldest element on the queue, pointed to by the
+   *          buffer_t head field. The element is returned to the caller.
+   * @return  type T element
    */
-   T dequeue() {
-     if (isEmpty()) { return T(); }
-     --m_buffer.count;
-     T item = m_buffer.queue[m_buffer.head];
-     if (++m_buffer.head == m_buffer.size) { m_buffer.head = 0; }
-     return item;
-   }
+  T dequeue() {
+    if (empty()) { return T(); }
+    const T item = m_buffer.queue[m_buffer.head];
+    m_buffer.head = (m_buffer.head +1) % N;
+    return item;
+  }
 };
 
 #endif

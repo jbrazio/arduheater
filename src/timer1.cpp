@@ -35,9 +35,9 @@ ISR(TIMER1_COMPA_vect) {
   PORTB |= 0x20;                        // Set D13 high
   busy = true;                          // Acquire the lock
 
-  keypad::single::instance().worker();
-  DHT22::single::instance().worker();
-  ui::single::instance().worker();
+  keypad::single::instance().irq();
+  DHT22::single::instance().irq();
+  ui::single::instance().irq();
 
   busy = false;   // Release the lock
   PORTB &= ~0x20; // Set D13 low
