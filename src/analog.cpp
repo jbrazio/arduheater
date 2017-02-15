@@ -16,33 +16,3 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
-#ifndef __CARD_H__
-#define __CARD_H__
-
-#include <Arduino.h>
-#include "enum.h"
-
-class Card {
-protected:
-  Card()
-    : m_needs_drawing(true)
-  {;}
-
-public:
-  virtual ~Card() {;}
-
-public:
-  bool m_needs_drawing;
-  card_index_t m_timeout_card;
-
-public:
-  virtual void draw()    {;}
-  virtual void init()    {;}
-  virtual void left()    {;}
-  virtual void press()   {;}
-  virtual void right()   {;}
-  virtual void timeout() {;}
-};
-
-#endif

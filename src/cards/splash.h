@@ -26,6 +26,7 @@
 #include "enum.h"
 #include "macros.h"
 #include "print.h"
+#include "painter.h"
 
 class CardSplash : public Card {
 public:
