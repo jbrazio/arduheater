@@ -20,9 +20,7 @@
 #ifndef __SENSOR_H__
 #define __SENSOR_H__
 
-#include <Arduino.h>
-#include "enum.h"
-#include "struct.h"
+#include "common.h"
 
 class Sensor {
 protected:
@@ -38,7 +36,7 @@ public:
 
 protected:
   sensor_state_t m_sensor_state;
-  hb_timer_t s_sleep;
+  hb_timer_t m_sleep;
 
 protected:
   virtual void update()  {;}
@@ -51,7 +49,7 @@ public:
 public:
   virtual inline void reset() {
     m_sensor_state   = SENSOR_SLEEP;
-    s_sleep.timeleft = s_sleep.period;
+    m_sleep.timeleft = m_sleep.period;
   }
 
   virtual inline sensor_state_t state() {

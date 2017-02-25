@@ -20,8 +20,7 @@
 #ifndef __STRINGS_H__
 #define __STRINGS_H__
 
-#include <Arduino.h>
-#include <avr/pgmspace.h>
+#include "common.h"
 
 // Special characters
 const char string_colon             [] PROGMEM = { 0x3a, 0x00 };

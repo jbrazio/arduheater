@@ -17,23 +17,21 @@
  *
  */
 
-#include <Arduino.h>
-#include "macros.h"
-#include "print.h"
-#include "runtime.h"
-#include "weather.h"
+#include "common.h"
 
 void runtime::update(const message_t& message) {
   switch (message.category) {
     case MSG_CAT_WEATHER: {
-      DEBUGPRN("runtime::update(): MSG_CAT_WEATHER");
+      //DEBUGPRN("runtime::update(): MSG_CAT_WEATHER");
 
-      serial::print::PGM(PSTR("runtime::update(): t: "));
+      /*
+      serial::print::PGM(PSTR("MSG_CAT_WEATHER: t: "));
       serial::print::float32(message.data[0].f, 2);
       serial::print::PGM(PSTR(", rh: "));
       serial::print::float32(message.data[1].f, 2);
       serial::print::PGM(PSTR(", dew: "));
       serial::println::float32(weather::calc::dew(message.data[0].f, message.data[1].f), 2);
+      */
 
       m_ambient.t   += roundf(message.data[0].f);
       m_ambient.rh  += roundf(message.data[1].f);
@@ -44,7 +42,29 @@ void runtime::update(const message_t& message) {
         t   = m_ambient.t();
         rh  = m_ambient.rh();
         dew = m_ambient.dew();
-        m_lcd_needs_refresh = true;
+
+        ui::single::instance().update({MSG_UPDATE_LCD, 0});
+      }
+      break;
+    }
+
+    case MSG_CAT_NTC: {
+      //DEBUGPRN("runtime::update(): MSG_CAT_NTC");
+
+      /*
+      serial::print::PGM(PSTR("MSG_CAT_NTC: channel: "));
+      serial::print::uint8(message.data[0].ub[0]);
+      serial::print::PGM(PSTR(", t: "));
+      serial::println::float32(message.data[1].f, 2);
+      */
+
+      uint8_t ch = message.data[0].ub[0];
+      m_output[ch].t += roundf(message.data[1].f);
+
+      static int16_t t[4]; // cache values
+      if (m_output[ch].t() != t[ch]) {
+        t[ch] = m_output[ch].t();
+        ui::single::instance().update({MSG_UPDATE_LCD, 0});
       }
       break;
     }

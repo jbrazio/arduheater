@@ -20,15 +20,7 @@
 #ifndef __CARD_HOME_H__
 #define __CARD_HOME_H__
 
-#include <Arduino.h>
-#include "card.h"
-#include "config.h"
-#include "painter.h"
-#include "print.h"
-#include "runtime.h"
-
-#include "widgets/title.h"
-#include "widgets/middle.h"
+#include "common.h"
 
 class CardHome : public Card {
 public:
@@ -37,19 +29,36 @@ public:
 
 public:
   void draw() {
-    char buffer[4];
-    uint8_t x, y;
+    char buffer[8];
 
     Painter::instance()->firstPage();
     do {
-      widget::title::draw(string_lcd_ambient,  1);
-      widget::title::draw(string_lcd_humidity, 2);
+      widget::title::draw(string_lcd_ambient,  1, true);
+      snprintf_P(buffer, sizeof(buffer), PSTR("%i%S"),
+        runtime::single::instance().m_ambient.t(), string_lcd_unit_C);
+      widget::middle::draw(buffer, 1);
 
-      widget::middle::draw(1);
+      if (m_page_active == 0) {
+        widget::title::draw(string_lcd_humidity, 2, true);
+        snprintf_P(buffer, sizeof(buffer), PSTR("%i%S"),
+          runtime::single::instance().m_ambient.rh(), string_percent);
+      } else {
+        widget::title::draw(string_lcd_dew_point, 2, true);
+        snprintf_P(buffer, sizeof(buffer), PSTR("%i%S"),
+          runtime::single::instance().m_ambient.dew(), string_lcd_unit_C);
+      }
 
+      widget::middle::draw(buffer, 2);
 
+      for (size_t i = 0; i < 4; i++) {
+        snprintf_P(buffer, sizeof(buffer), PSTR("%iC"),
+          runtime::single::instance().m_output[i].t);
+        widget::bottom::draw(buffer, i);
+      }
     } while(Painter::instance()->nextPage());
   }
+
+  inline void init() { m_pages = 2; }
 };
 
 #endif

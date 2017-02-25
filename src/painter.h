@@ -20,9 +20,7 @@
 #ifndef __PAINTER_H__
 #define __PAINTER_H__
 
-#include <Arduino.h>
-#include <U8glib.h>
-#include "config.h"
+#include "common.h"
 
 class Painter {
 private:
@@ -51,8 +49,14 @@ public:
     return &s_painter;
   }
 
-  static inline void init() {
+  static inline void normalfont() {
     instance()->setFont(UI_LCD_FONT);
+    instance()->setFontPosTop();
+    instance()->setFontRefHeightExtendedText();
+  }
+
+  static inline void bigfont() {
+    instance()->setFont(u8g_font_profont22r);
     instance()->setFontPosTop();
     instance()->setFontRefHeightExtendedText();
   }

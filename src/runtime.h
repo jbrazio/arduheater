@@ -20,29 +20,26 @@
 #ifndef __RUNTIME_H__
 #define __RUNTIME_H__
 
-#include <Arduino.h>
-#include "observer.h"
-#include "singleton.h"
-#include "smooth_mm.h"
-#include "struct.h"
+#include "common.h"
 
 class runtime : public Observer<message_t> {
 public:
-  runtime()
-    : m_lcd_needs_refresh(true)
-  {;}
+  runtime() {;}
 
 public:
   typedef Singleton<runtime> single;
-
-public:
-  bool m_lcd_needs_refresh;
 
   struct ambient_data_t {
     mmsmooth_t<int16_t, 10> dew;
     mmsmooth_t<int16_t, 10> rh;
     mmsmooth_t<int16_t, 10> t;
   } m_ambient;
+
+  struct output_t {
+    mmsmooth_t<int16_t, 10> t;
+    float out;
+    PID pid;
+  } m_output[4];
 
 public:
   void update(const message_t&);

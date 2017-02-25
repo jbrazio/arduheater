@@ -20,7 +20,7 @@
 #ifndef __TYPES_H__
 #define __TYPES_H__
 
-#include <Arduino.h>
+#include "common.h"
 
 typedef void (*menuitem_fn)(void);
 typedef uint32_t millis_t;

@@ -17,28 +17,32 @@
  *
  */
 
-#ifndef __PCINT_H__
-#define __PCINT_H__
+#ifndef __THERMISTOR_H__
+#define __THERMISTOR_H__
 
-#include <Arduino.h>
-#include "keypad.h"
+#include "common.h"
 
-ISR(PCINT0_vect)
+class thermistor : public Sensor
+  , public Subject<message_t>
 {
-  // #define PB 2
-  keypad::single::instance().isr(2);
-}
+protected:
+  int16_t m_cache[4];
+  uint8_t m_active_channel;
 
-ISR(PCINT1_vect)
-{
-  // #define PC 3
-  keypad::single::instance().isr(3);
-}
+public:
+  typedef Singleton<thermistor> single;
 
-ISR(PCINT2_vect)
-{
-  // #define PD 4
-  keypad::single::instance().isr(4);
-}
+protected:
+  void update();
+
+public:
+  void init();
+  void irq();
+  void isr(int16_t reading);
+  void reset();
+
+public:
+  inline float get_temperature(const uint8_t& channel) { return m_cache[channel]; }
+};
 
 #endif

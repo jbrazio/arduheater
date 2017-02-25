@@ -17,15 +17,11 @@
  *
  */
 
-#include <Arduino.h>
-#include "dht22.h"
-#include "enum.h"
-#include "macros.h"
-#include "timer1.h"
+#include "common.h"
 
 void DHT22::init(const uint8_t& pin) {
   for (uint8_t i = 0; i < array_size(m_cache); i++) { m_cache[i] = 0; }
-  s_sleep.period = DHT22_SLEEP_TIME;
+  m_sleep.period = DHT22_SLEEP_TIME;
   m_pin = pin;
   reset();
 }
@@ -96,14 +92,14 @@ void DHT22::irq() {
   switch (m_sensor_state) {
     case SENSOR_TIMEOUT:
     case SENSOR_ERROR: {
-      DEBUGPRN("DHT22::worker(): SENSOR_ERROR/TIMEOUT");
+      DEBUGPRN("DHT22::irq(): SENSOR_ERROR/TIMEOUT");
       reset();
       break;
     }
 
     case SENSOR_READY: {
       if (m_needs_updating) {
-        DEBUGPRN("DHT22::worker(): m_needs_updating");
+        DEBUGPRN("DHT22::irq(): m_needs_updating");
         m_needs_updating = false;
         update();
       }
@@ -111,10 +107,10 @@ void DHT22::irq() {
     }
 
     case SENSOR_SLEEP: {
-      if (s_sleep.period) {
-        if (s_sleep.timeleft > 0) { s_sleep.timeleft -= HEARTBEAT; }
+      if (m_sleep.period) {
+        if (m_sleep.timeleft > 0) { m_sleep.timeleft -= HEARTBEAT; }
         else {
-          DEBUGPRN("DHT22::worker(): SENSOR_READY");
+          DEBUGPRN("DHT22::irq(): SENSOR_READY");
           m_sensor_state = SENSOR_READY;
         }
       }

@@ -20,7 +20,7 @@
 #ifndef __WEATHER_H__
 #define __WEATHER_H__
 
-#include <Arduino.h>
+#include "common.h"
 
 #define NOAA_DEW_FUNCTION true
 

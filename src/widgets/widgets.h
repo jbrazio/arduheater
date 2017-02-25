@@ -17,19 +17,26 @@
  *
  */
 
-#ifndef __VERSION_H__
-#define __VERSION_H__
+#ifndef __WIDGET_MIDDLE_H__
+#define __WIDGET_MIDDLE_H__
 
 #include "common.h"
 
-/**
- * Product identifier
- */
-#define PROGRAM_NAME "Astroheater"
+namespace widget {
+  namespace title {
+    void draw(const char* s,
+      const uint8_t& position = 0, const bool& pgm = false);
+  }
 
-/**
- * Release version identifier
- */
-#define SHORT_BUILD_VERSION "0.0.2-beta"
+  namespace middle {
+    void draw(const char* s,
+      const uint8_t& position = 0, const bool& pgm = false);
+  }
+
+  namespace bottom {
+    void draw(const char* s,
+      const uint8_t& position = 0, const bool& pgm = false);
+  }
+};
 
 #endif

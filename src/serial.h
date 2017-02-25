@@ -20,8 +20,7 @@
 #ifndef __SERIAL_H__
 #define __SERIAL_H__
 
-#include <Arduino.h>
-#include "circularqueue.h"
+#include "common.h"
 
 #ifndef RX_BUFFER_SIZE
   #define RX_BUFFER_SIZE 16

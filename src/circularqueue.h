@@ -20,7 +20,7 @@
 #ifndef __CIRCULARQUEUE_H__
 #define __CIRCULARQUEUE_H__
 
-#include <Arduino.h>
+#include "common.h"
 
 /**
  * @brief   Circular Queue class

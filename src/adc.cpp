@@ -17,10 +17,9 @@
  *
  */
 
-#ifndef __MAIN_H__
-#define __MAIN_H__
+#include "common.h"
 
-#include "pcint.h"
-#include "timer1.h"
-
-#endif
+ /**
+  * Analog to Digital Converter interrupt handler
+  */
+ISR(ADC_vect) { thermistor::single::instance().isr(ADC); }

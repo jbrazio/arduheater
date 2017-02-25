@@ -20,6 +20,8 @@
 #ifndef __ASSERT_H__
 #define __ASSERT_H__
 
+#include "common.h"
+
 /**
  * Validate the micro processor
  */

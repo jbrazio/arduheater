@@ -20,10 +20,7 @@
 #ifndef __PRINT_H__
 #define __PRINT_H__
 
-#include <Arduino.h>
-#include <avr/pgmspace.h>
-#include "serial.h"
-#include "strings.h"
+#include "common.h"
 
 namespace serial {
   namespace print {

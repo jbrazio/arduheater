@@ -20,21 +20,28 @@
 #ifndef __CARD_H__
 #define __CARD_H__
 
-#include <Arduino.h>
-#include "enum.h"
+#include "common.h"
 
 class Card {
 protected:
   Card()
     : m_needs_drawing(true)
+    , m_page_period(10000L)
+    , m_page_active(0)
+    , m_pages(0)
   {;}
 
 public:
   virtual ~Card() {;}
 
-public:
-  bool m_needs_drawing;
-  card_index_t m_timeout_card;
+protected:
+  bool          m_needs_drawing;
+  card_index_t  m_timeout_card;
+  hb_timer_t    m_slideshow;
+  hb_timer_t    m_timeout;
+  uint16_t      m_page_period;
+  uint8_t       m_page_active;
+  uint8_t       m_pages;
 
 public:
   virtual void draw()    {;}
@@ -43,6 +50,17 @@ public:
   virtual void press()   {;}
   virtual void right()   {;}
   virtual void timeout() {;}
+
+public:
+  bool did_page_timeout();
+  bool did_timeout();
+  bool has_pages();
+  bool has_timeout();
+  bool needs_drawing(const uint8_t & lhs = 0xff);
+  card_index_t timeout_card();
+  void next_page();
+  void reset_timeout();
+  void set_timeout(const uint16_t & lhs = 0);
 };
 
 #endif

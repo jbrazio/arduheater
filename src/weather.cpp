@@ -17,8 +17,7 @@
  *
  */
 
-#include <Arduino.h>
-#include "weather.h"
+#include "common.h"
 
 float weather::calc::dew(const float& t, const float& rh){
   #ifdef NOAA_DEW_FUNCTION

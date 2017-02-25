@@ -17,9 +17,7 @@
  *
  */
 
-#include <Arduino.h>
-#include "print.h"
-#include "version.h"
+#include "common.h"
 
 void serial::print::number(uint32_t n, const uint8_t& base, const uint8_t& digits) {
   unsigned char buf[digits];

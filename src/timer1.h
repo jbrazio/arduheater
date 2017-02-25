@@ -20,8 +20,7 @@
 #ifndef __TIMER1_H__
 #define __TIMER1_H__
 
-#include <Arduino.h>
-#include "macros.h"
+#include "common.h"
 
 /*
  * Timer1 heartbeat in milliseconds
@@ -39,10 +38,10 @@ namespace timer1 {
     cli();
     TCCR1A = TCCR1B = TCNT1 = 0;
 
-    OCR1A   = 0xC35;          // Compare match register
-    TCCR1B |= (1 << WGM12);   // CTC mode
-    TCCR1B |= (1 << CS12);    // 256 prescaler
-    TIMSK1 |= (1 << OCIE1A);  // enable timer compare interrupt
+    OCR1A   = 0xC35;        // Compare match register
+    TCCR1B |= bit(WGM12);   // CTC mode
+    TCCR1B |= bit(CS12);    // 256 prescaler
+    TIMSK1 |= bit(OCIE1A);  // enable timer compare interrupt
     sei();
   }
 };

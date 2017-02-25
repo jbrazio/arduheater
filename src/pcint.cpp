@@ -16,3 +16,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
+
+#include "common.h"
+
+// #define PB 2
+ISR(PCINT0_vect) { keypad::single::instance().isr(2); }
+
+/*
+// #define PC 3
+ISR(PCINT1_vect) { keypad::single::instance().isr(3); }
+
+// #define PD 4
+ISR(PCINT2_vect) { keypad::single::instance().isr(4); }
+*/

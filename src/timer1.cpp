@@ -17,14 +17,13 @@
  *
  */
 
-#ifndef __TIMER1_H__
-#define __TIMER1_H__
+#include "common.h"
 
-#include <Arduino.h>
-#include "dht22.h"
-#include "keypad.h"
-#include "timer1.h"
-#include "ui.h"
+extern PID myPID;
+extern float kP, kI, kD;
+extern float volatile Input;
+extern float volatile Output;
+extern float volatile Setpoint;
 
 /**
  * Timer1 interrupt handler
@@ -38,9 +37,15 @@ ISR(TIMER1_COMPA_vect) {
   keypad::single::instance().irq();
   DHT22::single::instance().irq();
   ui::single::instance().irq();
+  thermistor::single::instance().irq();
+
+  for (size_t i = 0; i < 1; i++) {
+    runtime::output_t* p = &runtime::single::instance().m_output[i];
+    p->pid.input(p->t());
+    p->pid.irq();
+    analogWrite(HEATER_A_PIN, p->pid.output());
+  }
 
   busy = false;   // Release the lock
   PORTB &= ~0x20; // Set D13 low
 }
-
-#endif

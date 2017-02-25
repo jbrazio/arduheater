@@ -20,8 +20,7 @@
 #ifndef __SUBJECT_H__
 #define __SUBJECT_H__
 
-#include <Arduino.h>
-#include "observer.h"
+#include "common.h"
 
 /**
  * Abstract subject/publisher class

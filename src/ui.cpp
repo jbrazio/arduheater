@@ -17,17 +17,7 @@
  *
  */
 
-#include <Arduino.h>
-#include "macros.h"
-#include "print.h"
-#include "struct.h"
-#include "timer1.h"
-#include "ui.h"
-#include "weather.h"
-
-#include "cards/blank.h"
-#include "cards/home.h"
-#include "cards/splash.h"
+#include "common.h"
 
 ui::ui()
   : m_active_card(nullptr)
@@ -37,6 +27,12 @@ ui::ui()
 
 void ui::update(const message_t& message) {
   switch (message.category) {
+    case MSG_UPDATE_LCD: {
+      DEBUGPRN("ui::update(): MSG_UPDATE_LCD");
+      m_active_card->needs_drawing(true);
+      break;
+    }
+
     case MSG_CAT_KEYPAD: {
       DEBUGPRN("ui::update(): MSG_CAT_KEYPAD");
       process_keypress(message);
@@ -50,36 +46,30 @@ void ui::update(const message_t& message) {
 void ui::irq() {
   // this guard will prevent meltdown when the ptr is undef
   if (m_active_card) {
-    // allow runtime outsiders to request a lcd refresh
-    if (runtime::single::instance().m_lcd_needs_refresh) {
-      DEBUGPRN("ui::worker(): m_lcd_needs_refresh");
-      runtime::single::instance().m_lcd_needs_refresh = false;
-      m_active_card->m_needs_drawing = true;
+    // do time accounting for card's timeout
+    if (m_active_card->has_timeout() && m_active_card->did_timeout()) {
+      m_active_card->timeout();
+      show(m_active_card->timeout_card());
+    }
+
+    // do time accounting for card's slideshow
+    if (m_active_card->has_pages() && m_active_card->did_page_timeout()) {
+      DEBUGPRN("ui::irq(): next_page()");
+      m_active_card->next_page();
+      m_active_card->needs_drawing(true);
     }
 
     // refresh the active card
-    if (m_active_card->m_needs_drawing) {
-      DEBUGPRN("ui::worker(): m_needs_drawing");
-      m_active_card->m_needs_drawing = false;
+    if (m_active_card->needs_drawing()) {
+      DEBUGPRN("ui::irq(): needs_drawing()");
+      m_active_card->needs_drawing(false);
       m_active_card->draw();
-    }
-
-    // do time accounting for card's timeout
-    if (m_active_timeout) {
-      if (m_active_timeleft > 0) { m_active_timeleft -= HEARTBEAT; }
-      else {
-        m_active_card->timeout();
-        show(m_active_card->m_timeout_card);
-      }
     }
   }
 }
 
 void ui::show(const card_index_t& card_index, const uint16_t& card_timeout) {
   delete m_active_card; // free the active card's memory
-  m_active_index    = card_index; // active card tracker
-  m_active_timeout  = card_timeout; // set the card's timeout
-  m_active_timeleft = card_timeout; // zero the counter
 
   // simple card factory
   switch (card_index) {
@@ -104,6 +94,10 @@ void ui::show(const card_index_t& card_index, const uint16_t& card_timeout) {
 
   // init() is virtual so, if uneeded, cards may not define it
   m_active_card->init();
+  m_active_index = card_index;
+
+  // prepare card's timeout
+  m_active_card->set_timeout(card_timeout);
 }
 
 void ui::process_keypress(const message_t& message) {
@@ -115,6 +109,11 @@ void ui::process_keypress(const message_t& message) {
   serial::print::PGM(PSTR("): "));
   serial::println::uint8(state);
 
+  static bool boo = false;
+  boo = ! boo;
+  runtime::single::instance().m_output[0].pid.mode(boo ? PID::AUTOMATIC : PID::MANUAL);
+  if (!boo) runtime::single::instance().m_output[0].pid.output(0);
+
   // reset the card's timeout if needed
-  if (m_active_timeout) m_active_timeleft = m_active_timeout;
+  if (m_active_card->has_timeout()) { m_active_card->reset_timeout(); }
 }

@@ -20,10 +20,7 @@
 #ifndef __KEYPAD_H__
 #define __KEYPAD_H__
 
-#include <Arduino.h>
-#include "singleton.h"
-#include "struct.h"
-#include "subject.h"
+#include "common.h"
 
 class keypad : public Subject<message_t>
 {

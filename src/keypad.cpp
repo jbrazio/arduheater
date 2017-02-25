@@ -18,10 +18,7 @@
  */
 
 
-#include <Arduino.h>
-#include "enum.h"
-#include "keypad.h"
-#include "struct.h"
+#include "common.h"
 
 void keypad::init(const uint8_t& pin_A, const uint8_t& pin_B) {
   m_key[0].pin = pin_A;

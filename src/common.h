@@ -17,13 +17,51 @@
  *
  */
 
-#ifndef __ANALOG_H__
-#define __ANALOG_H__
+#ifndef __COMMON_H__
+#define __COMMON_H__
 
 #include <Arduino.h>
+#include <avr/pgmspace.h>
+#include <U8glib.h>
 
-namespace analog {
-  
-};
+#include "config.h"
+#include "version.h"
+#include "strings.h"
+
+#include "assert.h"
+
+#include "enum.h"
+#include "struct.h"
+#include "circularqueue.h"
+#include "smooth_mm.h"
+
+#include "serial.h"
+#include "print.h"
+#include "macros.h"
+
+#include "observer.h"
+#include "subject.h"
+#include "singleton.h"
+
+#include "card.h"
+#include "sensor.h"
+#include "dht22.h"
+#include "keypad.h"
+#include "painter.h"
+#include "timer1.h"
+#include "pid.h"
+#include "runtime.h"
+#include "thermistor.h"
+#include "types.h"
+#include "ui.h"
+#include "weather.h"
+
+#include "bitmaps/bootlogo.h"
+
+#include "widgets/widgets.h"
+
+#include "cards/blank.h"
+#include "cards/home.h"
+#include "cards/splash.h"
 
 #endif

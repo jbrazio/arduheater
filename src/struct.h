@@ -20,8 +20,7 @@
 #ifndef __STRUCT_H__
 #define __STRUCT_H__
 
-#include <Arduino.h>
-#include "enum.h"
+#include "common.h"
 
 struct message_t {
   msg_category_t category;

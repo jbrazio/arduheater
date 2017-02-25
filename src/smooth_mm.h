@@ -20,8 +20,7 @@
 #ifndef __SMOOTHING_MM_H__
 #define __SMOOTHING_MM_H__
 
-#include <Arduino.h>
-#include "print.h"
+#include "common.h"
 
 template <typename T, uint8_t N> struct mmsmooth_t {
 private:

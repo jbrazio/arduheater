@@ -20,24 +20,12 @@
 #ifndef __UI_H__
 #define __UI_H__
 
-#include <Arduino.h>
-#include "card.h"
-#include "enum.h"
-#include "observer.h"
-#include "singleton.h"
-#include "struct.h"
+#include "common.h"
 
 class ui : public Observer<message_t> {
 private:
   Card* m_active_card;
   card_index_t m_active_index;
-
-private:
-  // uint16_t will allow up to ~65s timeout but due to the way we do time
-  // accounting the max number of seconds for a card to timeout is ~32s which
-  // is the max value of a int16 vartype.
-  uint16_t m_active_timeout;
-  int16_t  m_active_timeleft;
 
 public:
   typedef Singleton<ui> single;

@@ -17,8 +17,7 @@
  *
  */
 
-#include <Arduino.h>
-#include "serial.h"
+#include "common.h"
 
 CircularQueue<uint8_t, RX_BUFFER_SIZE> serial::rx_buffer;
 CircularQueue<uint8_t, TX_BUFFER_SIZE> serial::tx_buffer;
@@ -91,7 +90,6 @@ void serial::irq::tx() {
   // to stop tx-streaming if this concludes the transfer
   if (serial::tx_buffer.empty()) { UCSR0B &= ~(1 << UDRIE0); }
 }
-
 
 // RX Interrupt handler
 ISR(USART_RX_vect) { serial::irq::rx(); }

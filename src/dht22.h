@@ -20,13 +20,7 @@
 #ifndef __DHT22_H__
 #define __DHT22_H__
 
-#include <Arduino.h>
-#include "enum.h"
-#include "macros.h"
-#include "sensor.h"
-#include "singleton.h"
-#include "struct.h"
-#include "subject.h"
+#include "common.h"
 
 #define DHT22_SLEEP_TIME 1999L
 

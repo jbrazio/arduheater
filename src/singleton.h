@@ -20,7 +20,7 @@
 #ifndef __SINGLETON_H__
 #define __SINGLETON_H__
 
-#include <Arduino.h>
+#include "common.h"
 
 /**
  * Singleton class

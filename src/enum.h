@@ -23,7 +23,9 @@
 enum msg_category_t {
   MSG_CAT_UNKNOWN,
   MSG_CAT_KEYPAD,
+  MSG_UPDATE_LCD,
   MSG_CAT_WEATHER,
+  MSG_CAT_NTC
 };
 
 enum keycode_t {

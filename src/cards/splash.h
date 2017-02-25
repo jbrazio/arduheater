@@ -20,13 +20,7 @@
 #ifndef __CARD_SPLASH_H__
 #define __CARD_SPLASH_H__
 
-#include <Arduino.h>
-#include "bitmaps/bootlogo.h"
-#include "card.h"
-#include "enum.h"
-#include "macros.h"
-#include "print.h"
-#include "painter.h"
+#include "common.h"
 
 class CardSplash : public Card {
 public:
@@ -42,13 +36,8 @@ public:
     } while(Painter::instance()->nextPage());
   }
 
-  void init() {
-    m_timeout_card = CARD_HOME;
-  }
-
-  void timeout() {
-    DEBUGPRN("CardSplash::timeout()");
-  }
+  void init() { m_timeout_card = CARD_HOME; }
+  void timeout() { DEBUGPRN("CardSplash::timeout()"); }
 };
 
 #endif

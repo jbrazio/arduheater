@@ -20,10 +20,7 @@
 #ifndef __CARD_BLANK_H__
 #define __CARD_BLANK_H__
 
-#include <Arduino.h>
-#include "card.h"
-#include "painter.h"
-#include "print.h"
+#include "common.h"
 
 class CardBlank : public Card {
 public:
