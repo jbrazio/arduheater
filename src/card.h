@@ -24,11 +24,11 @@
 
 class Card {
 protected:
-  Card()
+  Card(const uint8_t& pages, const uint16_t& timeout)
     : m_needs_drawing(true)
-    , m_page_period(10000L)
+    , m_slideshow({timeout, (int16_t) timeout})
     , m_page_active(0)
-    , m_pages(0)
+    , m_pages(pages)
   {;}
 
 public:
@@ -39,7 +39,6 @@ protected:
   card_index_t  m_timeout_card;
   hb_timer_t    m_slideshow;
   hb_timer_t    m_timeout;
-  uint16_t      m_page_period;
   uint8_t       m_page_active;
   uint8_t       m_pages;
 
@@ -49,7 +48,7 @@ public:
   virtual void left()    {;}
   virtual void press()   {;}
   virtual void right()   {;}
-  virtual void timeout() {;}
+  virtual bool timeout() { return true; }
 
 public:
   bool did_page_timeout();

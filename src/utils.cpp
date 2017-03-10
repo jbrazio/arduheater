@@ -19,7 +19,36 @@
 
 #include "common.h"
 
-float weather::calc::dew(const float& t, const float& rh){
+void utils::itoa(char* buf, uint8_t& pos, int16_t n, const uint8_t& base, uint8_t digits) {
+  if (n == 0) {
+    buf[pos++] = 0x30;
+    buf[pos] = 0x00;
+    return;
+  }
+
+  if (n < 0) {
+    buf[pos++] = pgm_read_byte(string_minus);
+    n *= -1;  // no need to deal with signs from now on
+  }
+
+  if (digits == 0) {
+    int16_t t = n;
+    while (t) { t /= base; digits++; }
+  }
+
+  uint8_t start = pos;
+  uint8_t end   = start + digits;
+
+  while (end > start) {
+    buf[--end] = '0' + n % base;
+    n /= base;
+    pos++;
+  }
+
+  buf[pos] = 0x00;
+}
+
+float utils::weather::dew(const float& t, const float& rh) {
   #ifdef NOAA_DEW_FUNCTION
     // dewPoint function NOAA
     // reference (1) : http://wahiduddin.net/calc/density_algorithms.htm

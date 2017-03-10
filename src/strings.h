@@ -40,8 +40,10 @@ const char string_no_pci            [] PROGMEM = { "PIN is not interrupt-capable
 const char string_lcd_ambient       [] PROGMEM = { "Ambient" };
 const char string_lcd_dew_point     [] PROGMEM = { "Dew point" };
 const char string_lcd_humidity      [] PROGMEM = { "Humidity" };
+const char string_lcd_not_apply     [] PROGMEM = { "N/A" };
 const char string_lcd_unit_C        [] PROGMEM = { "C" };
 
+/*
 // Menu items
 const char string_output_adjust     [] PROGMEM = { "Output adjust" };
 const char string_channel_one       [] PROGMEM = { "Channel one" };
@@ -55,5 +57,6 @@ const char string_mode              [] PROGMEM = { "Mode" };
 const char string_automatic         [] PROGMEM = { "Automatic" };
 const char string_manual            [] PROGMEM = { "Manual" };
 const char string_setpoint          [] PROGMEM = { "Setpoint" };
+*/
 
 #endif

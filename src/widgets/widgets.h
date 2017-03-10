@@ -34,8 +34,8 @@ namespace widget {
   }
 
   namespace bottom {
-    void draw(const char* s,
-      const uint8_t& position = 0, const bool& pgm = false);
+    void draw(const char* s, const uint8_t& position = 0,
+      const bool& pgm = false, const bool& invert = false);
   }
 };
 

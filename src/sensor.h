@@ -22,38 +22,110 @@
 
 #include "common.h"
 
-class Sensor {
-protected:
-  Sensor()
-    : m_needs_updating(true)
-  {;}
-
+class Sensor
+{
 public:
-  virtual ~Sensor() {;}
+  Sensor(const uint16_t& warmup, const uint16_t& sleep, const uint16_t& refresh) {
+    if (warmup) {
+      m_register |= bit(0);
+      m_timer.warmup.period = warmup;
+      DEBUGPRN(5, "SENSOR_NEEDS_WARMUP flag is set");
+    }
 
-public:
-  bool m_needs_updating;
+    if (sleep) {
+      m_register |= bit(1);
+      m_timer.sleep.period = sleep;
+      DEBUGPRN(5, "SENSOR_NEEDS_SLEEP flag is set");
+    }
 
-protected:
-  sensor_state_t m_sensor_state;
-  hb_timer_t m_sleep;
-
-protected:
-  virtual void update()  {;}
-
-public:
-  virtual void init()    {;}
-  virtual void timeout() {;}
-  virtual void worker()  {;}
-
-public:
-  virtual inline void reset() {
-    m_sensor_state   = SENSOR_SLEEP;
-    m_sleep.timeleft = m_sleep.period;
+    if (refresh) {
+      m_register |= bit(2);
+      m_timer.refresh.period = refresh;
+      DEBUGPRN(5, "SENSOR_NEEDS_REFRESH flag is set");
+    }
   }
 
-  virtual inline sensor_state_t state() {
-    return m_sensor_state;
+protected:
+  /*
+   * The m_register property is a 8bit "register" with the following flags:
+   *
+   * bit 0 - SENSOR_NEEDS_WARMUP
+   * This flag bit is set when the sensor needs a specifica amount of warmup
+   * time before taking the first reading. The required amound of time should
+   * be defined using m_timer.warmup.period property.
+   *
+   * bit 1 - SENSOR_NEEDS_SLEEP
+   * This flag is set when the sensor needs a specific amount of rest time
+   * after taking each reading, the required amount of time should be defined
+   * using m_timer.sleep.period property.
+   *
+   * bit 2 - SENSOR_NEEDS_REFRESH
+   * This flag is set when the sensor needs to be refreshed automatically
+   * within a period, the required amound of time should be defined using
+   * m_timer.refresh.period property.
+   */
+  flag_t m_register;
+
+  sensor_state_t m_state;
+  bool m_needs_updating;
+
+  struct {
+    hb_timer_t refresh;
+    hb_timer_t sleep;
+    hb_timer_t warmup;
+  } m_timer;
+
+protected:
+  virtual void update() = 0;
+
+public:
+  virtual void init() {
+    if (bit_is_set(m_register, 0)) {  // SENSOR_NEEDS_WARMUP
+      DEBUGPRN(5, "State changed to SENSOR_WARMUP");
+      m_state = SENSOR_WARMUP;
+      m_timer.warmup.timeleft = m_timer.warmup.period;
+    } else { m_state = SENSOR_READY; }
+  }
+
+  virtual inline void reset() {
+    if (bit_is_set(m_register, 1)) {  // SENSOR_NEEDS_SLEEP
+      DEBUGPRN(5, "State changed to SENSOR_SLEEP");
+      m_state = SENSOR_SLEEP;
+      m_timer.sleep.timeleft = m_timer.sleep.period;
+    } else { m_state = SENSOR_READY; }
+  }
+
+  virtual void irq() {
+    if (m_state == SENSOR_WARMUP) {
+      if (m_timer.warmup.timeleft > 0) { m_timer.warmup.timeleft -= HEARTBEAT; }
+      else { m_state = SENSOR_READY; DEBUGPRN(5, "State changed to SENSOR_READY"); }
+    }
+
+    else if (m_state == SENSOR_READY) {
+      if (bit_is_set(m_register, 2)) {  // SENSOR_NEEDS_REFRESH
+        if (m_timer.refresh.timeleft > 0) { m_timer.refresh.timeleft -= HEARTBEAT; }
+        else if (!m_needs_updating) { m_needs_updating = true; }
+      }
+
+      if (m_needs_updating) {
+        DEBUGPRN(5, "m_needs_updating flag is set");
+        if (bit_is_set(m_register, 2)) { m_timer.refresh.timeleft = m_timer.refresh.period; }
+        m_needs_updating = false;
+        update();
+      }
+    }
+
+    else if (m_state == SENSOR_SLEEP) {
+      if (m_timer.sleep.timeleft > 0) { m_timer.sleep.timeleft -= HEARTBEAT; }
+      else { m_state = SENSOR_READY; DEBUGPRN(5, "State changed to SENSOR_READY"); }
+    }
+
+    else if (m_state == SENSOR_TIMEOUT || m_state == SENSOR_ERROR) {
+      // TODO: We need to handle this in a serious way.. ideas:
+      // - critical sensor flag
+      // - error threshold when reached major fail is triggerd
+      reset();
+    }
   }
 };
 

@@ -41,11 +41,13 @@ struct key_t {
   uint8_t    timeout;
 };
 
-// heartbeat timer
+/*
+ * Heartbeat timer
+ * TODO: We need a better name for this
+ */
 struct hb_timer_t {
   // uint16_t will allow up to ~65s periods but due to the way we do time
-  // accounting the max value is capped to ~32s which is the max value of
-  // a int16 vartype.
+  // accounting the max value is capped to ~32s.
   uint16_t period;
   int16_t  timeleft;
 };

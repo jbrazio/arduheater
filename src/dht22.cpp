@@ -19,26 +19,25 @@
 
 #include "common.h"
 
-void DHT22::init(const uint8_t& pin) {
-  for (uint8_t i = 0; i < array_size(m_cache); i++) { m_cache[i] = 0; }
-  m_sleep.period = DHT22_SLEEP_TIME;
-  m_pin = pin;
-  reset();
-}
-
 void DHT22::update() {
-  m_sensor_state = SENSOR_BUSY;
+  m_state = SENSOR_BUSY;
 
   // send the start signal and switch into receive mode
   pinMode(m_pin, OUTPUT);
   digitalWrite(m_pin, LOW);
-  delay(1);
-  pinMode(m_pin, INPUT);
+
+  // trying to keep out the need of delay, millis & co.
+  for (volatile uint16_t i = 0; i < 16000; i++) {
+    __asm__ __volatile__ ("nop");
+  }
+
   digitalWrite(m_pin, HIGH);
+  pinMode(m_pin, INPUT);
 
   // return timeout if no data is received
+  // TODO: stop using pulsein
   if (! pulseIn(m_pin, LOW, 115)) {
-    m_sensor_state = SENSOR_TIMEOUT;
+    m_state = SENSOR_TIMEOUT;
     return;
   }
 
@@ -47,6 +46,7 @@ void DHT22::update() {
   uint16_t rawTemperature = 0;
 
   // process the incoming data
+  // TODO: stop using pulsein
   for(uint8_t i = 0; i < 40; i++) {
     data <<= 1;
     if (pulseIn(m_pin, HIGH, 200) > 30) data |= 1;
@@ -65,7 +65,7 @@ void DHT22::update() {
   // checksum validation
   if ((byte)(((byte)rawHumidity) + (rawHumidity >> 8)
     + ((byte)rawTemperature) + (rawTemperature >> 8)) != data) {
-    m_sensor_state = SENSOR_ERROR;
+    m_state = SENSOR_ERROR;
     return;
   }
 
@@ -86,39 +86,4 @@ void DHT22::update() {
   payload.data[0].f = m_cache[0];
   payload.data[1].f = m_cache[1];
   notify(payload);
-}
-
-void DHT22::irq() {
-  switch (m_sensor_state) {
-    case SENSOR_TIMEOUT:
-    case SENSOR_ERROR: {
-      DEBUGPRN("DHT22::irq(): SENSOR_ERROR/TIMEOUT");
-      reset();
-      break;
-    }
-
-    case SENSOR_READY: {
-      if (m_needs_updating) {
-        DEBUGPRN("DHT22::irq(): m_needs_updating");
-        m_needs_updating = false;
-        update();
-      }
-      break;
-    }
-
-    case SENSOR_SLEEP: {
-      if (m_sleep.period) {
-        if (m_sleep.timeleft > 0) { m_sleep.timeleft -= HEARTBEAT; }
-        else {
-          DEBUGPRN("DHT22::irq(): SENSOR_READY");
-          m_sensor_state = SENSOR_READY;
-        }
-      }
-      break;
-    }
-
-    default: {
-      break;
-    }
-  }
 }

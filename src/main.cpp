@@ -25,10 +25,10 @@ void setup() {
   serial::init();
   serial::print::banner();
 
-  ui::single::instance().show(CARD_SPLASH, 750L);
+  ui::single::instance().show(CARD_SPLASH, 250);
 
   keypad::single::instance().init(UI_KEYPAD_A_PIN, UI_KEYPAD_B_PIN);
-  keypad::single::instance().attach(&ui::single::instance());
+  keypad::single::instance().attach(&runtime::single::instance());
 
   DHT22::single::instance().init(AMBIENT_PIN);
   DHT22::single::instance().attach(&runtime::single::instance());
@@ -58,9 +58,8 @@ void loop() {
   static unsigned long wait_ui = now;
 
   if ((uint32_t) (now >= wait_ui)) {
-    cli();
-    wait_ui = now + 2000L;
-    DHT22::single::instance().m_needs_updating = true;
-    sei();
+    wait_ui = now + 1000L;
   }
+
+  ui::single::instance().draw();
 }

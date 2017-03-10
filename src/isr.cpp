@@ -19,11 +19,25 @@
 
 #include "common.h"
 
-extern PID myPID;
-extern float kP, kI, kD;
-extern float volatile Input;
-extern float volatile Output;
-extern float volatile Setpoint;
+/**
+ * Analog to Digital Converter interrupt handler
+ */
+ISR(ADC_vect) { thermistor::single::instance().isr(ADC); }
+
+/**
+ * Pin Change interrupt handler for PORTB aka 2
+ */
+ISR(PCINT0_vect) { keypad::single::instance().isr(2); }
+
+/**
+ * Pin Change interrupt handler for PORTC aka 3
+ */
+//ISR(PCINT1_vect) { keypad::single::instance().isr(3); }
+
+/**
+ * Pin Change interrupt handler for PORTD aka 4
+ */
+//ISR(PCINT2_vect) { keypad::single::instance().isr(4); }
 
 /**
  * Timer1 interrupt handler
@@ -36,8 +50,8 @@ ISR(TIMER1_COMPA_vect) {
 
   keypad::single::instance().irq();
   DHT22::single::instance().irq();
-  ui::single::instance().irq();
   thermistor::single::instance().irq();
+  ui::single::instance().irq();
 
   for (size_t i = 0; i < 1; i++) {
     runtime::output_t* p = &runtime::single::instance().m_output[i];

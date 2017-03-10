@@ -22,34 +22,37 @@
 
 #include "common.h"
 
-#define DHT22_SLEEP_TIME 1999L
+#define DHT22_WARMUP_TIME   3000L
+#define DHT22_SLEEP_TIME    1999L
+#define DHT22_REFRESH_TIME  5000L
 
-class DHT22
-  : public Sensor
-  , public Subject<message_t>
+class DHT22 : public Sensor, public Subject<message_t>
 {
+public:
+  typedef Singleton<DHT22> single;
+
+public:
+  DHT22(): Sensor(
+    DHT22_WARMUP_TIME,
+    DHT22_SLEEP_TIME,
+    DHT22_REFRESH_TIME)
+  {
+    for (size_t i = 0; i < array_size(m_cache); i++) { m_cache[i] = 0; }
+  }
+
 protected:
   uint8_t m_pin;
   float m_cache[2];
-
-public:
-  typedef Singleton<DHT22> single;
 
 protected:
   void update();
 
 public:
-  void init(const uint8_t&);
-  void irq();
+  inline float get_humidity()       { return m_cache[1]; }
+  inline float get_temperature()    { return m_cache[0]; }
 
 public:
-  inline float get_humidity() {
-    return m_cache[1];
-  }
-
-  inline float get_temperature() {
-    return m_cache[0];
-  }
+  inline void init(const uint8_t& pin) { Sensor::init(); m_pin = pin; }
 };
 
 #endif

@@ -26,7 +26,15 @@
 
 #include "common.h"
 
-class PID {
+class PID
+{
+public:
+  PID() {
+    limit(0, 255);
+    mode(PID::MANUAL);
+    sampletime(HEARTBEAT);
+  }
+
 public:
   enum mode_t { MANUAL, AUTOMATIC };
 
@@ -39,34 +47,25 @@ protected:
   mode_t m_mode;
 
 public:
-  PID() {
-    limit(0, 255);
-    mode(PID::MANUAL);
-    sampletime(HEARTBEAT);
-  }
-
-  virtual ~PID() {;}
-
-public:
   void irq(const bool& reset = false) {
     asm volatile ("/************ PID::irq() ************/");
     if (m_mode != PID::AUTOMATIC) { return; }
 
-    byte * b;
-    serial::write(67);
+    //byte * b;
+    //serial::write(67);
 
-    b = (byte *) &m_setpoint;
-    for (size_t i = 0; i < 4; i++ ) serial::write(b[i]);
+    //b = (byte *) &m_setpoint;
+    //for (size_t i = 0; i < 4; i++ ) serial::write(b[i]);
 
-    b = (byte *) &m_input;
-    for (size_t i = 0; i < 4; i++ ) serial::write(b[i]);
+    //b = (byte *) &m_input;
+    //for (size_t i = 0; i < 4; i++ ) serial::write(b[i]);
 
     static float s_last_input = 0;            // input value from last cycle
     float error  = m_setpoint - m_input;      // calculate current error
     float dInput = m_input - s_last_input;    // calculate input derivative
 
-    b = (byte *) &error;
-    for (size_t i = 0; i < 4; i++ ) serial::write(b[i]);
+    //b = (byte *) &error;
+    //for (size_t i = 0; i < 4; i++ ) serial::write(b[i]);
 
     static float s_error = 0;         // integration of error from 0 to present
     s_error += m_Ki * (error * m_dt); // adding the Ki term at this point will
@@ -78,8 +77,8 @@ public:
     if (s_error > m_max) { s_error = m_max; }       // cap the I term between
     else if (s_error < m_min) { s_error = m_min; }  // min and max values
 
-    b = (byte *) &s_error;
-    for (size_t i = 0; i < 4; i++ ) serial::write(b[i]);
+    //b = (byte *) &s_error;
+    //for (size_t i = 0; i < 4; i++ ) serial::write(b[i]);
 
     // evaluate the PID algorithm
     float u = (m_Kp * error) + s_error - (m_Kd * (dInput / m_dt));
@@ -87,8 +86,8 @@ public:
     if (u > m_max) { u = m_max; }       // cap the output between
     else if (u < m_min) { u = m_min; }  // min and max values
 
-    b = (byte *) &u;
-    for (size_t i = 0; i < 4; i++ ) serial::write(b[i]);
+    //b = (byte *) &u;
+    //for (size_t i = 0; i < 4; i++ ) serial::write(b[i]);
 
     m_output = u;
     s_last_input = m_input;
@@ -98,6 +97,10 @@ public:
   void limit(const float& min, const float& max) {
     if (min > max) { return; }
     m_min = min; m_max = max;
+  }
+
+  inline PID::mode_t mode() {
+    return m_mode;
   }
 
   inline void mode(const PID::mode_t& lhs) {

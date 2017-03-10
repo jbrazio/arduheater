@@ -21,21 +21,44 @@
 
 void runtime::update(const message_t& message) {
   switch (message.category) {
-    case MSG_CAT_WEATHER: {
-      //DEBUGPRN("runtime::update(): MSG_CAT_WEATHER");
+    case MSG_CAT_KEYPAD: {
+      DEBUGPRN(3, "runtime::update(): MSG_CAT_KEYPAD");
 
-      /*
+      #if defined(VERBOSE) && VERBOSE >= 3
+      keycode_t  button = static_cast<keycode_t>(message.data[0].dw);
+      keypress_t state  = static_cast<keypress_t>(message.data[1].dw);
+
+      serial::print::PGM(PSTR("buton("));
+      serial::print::uint8(button);
+      serial::print::PGM(PSTR("): "));
+      serial::println::uint8(state);
+      #endif
+
+      if (runtime::single::instance().m_output[0].running()) {
+        runtime::single::instance().m_output[0].off();
+      } else {
+        runtime::single::instance().m_output[0].on();
+      }
+
+      ui::single::instance().update(message);
+      break;
+    }
+
+    case MSG_CAT_WEATHER: {
+      DEBUGPRN(4, "runtime::update(): MSG_CAT_WEATHER");
+
+      #if defined(VERBOSE) && VERBOSE >= 4
       serial::print::PGM(PSTR("MSG_CAT_WEATHER: t: "));
       serial::print::float32(message.data[0].f, 2);
       serial::print::PGM(PSTR(", rh: "));
       serial::print::float32(message.data[1].f, 2);
       serial::print::PGM(PSTR(", dew: "));
-      serial::println::float32(weather::calc::dew(message.data[0].f, message.data[1].f), 2);
-      */
+      serial::println::float32(utils::weather::dew(message.data[0].f, message.data[1].f), 2);
+      #endif
 
       m_ambient.t   += roundf(message.data[0].f);
       m_ambient.rh  += roundf(message.data[1].f);
-      m_ambient.dew += roundf(weather::calc::dew(message.data[0].f, message.data[1].f));
+      m_ambient.dew += roundf(utils::weather::dew(message.data[0].f, message.data[1].f));
 
       static int8_t t, rh, dew; // cache values
       if ((m_ambient.t() != t) || (m_ambient.rh() != rh) || (m_ambient.dew() != dew)) {
@@ -49,19 +72,23 @@ void runtime::update(const message_t& message) {
     }
 
     case MSG_CAT_NTC: {
-      //DEBUGPRN("runtime::update(): MSG_CAT_NTC");
+      DEBUGPRN(4, "runtime::update(): MSG_CAT_NTC");
 
-      /*
+      #if defined(VERBOSE) && VERBOSE >= 4
       serial::print::PGM(PSTR("MSG_CAT_NTC: channel: "));
       serial::print::uint8(message.data[0].ub[0]);
       serial::print::PGM(PSTR(", t: "));
       serial::println::float32(message.data[1].f, 2);
-      */
+      #endif
 
       uint8_t ch = message.data[0].ub[0];
       m_output[ch].t += roundf(message.data[1].f);
 
       static int16_t t[4]; // cache values
+
+      //serial::print::pair::int16(PSTR("m_output[ch].t()"), m_output[ch].t());
+      //serial::print::pair::int16(PSTR("t[ch]"), t[ch]);
+
       if (m_output[ch].t() != t[ch]) {
         t[ch] = m_output[ch].t();
         ui::single::instance().update({MSG_UPDATE_LCD, 0});

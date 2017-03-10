@@ -25,21 +25,11 @@ ui::ui()
   show(CARD_BLANK); // clears the screen
 }
 
-void ui::update(const message_t& message) {
-  switch (message.category) {
-    case MSG_UPDATE_LCD: {
-      DEBUGPRN("ui::update(): MSG_UPDATE_LCD");
-      m_active_card->needs_drawing(true);
-      break;
-    }
-
-    case MSG_CAT_KEYPAD: {
-      DEBUGPRN("ui::update(): MSG_CAT_KEYPAD");
-      process_keypress(message);
-      break;
-    }
-
-    default: { break; }
+void ui::draw() {
+  if (m_active_card->needs_drawing()) {
+    DEBUGPRN(5, "ui::irq(): needs_drawing()");
+    m_active_card->needs_drawing(false);
+    m_active_card->draw();
   }
 }
 
@@ -48,22 +38,16 @@ void ui::irq() {
   if (m_active_card) {
     // do time accounting for card's timeout
     if (m_active_card->has_timeout() && m_active_card->did_timeout()) {
-      m_active_card->timeout();
-      show(m_active_card->timeout_card());
+      DEBUGPRN(5, "ui::irq(): timeout_card()");
+      if (m_active_card->timeout()) show(m_active_card->timeout_card());
+      else m_active_card->reset_timeout();
     }
 
     // do time accounting for card's slideshow
     if (m_active_card->has_pages() && m_active_card->did_page_timeout()) {
-      DEBUGPRN("ui::irq(): next_page()");
-      m_active_card->next_page();
+      DEBUGPRN(5, "ui::irq(): next_page()");
       m_active_card->needs_drawing(true);
-    }
-
-    // refresh the active card
-    if (m_active_card->needs_drawing()) {
-      DEBUGPRN("ui::irq(): needs_drawing()");
-      m_active_card->needs_drawing(false);
-      m_active_card->draw();
+      m_active_card->next_page();
     }
   }
 }
@@ -74,46 +58,45 @@ void ui::show(const card_index_t& card_index, const uint16_t& card_timeout) {
   // simple card factory
   switch (card_index) {
     case CARD_BLANK: {
-      DEBUGPRN("ui::show(): new CardBlank()");
+      DEBUGPRN(6, "ui::show(): new CardBlank()");
       m_active_card = new CardBlank();
       break;
     }
 
     case CARD_SPLASH: {
-      DEBUGPRN("ui::show(): new CardSplash()");
+      DEBUGPRN(6, "ui::show(): new CardSplash()");
       m_active_card = new CardSplash();
       break;
     }
 
     case CARD_HOME: {
-      DEBUGPRN("ui::show(): new CardHome()");
+      DEBUGPRN(6, "ui::show(): new CardHome()");
       m_active_card = new CardHome();
       break;
     }
   }
 
-  // init() is virtual so, if uneeded, cards may not define it
-  m_active_card->init();
-  m_active_index = card_index;
-
-  // prepare card's timeout
-  m_active_card->set_timeout(card_timeout);
+  m_active_card->init();                    // let the card bootstrap itself
+  m_active_index = card_index;              // bookeeping
+  m_active_card->set_timeout(card_timeout); // define the card's timeout
 }
 
-void ui::process_keypress(const message_t& message) {
-  keycode_t  button = static_cast<keycode_t>(message.data[0].dw);
-  keypress_t state  = static_cast<keypress_t>(message.data[1].dw);
+void ui::update(const message_t& message) {
+  switch (message.category) {
+    case MSG_UPDATE_LCD: {
+      DEBUGPRN(4, "ui::update(): MSG_UPDATE_LCD");
+      m_active_card->needs_drawing(true);
+      break;
+    }
 
-  serial::print::PGM(PSTR("buton("));
-  serial::print::uint8(button);
-  serial::print::PGM(PSTR("): "));
-  serial::println::uint8(state);
+    case MSG_CAT_KEYPAD: {
+      DEBUGPRN(3, "ui::update(): MSG_CAT_KEYPAD");
+      // reset the card's timeout if needed
+      if (m_active_card->has_timeout()) { m_active_card->reset_timeout(); }
+      m_active_card->needs_drawing(true);
+      break;
+    }
 
-  static bool boo = false;
-  boo = ! boo;
-  runtime::single::instance().m_output[0].pid.mode(boo ? PID::AUTOMATIC : PID::MANUAL);
-  if (!boo) runtime::single::instance().m_output[0].pid.output(0);
-
-  // reset the card's timeout if needed
-  if (m_active_card->has_timeout()) { m_active_card->reset_timeout(); }
+    default: { break; }
+  }
 }

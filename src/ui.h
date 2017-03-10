@@ -22,30 +22,26 @@
 
 #include "common.h"
 
-class ui : public Observer<message_t> {
-private:
-  Card* m_active_card;
-  card_index_t m_active_index;
-
+class ui : public Observer<message_t>
+{
 public:
   typedef Singleton<ui> single;
 
 public:
   ui();
-  virtual ~ui() {;}
+
+private:
+  Card* m_active_card;
+  card_index_t m_active_index;
 
 public:
-  inline void show(const card_index_t& card_index) {
-    show(card_index, 0);
-  }
+  inline void show(const card_index_t& card_index) { show(card_index, 0); }
 
 public:
+  void draw();
   void irq();
   void show(const card_index_t&, const uint16_t&);
   void update(const message_t&);
-
-protected:
-  void process_keypress(const message_t&);
 };
 
 #endif

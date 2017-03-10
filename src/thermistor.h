@@ -22,27 +22,47 @@
 
 #include "common.h"
 
-class thermistor : public Sensor
-  , public Subject<message_t>
+#define THERMISTOR_WARMUP_TIME   0
+#define THERMISTOR_SLEEP_TIME    0
+#define THERMISTOR_REFRESH_TIME  1
+
+class thermistor : public Sensor, public Subject<message_t>
 {
+public:
+  typedef Singleton<thermistor> single;
+
+public:
+  thermistor(): Sensor(
+    THERMISTOR_WARMUP_TIME,
+    THERMISTOR_SLEEP_TIME,
+    THERMISTOR_REFRESH_TIME)
+  {
+    ADCSRA  = bit(ADEN);                               // activate the ADC
+    ADCSRA |= bit(ADPS0)  |  bit(ADPS1) | bit(ADPS2);  // with prescaler of 128
+
+    for (uint8_t i = 0; i < array_size(m_cache); i++) { m_cache[i] = 0; }
+    m_active_channel = 3; // reset will overflow and scan will start on ch0
+    reset();
+
+    bitSet(DIDR0, ADC4D); // disable digital buffer on A4
+    bitSet(DIDR0, ADC5D); // disable digital buffer on A5
+  }
+
 protected:
   int16_t m_cache[4];
   uint8_t m_active_channel;
-
-public:
-  typedef Singleton<thermistor> single;
 
 protected:
   void update();
 
 public:
-  void init();
-  void irq();
+  inline float get_temperature(const uint8_t& channel) { return m_cache[channel]; }
+  inline void irq() { Sensor::irq(); }
+
+public:
   void isr(int16_t reading);
   void reset();
 
-public:
-  inline float get_temperature(const uint8_t& channel) { return m_cache[channel]; }
 };
 
 #endif

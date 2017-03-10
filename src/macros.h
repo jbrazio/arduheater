@@ -24,18 +24,16 @@
 
 #define array_size(a) sizeof(a) / sizeof(*a)
 
+/*
+serial::print::string(__PRETTY_FUNCTION__); \
+serial::print::chr::space(); \
+*/
+
 #ifdef VERBOSE
-  #define DEBUGPRN(a) serial::println::PGM(PSTR(a))
+  #define DEBUGPRN(a, b) do { \
+    if (a <= VERBOSE) { serial::println::PGM(PSTR(b)); }} while(0)
 #else
-  #define DEBUGPRN(a) do {} while(0)
+  #define DEBUGPRN(a, b) do {} while(0)
 #endif
-
-
-#define SERIAL_BANNER serial::print::PGM(PSTR(PROGRAM_NAME));         \
-                      serial::print::chr::space();                    \
-                      serial::print::PGM(PSTR(SHORT_BUILD_VERSION));  \
-                      serial::print::chr::space();                    \
-                      serial::print::PGM(string_serial_start);        \
-                      serial::print::chr::eol();
 
 #endif

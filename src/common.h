@@ -30,6 +30,7 @@
 
 #include "assert.h"
 
+#include "types.h"
 #include "enum.h"
 #include "struct.h"
 #include "circularqueue.h"
@@ -38,23 +39,22 @@
 #include "serial.h"
 #include "print.h"
 #include "macros.h"
+#include "utils.h"
 
 #include "observer.h"
 #include "subject.h"
 #include "singleton.h"
 
 #include "card.h"
+#include "timer1.h"
 #include "sensor.h"
 #include "dht22.h"
 #include "keypad.h"
 #include "painter.h"
-#include "timer1.h"
 #include "pid.h"
 #include "runtime.h"
 #include "thermistor.h"
-#include "types.h"
 #include "ui.h"
-#include "weather.h"
 
 #include "bitmaps/bootlogo.h"
 

@@ -36,7 +36,7 @@ bool Card::did_timeout() {
 }
 
 bool Card::has_pages() {
-  return (m_pages > 0 && m_slideshow.period > 0);
+  return (m_pages > 1 && m_slideshow.period > 0);
 }
 
 bool Card::has_timeout() {
@@ -54,8 +54,7 @@ card_index_t Card::timeout_card() {
 
 void Card::next_page() {
   m_page_active        = (m_page_active +1) % m_pages;
-  m_slideshow.period   = m_page_period;
-  m_slideshow.timeleft = m_page_period;
+  m_slideshow.timeleft = m_slideshow.period;
 }
 
 void Card::reset_timeout() {

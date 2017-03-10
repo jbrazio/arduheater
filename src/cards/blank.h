@@ -24,7 +24,7 @@
 
 class CardBlank : public Card {
 public:
-  CardBlank() {;}
+  CardBlank() : Card(1, 0) {;}
   virtual ~CardBlank() {;}
 
 public:

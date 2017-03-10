@@ -26,31 +26,27 @@
  * Singleton class
  * This class follows the Meyer's Singleton Pattern using variadic template
  */
-template <typename T> class Singleton
+template<class T> class Singleton
 {
-private:
-  /**
-   * The copy constructor is hidden.
-   */
-  Singleton(Singleton const& orig) = delete;
-
-  /**
-   * The assign constructor is hidden
-   */
-  Singleton& operator=(Singleton const&) = delete;
-
 protected:
   Singleton() {;}
   virtual ~Singleton() {;}
+
+/*
+private:
+  Singleton(Singleton const&);
+  Singleton& operator=(Singleton const&);
+*/
+public:
+  Singleton(Singleton const&) = delete;
+  Singleton& operator=(Singleton const&) = delete;
 
 public:
   /**
    * This method generates a single instance and returns a reference to it.
    *
-   * Static properties are only initialized on their first call, thus declaring
-   * s_instance as static will provide to the class a lazy initialization.
-   * Generic templates are used so a list of arguments can be passed on to the
-   * class constructor.
+   * Static properties are only instantiated on their first use, thus declaring
+   * s_instance as static will provide lazy initialization.
    *
    * Do not use this class as a parent of another class, instead declare a
    * public property such as:
@@ -61,11 +57,17 @@ public:
    *
    * @return An instance reference of the T class.
    */
-  template <typename... A>
-  inline static T& instance(A... args) {
-    static T s_instance(args...);
+  template<typename... A> inline static T& instance(A... args) {
+    static T s_instance(args...); // Guaranteed to be destroyed.
+                                  // Instantiated on first use.
     return s_instance;
   }
 };
+
+template<class C, typename... A> C& singleton(A... args) {
+  static C instance(args...); // Guaranteed to be destroyed.
+                              // Instantiated on first use.
+  return instance;
+}
 
 #endif

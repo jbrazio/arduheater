@@ -17,17 +17,23 @@
  *
  */
 
-#ifndef __WEATHER_H__
-#define __WEATHER_H__
+#ifndef __UTILS_H__
+#define __UTILS_H__
 
 #include "common.h"
 
-#define NOAA_DEW_FUNCTION true
+namespace utils {
+  void itoa(char* buf, uint8_t& pos, int16_t n, const uint8_t& base = 10, uint8_t digits = 0);
+};
 
-namespace weather {
-  namespace calc {
+namespace utils {
+  namespace weather {
+    // Uncomment the following line to enable the NOAA dew function
+    // otherwise a simpler calculating algorithm will be used.
+    //#define NOAA_DEW_FUNCTION
+
     float dew(const float& t, const float& rh);
-  };
+  }
 };
 
 #endif

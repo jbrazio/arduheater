@@ -19,54 +19,31 @@
 
 #include "common.h"
 
-void thermistor::init() {
-  DEBUGPRN("thermistor::init()");
-
-  ADCSRA  = bit(ADEN);                              // Activate the ADC
-  ADCSRA |= bit(ADPS0) |  bit(ADPS1) | bit(ADPS2);  // Prescaler of 128
-
-  for (uint8_t i = 0; i < array_size(m_cache); i++) { m_cache[i] = 0; }
-  m_active_channel = 3;
-  reset();
-
-  bitSet(DIDR0, ADC4D);  // disable digital buffer on A4
-  bitSet(DIDR0, ADC5D);  // disable digital buffer on A5
-}
-
 void thermistor::update() {
-  m_sensor_state = SENSOR_BUSY;
-  ADCSRA |= bit(ADSC) | bit(ADIE);
-}
-
-void thermistor::irq() {
-  switch (m_sensor_state) {
-    case SENSOR_READY: {
-      if (m_needs_updating) {
-        m_needs_updating = false;
-        update();
-      }
-      break;
-    }
-    default: {
-      break;
-    }
-  }
+  m_state = SENSOR_BUSY;
+  ADCSRA |= bit(ADSC) | bit(ADIE);  // start and trigger ISR when finished
 }
 
 void thermistor::isr(int16_t reading) {
   float steinhart;
-  steinhart = SERIESRESISTOR / (1023.0 / reading - 1);  // convert raw to ohms
-  steinhart = steinhart / THERMISTORNOMINAL;            // (R/Ro)
-  steinhart = log(steinhart);                           // ln(R/Ro)
+  steinhart  = SERIESRESISTOR / (1023.0 / reading - 1); // convert raw to ohms
+  steinhart  = steinhart / THERMISTORNOMINAL;           // (R/Ro)
+  steinhart  = log(steinhart);                          // ln(R/Ro)
   steinhart /= BCOEFFICIENT;                            // 1/B * ln(R/Ro)
   steinhart += 1.0 / (TEMPERATURENOMINAL + 273.15);     // + (1/To)
-  steinhart = 1.0 / steinhart;                          // Invert
+  steinhart  = 1.0 / steinhart;                         // Invert
   steinhart -= 273.15;                                  // convert to K to C
+
+  // this will make a not connected sensor to have THERMISTOR_ERROR value
+  // TODO: Build a thermal protection system
+  //if (steinhart > THERMISTOR_MAX_TEMP || steinhart < THERMISTOR_MIN_TEMP) {
+  //  steinhart = THERMISTOR_ERROR;
+  //}
 
   m_cache[m_active_channel] = steinhart;
 
-  //serial::print::PGM(PSTR("t: "));
-  //serial::println::float32(steinhart, 2);
+  //static int16_t f = -20;
+  //m_cache[m_active_channel] = f++;
 
   message_t payload;
   payload.category      = MSG_CAT_NTC;
@@ -78,10 +55,8 @@ void thermistor::isr(int16_t reading) {
 }
 
 void thermistor::reset() {
-  m_needs_updating = true;
-  m_sensor_state   = SENSOR_READY;
+  Sensor::reset();
   m_active_channel = (m_active_channel +1) % 4;
-
   // Select internal reference of 1.1V and input port
   ADMUX = bit (REFS0) | bit (REFS1) | (m_active_channel & 0x07);
 }

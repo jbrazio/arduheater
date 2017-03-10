@@ -22,53 +22,52 @@
 
 #include "common.h"
 
-template <typename T, uint8_t N> struct mmsmooth_t {
+template <typename T, uint8_t N> struct mmsmooth_t
+{
+public:
+  mmsmooth_t() { reset(); }
+
 private:
   T       m_values[N];
   T       m_sum_of_values;
   uint8_t m_index;
   uint8_t m_count;
 
-public:
-  mmsmooth_t() {
-    reset();
-  }
-
 private:
   inline void reset() {
-    m_count         = 0;
-    m_index         = 0;
-    m_sum_of_values = 0;
+    m_count = m_index = m_sum_of_values = 0;
     for (size_t i = 0; i < N; i++) { m_values[i] = 0; }
   }
 
 public:
+  inline bool full() {
+    return (m_count == N);
+  }
+
   inline T operator()() {
     if (m_count == 0) { return 0; }
     return m_sum_of_values / m_count;
   }
 
-  inline void operator()(const T &value) {
+  inline void operator()(const T &lhs) {
     m_sum_of_values    -= m_values[m_index];
-    m_values[m_index++] = value;
-    m_sum_of_values    += value;
+    m_values[m_index++] = lhs;
+    m_sum_of_values    += lhs;
 
     if (m_index >= N) { m_index = 0; }
-    if (m_count <  N) { ++m_count; }
+    else if (m_count <  N) { ++m_count; }
   }
 
-  inline mmsmooth_t& operator=(const T &value) {
+  inline mmsmooth_t& operator=(const T &lhs) {
     reset();
-    m_count         = 1;
-    m_index         = 1;
-    m_values[0]     = value;
-    m_sum_of_values = value;
+    m_count = m_index = 1;
+    m_values[0]       = lhs;
+    m_sum_of_values   = lhs;
     return (*this);
   }
 
-  inline mmsmooth_t& operator+=(const T &value) {
-    if (isnan(value)) return (*this);
-    operator()(value);
+  inline mmsmooth_t& operator+=(const T &lhs) {
+    if (! isnan(lhs)) { operator()(lhs); }
     return (*this);
   }
 };

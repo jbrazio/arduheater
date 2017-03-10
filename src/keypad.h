@@ -24,12 +24,12 @@
 
 class keypad : public Subject<message_t>
 {
+public:
+  typedef Singleton<keypad> single;
+
 private:
     key_t m_key[2];
     volatile uint8_t v_cache[2];
-
-public:
-  typedef Singleton<keypad> single;
 
 protected:
   void attachPinChangeInterrupt(const uint8_t& pin);

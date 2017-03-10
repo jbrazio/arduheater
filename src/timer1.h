@@ -33,11 +33,10 @@ namespace timer1 {
   * Enable the timer1 ISR in compare match mode with a 20Hz rate
   */
   inline void init() {
-    DEBUGPRN("timer1::init()");
+    DEBUGPRN(6, "timer1::init()");
 
     cli();
     TCCR1A = TCCR1B = TCNT1 = 0;
-
     OCR1A   = 0xC35;        // Compare match register
     TCCR1B |= bit(WGM12);   // CTC mode
     TCCR1B |= bit(CS12);    // 256 prescaler

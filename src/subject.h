@@ -27,43 +27,35 @@
  */
 template <typename T> class Subject
 {
+protected:
+  Subject()
+    : p_observer(nullptr)
+  {;}
+
 private:
   Observer<T>* p_observer;
-
-protected:
-  Subject() {
-    p_observer = nullptr;
-  }
-
-  virtual ~Subject() {;}
 
 public:
   /**
    * Register an observer for our subject
    */
-  void attach(Observer<T>* obs)
-  {
-    if (p_observer == nullptr)
-      p_observer = obs;
+  inline void attach(Observer<T>* obs) {
+    if (p_observer == nullptr) { p_observer = obs; }
   }
 
   /**
    * Unregister an existing observer
    */
-  void dettach()
-  {
-    if (p_observer != nullptr)
-      p_observer = nullptr;
+  inline void dettach() {
+    if (p_observer != nullptr) { p_observer = nullptr; }
   }
 
 protected:
   /**
    * Notify the observer
    */
-  void notify(const T& message)
-  {
-    if (p_observer != nullptr)
-      p_observer->update(message);
+  inline void notify(const T& message) {
+    if (p_observer != nullptr) { p_observer->update(message); }
   }
 };
 

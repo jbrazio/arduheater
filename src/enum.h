@@ -49,11 +49,12 @@ enum card_index_t {
 
 enum sensor_state_t {
   SENSOR_UNKNOWN,
+  SENSOR_WARMUP,
   SENSOR_READY,
   SENSOR_BUSY,
+  SENSOR_SLEEP,
   SENSOR_TIMEOUT,
   SENSOR_ERROR,
-  SENSOR_SLEEP,
 };
 
 #endif

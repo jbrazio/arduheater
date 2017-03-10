@@ -22,10 +22,10 @@
 
 #include "common.h"
 
-class Painter {
+class Painter
+{
 private:
   Painter() {;}
-  ~Painter() {;}
 
 public:
   static U8GLIB* instance() {
@@ -56,7 +56,7 @@ public:
   }
 
   static inline void bigfont() {
-    instance()->setFont(u8g_font_profont22r);
+    instance()->setFont(UI_LCD_FONT_BIG);
     instance()->setFontPosTop();
     instance()->setFontRefHeightExtendedText();
   }

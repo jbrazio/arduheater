@@ -25,8 +25,7 @@
 /**
  * Abstract observer/subscriber class
  */
-template <typename T>
-class Observer
+template <typename T> class Observer
 {
 public:
   virtual void update(const T& val) = 0;

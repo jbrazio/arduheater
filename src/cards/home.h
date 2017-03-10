@@ -24,41 +24,53 @@
 
 class CardHome : public Card {
 public:
-  CardHome() {;}
+  CardHome() : Card(2, 5000) {;}
   virtual ~CardHome() {;}
 
 public:
   void draw() {
-    char buffer[8];
-
     Painter::instance()->firstPage();
     do {
+      char buffer[8];
+      uint8_t bufpos = 0;
+
       widget::title::draw(string_lcd_ambient,  1, true);
-      snprintf_P(buffer, sizeof(buffer), PSTR("%i%S"),
-        runtime::single::instance().m_ambient.t(), string_lcd_unit_C);
+      utils::itoa(buffer, bufpos, runtime::single::instance().m_ambient.t());
+      buffer[bufpos++] = pgm_read_byte(string_lcd_unit_C);
+      buffer[bufpos]   = 0x00;
+
       widget::middle::draw(buffer, 1);
 
+      bufpos = 0;
       if (m_page_active == 0) {
         widget::title::draw(string_lcd_humidity, 2, true);
-        snprintf_P(buffer, sizeof(buffer), PSTR("%i%S"),
-          runtime::single::instance().m_ambient.rh(), string_percent);
+        utils::itoa(buffer, bufpos, runtime::single::instance().m_ambient.rh());
+        buffer[bufpos++] = pgm_read_byte(string_percent);
+        buffer[bufpos]   = 0x00;
       } else {
         widget::title::draw(string_lcd_dew_point, 2, true);
-        snprintf_P(buffer, sizeof(buffer), PSTR("%i%S"),
-          runtime::single::instance().m_ambient.dew(), string_lcd_unit_C);
+        utils::itoa(buffer, bufpos, runtime::single::instance().m_ambient.dew());
+        buffer[bufpos++] = pgm_read_byte(string_lcd_unit_C);
+        buffer[bufpos]   = 0x00;
       }
 
       widget::middle::draw(buffer, 2);
 
       for (size_t i = 0; i < 4; i++) {
-        snprintf_P(buffer, sizeof(buffer), PSTR("%iC"),
-          runtime::single::instance().m_output[i].t);
-        widget::bottom::draw(buffer, i);
+        if (runtime::single::instance().m_output[i].t() != THERMISTOR_ERROR) {
+          bufpos = 0;
+          utils::itoa(buffer, bufpos, runtime::single::instance().m_output[i].t());
+          buffer[bufpos++] = pgm_read_byte(string_lcd_unit_C);
+          buffer[bufpos]   = 0x00;
+        } else {
+          strcpy(buffer, "N/A");
+        }
+
+        bool invert = runtime::single::instance().m_output[i].running() ? true : false;
+        widget::bottom::draw(buffer, i, false, invert);
       }
     } while(Painter::instance()->nextPage());
   }
-
-  inline void init() { m_pages = 2; }
 };
 
 #endif

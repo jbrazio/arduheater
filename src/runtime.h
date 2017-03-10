@@ -22,13 +22,15 @@
 
 #include "common.h"
 
-class runtime : public Observer<message_t> {
+class runtime : public Observer<message_t>
+{
 public:
   runtime() {;}
 
 public:
   typedef Singleton<runtime> single;
 
+public:
   struct ambient_data_t {
     mmsmooth_t<int16_t, 10> dew;
     mmsmooth_t<int16_t, 10> rh;
@@ -36,9 +38,13 @@ public:
   } m_ambient;
 
   struct output_t {
-    mmsmooth_t<int16_t, 10> t;
-    float out;
     PID pid;
+    //float out;
+    mmsmooth_t<int16_t, 10> t;
+
+    bool running()  { return (pid.mode() == PID::AUTOMATIC); }
+    void off()      { pid.mode(PID::MANUAL); pid.output(0); }
+    void on()       { pid.mode(PID::AUTOMATIC); }
   } m_output[4];
 
 public:
