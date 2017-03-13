@@ -37,10 +37,11 @@ public:
   }
 
   void init() { m_timeout_card = CARD_HOME; }
+
   bool timeout() {
-    if (runtime::single::instance().m_ambient.t()
-      && runtime::single::instance().m_ambient.rh()
-      && runtime::single::instance().m_output[3].t.full()) return true;
+    if (runtime::single::instance().ambient.t()
+      && runtime::single::instance().ambient.rh()
+      && runtime::single::instance().heater[3].t.full()) return true;
     else return false;
   }
 };

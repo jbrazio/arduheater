@@ -27,7 +27,7 @@ ui::ui()
 
 void ui::draw() {
   if (m_active_card->needs_drawing()) {
-    DEBUGPRN(5, "ui::irq(): needs_drawing()");
+    DEBUGPRN(5, "ui::draw(): needs_drawing()");
     m_active_card->needs_drawing(false);
     m_active_card->draw();
   }
@@ -49,6 +49,14 @@ void ui::irq() {
       m_active_card->needs_drawing(true);
       m_active_card->next_page();
     }
+
+    /*
+    static uint16_t foo = 0;
+    if (foo >= 250) {
+      m_active_card->needs_drawing(true);
+      foo = 0;
+    } else foo += HEARTBEAT;
+    */
   }
 }
 
@@ -91,6 +99,15 @@ void ui::update(const message_t& message) {
 
     case MSG_CAT_KEYPAD: {
       DEBUGPRN(3, "ui::update(): MSG_CAT_KEYPAD");
+
+      keycode_t  button = static_cast<keycode_t>(message.data[0].dw);
+      keypress_t state  = static_cast<keypress_t>(message.data[1].dw);
+
+      if (state == KEYPRESS_SHORT) {
+        if (button == KEYCODE_RIGHT) { m_active_card->right(); }
+        else if (button == KEYCODE_LEFT) { m_active_card->left(); }
+      }
+
       // reset the card's timeout if needed
       if (m_active_card->has_timeout()) { m_active_card->reset_timeout(); }
       m_active_card->needs_drawing(true);

@@ -46,9 +46,8 @@ void setup() {
   //analogWrite(HEATER_A_PIN, 100);
 
   for (size_t i = 0; i < 1; i++) {
-    runtime::output_t* p = &runtime::single::instance().m_output[i];
-    p->pid.setpoint(50);
-    p->pid.tune(25.00, 00.20, 15.00);
+    runtime::single::instance().heater[i].pid.setpoint(50);
+    runtime::single::instance().heater[i].pid.tune(25.00, 00.20, 15.00);
     //p->pid.mode(PID::AUTOMATIC);
   }
 }

@@ -31,21 +31,20 @@ public:
   typedef Singleton<runtime> single;
 
 public:
-  struct ambient_data_t {
+  struct {
     mmsmooth_t<int16_t, 10> dew;
     mmsmooth_t<int16_t, 10> rh;
     mmsmooth_t<int16_t, 10> t;
-  } m_ambient;
+  } ambient;
 
-  struct output_t {
+  struct {
     PID pid;
-    //float out;
     mmsmooth_t<int16_t, 10> t;
 
     bool running()  { return (pid.mode() == PID::AUTOMATIC); }
     void off()      { pid.mode(PID::MANUAL); pid.output(0); }
     void on()       { pid.mode(PID::AUTOMATIC); }
-  } m_output[4];
+  } heater[4];
 
 public:
   void update(const message_t&);

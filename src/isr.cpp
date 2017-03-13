@@ -54,10 +54,16 @@ ISR(TIMER1_COMPA_vect) {
   ui::single::instance().irq();
 
   for (size_t i = 0; i < 1; i++) {
-    runtime::output_t* p = &runtime::single::instance().m_output[i];
-    p->pid.input(p->t());
-    p->pid.irq();
-    analogWrite(HEATER_A_PIN, p->pid.output());
+    runtime::single::instance().heater[i].pid.input(
+      runtime::single::instance().heater[i].t()
+    );
+
+    runtime::single::instance().heater[i].pid.irq();
+
+    analogWrite(
+      HEATER_A_PIN,
+      runtime::single::instance().heater[i].pid.output()
+    );
   }
 
   busy = false;   // Release the lock

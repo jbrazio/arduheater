@@ -25,7 +25,6 @@
 class CardHome : public Card {
 public:
   CardHome() : Card(2, 5000) {;}
-  virtual ~CardHome() {;}
 
 public:
   void draw() {
@@ -35,7 +34,7 @@ public:
       uint8_t bufpos = 0;
 
       widget::title::draw(string_lcd_ambient,  1, true);
-      utils::itoa(buffer, bufpos, runtime::single::instance().m_ambient.t());
+      utils::itoa(buffer, bufpos, runtime::single::instance().ambient.t());
       buffer[bufpos++] = pgm_read_byte(string_lcd_unit_C);
       buffer[bufpos]   = 0x00;
 
@@ -44,12 +43,12 @@ public:
       bufpos = 0;
       if (m_page_active == 0) {
         widget::title::draw(string_lcd_humidity, 2, true);
-        utils::itoa(buffer, bufpos, runtime::single::instance().m_ambient.rh());
+        utils::itoa(buffer, bufpos, runtime::single::instance().ambient.rh());
         buffer[bufpos++] = pgm_read_byte(string_percent);
         buffer[bufpos]   = 0x00;
       } else {
         widget::title::draw(string_lcd_dew_point, 2, true);
-        utils::itoa(buffer, bufpos, runtime::single::instance().m_ambient.dew());
+        utils::itoa(buffer, bufpos, runtime::single::instance().ambient.dew());
         buffer[bufpos++] = pgm_read_byte(string_lcd_unit_C);
         buffer[bufpos]   = 0x00;
       }
@@ -57,19 +56,33 @@ public:
       widget::middle::draw(buffer, 2);
 
       for (size_t i = 0; i < 4; i++) {
-        if (runtime::single::instance().m_output[i].t() != THERMISTOR_ERROR) {
+        if (runtime::single::instance().heater[i].t() != THERMISTOR_ERROR) {
           bufpos = 0;
-          utils::itoa(buffer, bufpos, runtime::single::instance().m_output[i].t());
+          utils::itoa(buffer, bufpos, runtime::single::instance().heater[i].t());
           buffer[bufpos++] = pgm_read_byte(string_lcd_unit_C);
           buffer[bufpos]   = 0x00;
         } else {
           strcpy(buffer, "N/A");
         }
 
-        bool invert = runtime::single::instance().m_output[i].running() ? true : false;
-        widget::bottom::draw(buffer, i, false, invert);
+        widget::bottom::draw(buffer, i, false, (m_highlighted == (int8_t) i));
       }
     } while(Painter::instance()->nextPage());
+  }
+
+  inline void left() {
+    // TODO: find a better option, today I'm very lazy :-/
+    --m_highlighted;
+    if (m_highlighted < 0) m_highlighted = 3;
+  }
+
+  inline void right() {
+    m_highlighted = (m_highlighted +1) % 4;
+  }
+
+  inline bool timeout() {
+    m_highlighted = -1;
+    return true;
   }
 };
 

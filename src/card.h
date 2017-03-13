@@ -24,11 +24,12 @@
 
 class Card {
 protected:
-  Card(const uint8_t& pages, const uint16_t& timeout)
+  Card(const uint8_t& pages, const uint16_t& page_timeout)
     : m_needs_drawing(true)
-    , m_slideshow({timeout, (int16_t) timeout})
+    , m_slideshow({page_timeout, (int16_t) page_timeout})
     , m_page_active(0)
     , m_pages(pages)
+    , m_highlighted(-1) 
   {;}
 
 public:
@@ -41,6 +42,7 @@ protected:
   hb_timer_t    m_timeout;
   uint8_t       m_page_active;
   uint8_t       m_pages;
+  int8_t        m_highlighted;
 
 public:
   virtual void draw()    {;}
