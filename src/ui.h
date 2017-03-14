@@ -35,12 +35,9 @@ private:
   card_index_t m_active_index;
 
 public:
-  inline void show(const card_index_t& card_index) { show(card_index, 0); }
-
-public:
   void draw();
   void irq();
-  void show(const card_index_t&, const uint16_t&);
+  void show(const card_index_t& card_index);
   void update(const message_t&);
 };
 

@@ -22,24 +22,28 @@
 
 #include "common.h"
 
+#define SENSOR_NEEDS_WARMUP   0
+#define SENSOR_NEEDS_SLEEP    1
+#define SENSOR_NEEDS_REFRESH  2
+
 class Sensor
 {
 public:
   Sensor(const uint16_t& warmup, const uint16_t& sleep, const uint16_t& refresh) {
     if (warmup) {
-      m_register |= bit(0);
+      m_register |= bit(SENSOR_NEEDS_WARMUP);
       m_timer.warmup.period = warmup;
       DEBUGPRN(5, "Sensor: SENSOR_NEEDS_WARMUP flag is set");
     }
 
     if (sleep) {
-      m_register |= bit(1);
+      m_register |= bit(SENSOR_NEEDS_SLEEP);
       m_timer.sleep.period = sleep;
       DEBUGPRN(5, "Sensor: SENSOR_NEEDS_SLEEP flag is set");
     }
 
     if (refresh) {
-      m_register |= bit(2);
+      m_register |= bit(SENSOR_NEEDS_REFRESH);
       m_timer.refresh.period = refresh;
       DEBUGPRN(5, "Sensor: SENSOR_NEEDS_REFRESH flag is set");
     }
@@ -80,7 +84,7 @@ protected:
 
 public:
   virtual void init() {
-    if (bit_is_set(m_register, 0)) {  // SENSOR_NEEDS_WARMUP
+    if (bit_is_set(m_register, SENSOR_NEEDS_WARMUP)) {
       DEBUGPRN(5, "Sensor: State changed to SENSOR_WARMUP");
       m_state = SENSOR_WARMUP;
       m_timer.warmup.timeleft = m_timer.warmup.period;
@@ -88,7 +92,7 @@ public:
   }
 
   virtual inline void reset() {
-    if (bit_is_set(m_register, 1)) {  // SENSOR_NEEDS_SLEEP
+    if (bit_is_set(m_register, SENSOR_NEEDS_SLEEP)) {
       DEBUGPRN(5, "Sensor: State changed to SENSOR_SLEEP");
       m_state = SENSOR_SLEEP;
       m_timer.sleep.timeleft = m_timer.sleep.period;
@@ -102,14 +106,14 @@ public:
     }
 
     else if (m_state == SENSOR_READY) {
-      if (bit_is_set(m_register, 2)) {  // SENSOR_NEEDS_REFRESH
+      if (bit_is_set(m_register, SENSOR_NEEDS_REFRESH)) {
         if (m_timer.refresh.timeleft > 0) { m_timer.refresh.timeleft -= HEARTBEAT; }
         else if (!m_needs_updating) { m_needs_updating = true; }
       }
 
       if (m_needs_updating) {
         DEBUGPRN(6, "Sensor: m_needs_updating flag is set");
-        if (bit_is_set(m_register, 2)) { m_timer.refresh.timeleft = m_timer.refresh.period; }
+        if (bit_is_set(m_register, SENSOR_NEEDS_REFRESH)) { m_timer.refresh.timeleft = m_timer.refresh.period; }
         m_needs_updating = false;
         update();
       }

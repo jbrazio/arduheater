@@ -24,6 +24,7 @@
 
 namespace utils {
   void itoa(char* buf, uint8_t& pos, int16_t n, const uint8_t& base = 10, uint8_t digits = 0);
+  uint8_t mstotick(const uint16_t& ms);
 };
 
 namespace utils {

@@ -39,6 +39,7 @@
 #include "serial.h"
 #include "print.h"
 #include "macros.h"
+#include "timer1.h"
 #include "utils.h"
 
 #include "observer.h"
@@ -46,7 +47,6 @@
 #include "singleton.h"
 
 #include "card.h"
-#include "timer1.h"
 #include "sensor.h"
 #include "dht22.h"
 #include "keypad.h"

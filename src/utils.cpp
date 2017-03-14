@@ -48,6 +48,11 @@ void utils::itoa(char* buf, uint8_t& pos, int16_t n, const uint8_t& base, uint8_
   buf[pos] = 0x00;
 }
 
+uint8_t utils::mstotick(const uint16_t& ms) {
+  // WARNING: max 12750ms as input
+  return ms / HEARTBEAT;
+}
+
 float utils::weather::dew(const float& t, const float& rh) {
   #ifdef NOAA_DEW_FUNCTION
     // dewPoint function NOAA

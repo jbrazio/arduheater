@@ -24,7 +24,10 @@
 
 class CardHome : public Card {
 public:
-  CardHome() : Card(2, 5000) {;}
+  CardHome() {
+    set_slideshow_pages(2);
+    set_slideshow_period(5000);
+  }
 
 public:
   void draw() {
@@ -41,7 +44,7 @@ public:
       widget::middle::draw(buffer, 1);
 
       bufpos = 0;
-      if (m_page_active == 0) {
+      if (m_active_page == 0) {
         widget::title::draw(string_lcd_humidity, 2, true);
         utils::itoa(buffer, bufpos, runtime::single::instance().ambient.rh());
         buffer[bufpos++] = pgm_read_byte(string_percent);
@@ -56,7 +59,7 @@ public:
       widget::middle::draw(buffer, 2);
 
       for (size_t i = 0; i < 4; i++) {
-        if (runtime::single::instance().heater[i].t() != THERMISTOR_ERROR) {
+        if (runtime::single::instance().heater[i].t() != THERMISTOR_ERR_TEMP) {
           bufpos = 0;
           utils::itoa(buffer, bufpos, runtime::single::instance().heater[i].t());
           buffer[bufpos++] = pgm_read_byte(string_lcd_unit_C);
@@ -65,23 +68,21 @@ public:
           strcpy(buffer, "N/A");
         }
 
-        widget::bottom::draw(buffer, i, false, (m_highlighted == (int8_t) i));
+        widget::bottom::draw(buffer, i, false, (m_active_section == (int8_t) i));
       }
     } while(Painter::instance()->nextPage());
   }
 
   inline void left() {
-    // TODO: find a better option, today I'm very lazy :-/
-    --m_highlighted;
-    if (m_highlighted < 0) m_highlighted = 3;
+    m_active_section = (m_active_section -1) % 4;
   }
 
   inline void right() {
-    m_highlighted = (m_highlighted +1) % 4;
+    m_active_section = (m_active_section +1) % 4;
   }
 
   inline bool timeout() {
-    m_highlighted = -1;
+    m_active_section = -1;
     return true;
   }
 };

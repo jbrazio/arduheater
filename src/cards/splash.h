@@ -24,19 +24,18 @@
 
 class CardSplash : public Card {
 public:
-  CardSplash() : Card(1, 0) {;}
-  virtual ~CardSplash() {;}
+  CardSplash() {;}
 
 public:
   void draw() {
+    Card::draw();
+
     Painter::instance()->firstPage();
     do {
       Painter::instance()->setColorIndex(1);
       Painter::instance()->drawBitmapP(0, 0, 16, 64, bitmap_bootlogo);
     } while(Painter::instance()->nextPage());
   }
-
-  void init() { m_timeout_card = CARD_HOME; }
 
   bool timeout() {
     if (runtime::single::instance().ambient.t()

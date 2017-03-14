@@ -26,41 +26,18 @@ ui::ui()
 }
 
 void ui::draw() {
-  if (m_active_card->needs_drawing()) {
+  if (m_active_card && m_active_card->needs_drawing()) {
     DEBUGPRN(5, "ui::draw(): needs_drawing()");
-    m_active_card->needs_drawing(false);
     m_active_card->draw();
   }
 }
 
 void ui::irq() {
   // this guard will prevent meltdown when the ptr is undef
-  if (m_active_card) {
-    // do time accounting for card's timeout
-    if (m_active_card->has_timeout() && m_active_card->did_timeout()) {
-      DEBUGPRN(5, "ui::irq(): timeout_card()");
-      if (m_active_card->timeout()) show(m_active_card->timeout_card());
-      else m_active_card->reset_timeout();
-    }
-
-    // do time accounting for card's slideshow
-    if (m_active_card->has_pages() && m_active_card->did_page_timeout()) {
-      DEBUGPRN(5, "ui::irq(): next_page()");
-      m_active_card->needs_drawing(true);
-      m_active_card->next_page();
-    }
-
-    /*
-    static uint16_t foo = 0;
-    if (foo >= 250) {
-      m_active_card->needs_drawing(true);
-      foo = 0;
-    } else foo += HEARTBEAT;
-    */
-  }
+  if (m_active_card) { m_active_card->tick(); }
 }
 
-void ui::show(const card_index_t& card_index, const uint16_t& card_timeout) {
+void ui::show(const card_index_t& card_index) {
   delete m_active_card; // free the active card's memory
 
   // simple card factory
@@ -86,7 +63,7 @@ void ui::show(const card_index_t& card_index, const uint16_t& card_timeout) {
 
   m_active_card->init();                    // let the card bootstrap itself
   m_active_index = card_index;              // bookeeping
-  m_active_card->set_timeout(card_timeout); // define the card's timeout
+  //m_active_card->set_timeout(card_timeout); // define the card's timeout
 }
 
 void ui::update(const message_t& message) {
@@ -99,18 +76,7 @@ void ui::update(const message_t& message) {
 
     case MSG_CAT_KEYPAD: {
       DEBUGPRN(3, "ui::update(): MSG_CAT_KEYPAD");
-
-      keycode_t  button = static_cast<keycode_t>(message.data[0].dw);
-      keypress_t state  = static_cast<keypress_t>(message.data[1].dw);
-
-      if (state == KEYPRESS_SHORT) {
-        if (button == KEYCODE_RIGHT) { m_active_card->right(); }
-        else if (button == KEYCODE_LEFT) { m_active_card->left(); }
-      }
-
-      // reset the card's timeout if needed
-      if (m_active_card->has_timeout()) { m_active_card->reset_timeout(); }
-      m_active_card->needs_drawing(true);
+      m_active_card->keypress(static_cast<keycode_t>(message.data[0].dw), message.data[1].bol);
       break;
     }
 

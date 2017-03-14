@@ -25,6 +25,7 @@
 struct message_t {
   msg_category_t category;
   union {
+    bool       bol; // boolean
     float        f; // float
     int32_t     dw; // double word
     uint32_t   udw; // unsigned double word
@@ -50,6 +51,11 @@ struct hb_timer_t {
   // accounting the max value is capped to ~32s.
   uint16_t period;
   int16_t  timeleft;
+};
+
+struct tick_timer_t {
+  uint8_t period;
+  uint8_t ticks;
 };
 
 #endif

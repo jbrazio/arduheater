@@ -24,11 +24,12 @@
 
 class CardBlank : public Card {
 public:
-  CardBlank() : Card(1, 0) {;}
-  virtual ~CardBlank() {;}
+  CardBlank() {;}
 
 public:
   void draw() {
+    Card::draw();
+
     Painter::instance()->firstPage();
     do {;} while(Painter::instance()->nextPage());
   }

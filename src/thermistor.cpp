@@ -26,13 +26,13 @@ void thermistor::update() {
 
 void thermistor::isr(int16_t reading) {
   float steinhart;
-  steinhart  = SERIESRESISTOR / (1023.0 / reading - 1); // convert raw to ohms
-  steinhart  = steinhart / THERMISTORNOMINAL;           // (R/Ro)
-  steinhart  = log(steinhart);                          // ln(R/Ro)
-  steinhart /= BCOEFFICIENT;                            // 1/B * ln(R/Ro)
-  steinhart += 1.0 / (TEMPERATURENOMINAL + 273.15);     // + (1/To)
-  steinhart  = 1.0 / steinhart;                         // Invert
-  steinhart -= 273.15;                                  // convert to K to C
+  steinhart  = THERMISTOR_SERIESRESISTOR / (1023.0 / reading - 1);  // convert raw to ohms
+  steinhart  = steinhart / THERMISTOR_NOMINAL_VAL;                  // (R/Ro)
+  steinhart  = log(steinhart);                                      // ln(R/Ro)
+  steinhart /= THERMISTOR_BCOEFFICIENT;                             // 1/B * ln(R/Ro)
+  steinhart += 1.0 / (THERMISTOR_NOMINAL_TEMP + 273.15);            // + (1/To)
+  steinhart  = 1.0 / steinhart;                                     // Invert
+  steinhart -= 273.15;                                              // convert to K to C
 
   // this will make a not connected sensor to have THERMISTOR_ERROR value
   // TODO: Build a thermal protection system

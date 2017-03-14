@@ -22,10 +22,15 @@
 void setup() {
   DDRB |= 0x20; // Enable D13 as output
 
+  pinMode(HEATER_0_PIN, OUTPUT);
+  pinMode(HEATER_1_PIN, OUTPUT);
+  pinMode(HEATER_2_PIN, OUTPUT);
+  pinMode(HEATER_3_PIN, OUTPUT);
+
   serial::init();
   serial::print::banner();
 
-  ui::single::instance().show(CARD_SPLASH, 250);
+  ui::single::instance().show(CARD_SPLASH);
 
   keypad::single::instance().init(UI_KEYPAD_A_PIN, UI_KEYPAD_B_PIN);
   keypad::single::instance().attach(&runtime::single::instance());
@@ -39,11 +44,6 @@ void setup() {
   timer1::init();
 
 
-  pinMode(HEATER_A_PIN, OUTPUT);
-  //TCCR0A = _BV(COM0A1) | _BV(COM0B1) | _BV(WGM00);
-  //TCCR0B = _BV(CS02) | _BV(CS00);
-  //TCCR0B = _BV(CS02);
-  //analogWrite(HEATER_A_PIN, 100);
 
   for (size_t i = 0; i < 1; i++) {
     runtime::single::instance().heater[i].pid.setpoint(50);

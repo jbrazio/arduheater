@@ -22,46 +22,68 @@
 
 #include "common.h"
 
+#define CARD_IS_A_SLIDESHOW 0
+#define CARD_HAS_UI_TIMEOUT 1
+#define CARD_NEEDS_DRAWING  7
+
 class Card {
 protected:
-  Card(const uint8_t& pages, const uint16_t& page_timeout)
-    : m_needs_drawing(true)
-    , m_slideshow({page_timeout, (int16_t) page_timeout})
-    , m_page_active(0)
-    , m_pages(pages)
-    , m_highlighted(-1) 
-  {;}
+  /*
+   * The m_register property is a 8bit "register" with the following flags:
+   *
+   * bit 0 - CARD_IS_A_SLIDESHOW
+   * This flag bit is set when the card has more than one page and needs to
+   * cycle among them.
+   *
+   * bit 1 - CARD_HAS_UI_TIMEOUT
+   * This flag bit is set when the card can react to user inputs such as the
+   * press of a key and has a timeout after the last keypress.
+   *
+   * bit 7 - CARD_NEEDS_DRAWING
+   * This flag bit is set when the card needs to be redrawn due to a update.
+   *
+   */
+  uint8_t m_register;
+
+protected:
+  Card() {
+    m_timer.ticks = 0;
+  }
 
 public:
   virtual ~Card() {;}
 
 protected:
-  bool          m_needs_drawing;
-  card_index_t  m_timeout_card;
-  hb_timer_t    m_slideshow;
-  hb_timer_t    m_timeout;
-  uint8_t       m_page_active;
-  uint8_t       m_pages;
-  int8_t        m_highlighted;
+  struct {
+    tick_timer_t slideshow;
+    tick_timer_t ui;
+    uint8_t ticks;
+  } m_timer;
+
+protected:
+  uint8_t m_number_of_pages;
+  uint8_t m_active_page;
+  uint8_t m_active_section;
 
 public:
-  virtual void draw()    {;}
-  virtual void init()    {;}
-  virtual void left()    {;}
-  virtual void press()   {;}
-  virtual void right()   {;}
-  virtual bool timeout() { return true; }
+  void set_slideshow_pages(const uint8_t& pages);
+  void set_slideshow_period(const uint16_t& ms);
+  virtual void next_slideshow_page();
 
 public:
-  bool did_page_timeout();
-  bool did_timeout();
-  bool has_pages();
-  bool has_timeout();
-  bool needs_drawing(const uint8_t & lhs = 0xff);
-  card_index_t timeout_card();
-  void next_page();
-  void reset_timeout();
-  void set_timeout(const uint16_t & lhs = 0);
+  void keypress(const keycode_t& key, const bool& extended);
+  void set_ui_timeout(const uint16_t& ms);
+  virtual void confirm() {;}
+  virtual void left(__attribute__((unused)) const bool& extended ) {;}
+  virtual void reset() {;}
+  virtual void right(__attribute__((unused)) const bool& extended) {;}
+
+public:
+  bool needs_drawing();
+  void needs_drawing(const bool& lhs);
+  virtual void draw();
+  virtual void init() {;}
+  virtual void tick();
 };
 
 #endif
