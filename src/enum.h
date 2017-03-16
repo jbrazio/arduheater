@@ -44,6 +44,7 @@ enum keypress_t {
 enum card_index_t {
   CARD_BLANK,
   CARD_SPLASH,
+  CARD_LOADING,
   CARD_HOME,
 };
 

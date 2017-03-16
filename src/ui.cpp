@@ -54,6 +54,12 @@ void ui::show(const card_index_t& card_index) {
       break;
     }
 
+    case CARD_LOADING: {
+      DEBUGPRN(6, "ui::show(): new CardLoading()");
+      m_active_card = new CardLoading();
+      break;
+    }
+
     case CARD_HOME: {
       DEBUGPRN(6, "ui::show(): new CardHome()");
       m_active_card = new CardHome();
@@ -76,7 +82,10 @@ void ui::update(const message_t& message) {
 
     case MSG_CAT_KEYPAD: {
       DEBUGPRN(3, "ui::update(): MSG_CAT_KEYPAD");
-      m_active_card->keypress(static_cast<keycode_t>(message.data[0].dw), message.data[1].bol);
+      keycode_t  button = static_cast<keycode_t>(message.data[0].dw);
+      keypress_t state  = static_cast<keypress_t>(message.data[1].dw);
+
+      m_active_card->keypress(button, (state == KEYPRESS_LONG));
       break;
     }
 

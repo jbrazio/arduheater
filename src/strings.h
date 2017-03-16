@@ -42,6 +42,7 @@ const char string_lcd_dew_point     [] PROGMEM = { "Dew point" };
 const char string_lcd_humidity      [] PROGMEM = { "Humidity" };
 const char string_lcd_not_apply     [] PROGMEM = { "N/A" };
 const char string_lcd_unit_C        [] PROGMEM = { "C" };
+const char string_lcd_please_wait   [] PROGMEM = { "Please wait.." };
 
 /*
 // Menu items

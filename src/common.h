@@ -63,5 +63,6 @@
 #include "cards/blank.h"
 #include "cards/home.h"
 #include "cards/splash.h"
+#include "cards/loading.h"
 
 #endif

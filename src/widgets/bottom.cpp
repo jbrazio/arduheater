@@ -33,7 +33,7 @@
  */
 
 void widget::bottom::draw(const char* s,
-  const uint8_t& position, const bool& pgm, const bool& invert, const bool& blink) {
+  const uint8_t& position, const bool& pgm, const bool& invert) {
   // this method should be called at the start of the drawing process
   // it will ensure a consistent font/char init.
   Painter::normalfont();
@@ -58,8 +58,6 @@ void widget::bottom::draw(const char* s,
 
   Painter::instance()->setColorIndex(invert ? 0 : 1);
 
-  if (!blink) {
-    if (pgm) { Painter::instance()->drawStrP(x, y + br, (u8g_pgm_uint8_t*) s); }
-    else     { Painter::instance()->drawStr(x, y + br, s); }
-  }
+  if (pgm) { Painter::instance()->drawStrP(x, y + br, (u8g_pgm_uint8_t*) s); }
+  else     { Painter::instance()->drawStr(x, y + br, s); }
 }

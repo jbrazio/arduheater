@@ -33,19 +33,19 @@ public:
     if (warmup) {
       m_register |= bit(SENSOR_NEEDS_WARMUP);
       m_timer.warmup.period = warmup;
-      DEBUGPRN(5, "Sensor: SENSOR_NEEDS_WARMUP flag is set");
+      //DEBUGPRN(5, "Sensor: SENSOR_NEEDS_WARMUP flag is set");
     }
 
     if (sleep) {
       m_register |= bit(SENSOR_NEEDS_SLEEP);
       m_timer.sleep.period = sleep;
-      DEBUGPRN(5, "Sensor: SENSOR_NEEDS_SLEEP flag is set");
+      //DEBUGPRN(5, "Sensor: SENSOR_NEEDS_SLEEP flag is set");
     }
 
     if (refresh) {
       m_register |= bit(SENSOR_NEEDS_REFRESH);
       m_timer.refresh.period = refresh;
-      DEBUGPRN(5, "Sensor: SENSOR_NEEDS_REFRESH flag is set");
+      //DEBUGPRN(5, "Sensor: SENSOR_NEEDS_REFRESH flag is set");
     }
   }
 
@@ -85,7 +85,7 @@ protected:
 public:
   virtual void init() {
     if (bit_is_set(m_register, SENSOR_NEEDS_WARMUP)) {
-      DEBUGPRN(5, "Sensor: State changed to SENSOR_WARMUP");
+      //DEBUGPRN(5, "Sensor: State changed to SENSOR_WARMUP");
       m_state = SENSOR_WARMUP;
       m_timer.warmup.timeleft = m_timer.warmup.period;
     } else { m_state = SENSOR_READY; }
@@ -93,7 +93,7 @@ public:
 
   virtual inline void reset() {
     if (bit_is_set(m_register, SENSOR_NEEDS_SLEEP)) {
-      DEBUGPRN(5, "Sensor: State changed to SENSOR_SLEEP");
+      //DEBUGPRN(5, "Sensor: State changed to SENSOR_SLEEP");
       m_state = SENSOR_SLEEP;
       m_timer.sleep.timeleft = m_timer.sleep.period;
     } else { m_state = SENSOR_READY; }
@@ -102,7 +102,7 @@ public:
   virtual void irq() {
     if (m_state == SENSOR_WARMUP) {
       if (m_timer.warmup.timeleft > 0) { m_timer.warmup.timeleft -= HEARTBEAT; }
-      else { m_state = SENSOR_READY; DEBUGPRN(5, "Sensor: State changed to SENSOR_READY"); }
+      else { m_state = SENSOR_READY; /* DEBUGPRN(5, "Sensor: State changed to SENSOR_READY"); */ }
     }
 
     else if (m_state == SENSOR_READY) {
@@ -112,7 +112,7 @@ public:
       }
 
       if (m_needs_updating) {
-        DEBUGPRN(6, "Sensor: m_needs_updating flag is set");
+        //DEBUGPRN(6, "Sensor: m_needs_updating flag is set");
         if (bit_is_set(m_register, SENSOR_NEEDS_REFRESH)) { m_timer.refresh.timeleft = m_timer.refresh.period; }
         m_needs_updating = false;
         update();
@@ -121,7 +121,7 @@ public:
 
     else if (m_state == SENSOR_SLEEP) {
       if (m_timer.sleep.timeleft > 0) { m_timer.sleep.timeleft -= HEARTBEAT; }
-      else { m_state = SENSOR_READY; DEBUGPRN(5, "Sensor: State changed to SENSOR_READY"); }
+      else { m_state = SENSOR_READY; /* DEBUGPRN(5, "Sensor: State changed to SENSOR_READY"); */ }
     }
 
     else if (m_state == SENSOR_TIMEOUT || m_state == SENSOR_ERROR) {

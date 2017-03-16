@@ -20,9 +20,9 @@
 
 #include "common.h"
 
-void keypad::init(const uint8_t& pin_A, const uint8_t& pin_B) {
-  m_key[0].pin = pin_A;
-  m_key[1].pin = pin_B;
+keypad::keypad() {
+  m_key[0].pin = UI_KEYPAD_A_PIN;
+  m_key[1].pin = UI_KEYPAD_B_PIN;
 
   for (size_t i = 0; i < 2; i++) {
     pinMode(m_key[i].pin, INPUT_PULLUP);

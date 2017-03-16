@@ -24,6 +24,7 @@
 
 #define CARD_IS_A_SLIDESHOW 0
 #define CARD_HAS_UI_TIMEOUT 1
+#define CARD_NEEDS_TIMEOUT  2
 #define CARD_NEEDS_DRAWING  7
 
 class Card {
@@ -38,6 +39,9 @@ protected:
    * bit 1 - CARD_HAS_UI_TIMEOUT
    * This flag bit is set when the card can react to user inputs such as the
    * press of a key and has a timeout after the last keypress.
+   *
+   * bit 2 - CARD_NEEDS_TIMEOUT
+   * This flag bit is set when a pending UI timeout is active.
    *
    * bit 7 - CARD_NEEDS_DRAWING
    * This flag bit is set when the card needs to be redrawn due to a update.
@@ -63,7 +67,6 @@ protected:
 protected:
   uint8_t m_number_of_pages;
   uint8_t m_active_page;
-  uint8_t m_active_section;
 
 public:
   void set_slideshow_pages(const uint8_t& pages);
@@ -74,14 +77,14 @@ public:
   void keypress(const keycode_t& key, const bool& extended);
   void set_ui_timeout(const uint16_t& ms);
   virtual void confirm() {;}
-  virtual void left(__attribute__((unused)) const bool& extended ) {;}
-  virtual void reset() {;}
+  virtual void left(__attribute__((unused)) const bool& extended) {;}
+  virtual void timeout() {;}
   virtual void right(__attribute__((unused)) const bool& extended) {;}
 
 public:
   bool needs_drawing();
   void needs_drawing(const bool& lhs);
-  virtual void draw();
+  virtual void draw() {;}
   virtual void init() {;}
   virtual void tick();
 };

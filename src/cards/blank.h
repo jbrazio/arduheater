@@ -28,8 +28,6 @@ public:
 
 public:
   void draw() {
-    Card::draw();
-
     Painter::instance()->firstPage();
     do {;} while(Painter::instance()->nextPage());
   }

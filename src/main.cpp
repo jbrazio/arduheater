@@ -27,29 +27,28 @@ void setup() {
   pinMode(HEATER_2_PIN, OUTPUT);
   pinMode(HEATER_3_PIN, OUTPUT);
 
-  serial::init();
-  serial::print::banner();
-
   ui::single::instance().show(CARD_SPLASH);
 
-  keypad::single::instance().init(UI_KEYPAD_A_PIN, UI_KEYPAD_B_PIN);
-  keypad::single::instance().attach(&runtime::single::instance());
-
-  DHT22::single::instance().init(AMBIENT_PIN);
-  DHT22::single::instance().attach(&runtime::single::instance());
-
-  thermistor::single::instance().init();
-  thermistor::single::instance().attach(&runtime::single::instance());
-
+  serial::init();
   timer1::init();
 
+  serial::print::banner();
 
+  keypad::single::instance().attach(&runtime::single::instance());
+  DHT22::single::instance().attach(&runtime::single::instance());
+  thermistor::single::instance().attach(&runtime::single::instance());
 
   for (size_t i = 0; i < 1; i++) {
     runtime::single::instance().heater[i].pid.setpoint(50);
     runtime::single::instance().heater[i].pid.tune(25.00, 00.20, 15.00);
     //p->pid.mode(PID::AUTOMATIC);
   }
+
+  /*while(runtime::single::instance().ambient.t() == 0
+    || runtime::single::instance().ambient.rh() == 0
+    || ! runtime::single::instance().heater[3].t.full()) {;}*/
+
+  ui::single::instance().show(CARD_HOME);
 }
 
 void loop() {

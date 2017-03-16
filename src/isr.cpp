@@ -61,7 +61,7 @@ ISR(TIMER1_COMPA_vect) {
     runtime::single::instance().heater[i].pid.irq();
 
     analogWrite(
-      HEATER_A_PIN,
+      HEATER_0_PIN,
       runtime::single::instance().heater[i].pid.output()
     );
   }

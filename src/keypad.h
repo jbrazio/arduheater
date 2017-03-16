@@ -27,6 +27,9 @@ class keypad : public Subject<message_t>
 public:
   typedef Singleton<keypad> single;
 
+public:
+  keypad();
+
 private:
     key_t m_key[2];
     volatile uint8_t v_cache[2];
@@ -35,7 +38,6 @@ protected:
   void attachPinChangeInterrupt(const uint8_t& pin);
 
 public:
-  void init(const uint8_t& pin_A, const uint8_t& pin_B);
   void irq();
   void isr(const uint8_t& port);
 };

@@ -38,22 +38,25 @@ void Card::next_slideshow_page() {
 
 void Card::set_ui_timeout(const uint16_t& ms) {
   m_timer.ui.period = utils::mstotick(ms);  // store the timeout period
-  m_register |= bit(CARD_HAS_UI_TIMEOUT);     // activate the UI flag
+  m_register |= bit(CARD_HAS_UI_TIMEOUT);   // activate the UI flag
 }
 
 void Card::keypress(const keycode_t& key, const bool& extended) {
   switch (key) {
     case KEYCODE_LEFT: {
+      //DEBUGPRN(5, "Card::keypress: left()");
       left(extended);
       break;
     }
 
     case KEYCODE_RIGHT: {
+      //DEBUGPRN(5, "Card::keypress: right()");
       right(extended);
       break;
     }
 
     case KEYCODE_OK: {
+      //DEBUGPRN(5, "Card::keypress: confirm()");
       confirm();
       break;
     }
@@ -61,8 +64,12 @@ void Card::keypress(const keycode_t& key, const bool& extended) {
     default: { break; }
   }
 
+  // usually a keypress will trigger a screen redraw
+  m_register |= bit(CARD_NEEDS_DRAWING);
+
   if (bit_is_set(m_register, CARD_HAS_UI_TIMEOUT)) {
     m_timer.ui.ticks = m_timer.ui.period;
+    m_register |= bit(CARD_NEEDS_TIMEOUT);
   }
 }
 
@@ -74,24 +81,27 @@ bool Card::needs_drawing() {
   return bit_is_set(m_register, CARD_NEEDS_DRAWING);
 }
 
-void Card::draw() {
-  m_register &= ~bit(CARD_NEEDS_DRAWING);
-}
-
 void Card::tick() {
   ++m_timer.ticks;
 
   if (bit_is_set(m_register, CARD_IS_A_SLIDESHOW)) {
+
     if (m_timer.slideshow.ticks > 0) { --m_timer.slideshow.ticks; }
     else { next_slideshow_page(); }
   }
 
   if (bit_is_set(m_register, CARD_HAS_UI_TIMEOUT)) {
     if (m_timer.ui.ticks > 0) { --m_timer.ui.ticks; }
-    else { reset(); }
+    else if (bit_is_set(m_register, CARD_NEEDS_TIMEOUT)) {
+      m_register &= ~bit(CARD_NEEDS_TIMEOUT);
+      m_register |= bit(CARD_NEEDS_DRAWING);
+      timeout();
+    }
   }
 
   if (bit_is_set(m_register, CARD_NEEDS_DRAWING)) {
+    //DEBUGPRN(5, "Card::tick: CARD_NEEDS_DRAWING");
+    m_register &= ~bit(CARD_NEEDS_DRAWING);
     draw();
   }
 }
