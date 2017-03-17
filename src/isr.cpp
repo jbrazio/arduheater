@@ -1,5 +1,5 @@
 /**
- * Arduheater - Telescope heat controller
+ * Arduheater - Heat controller for astronomy usage
  * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,55 +17,41 @@
  *
  */
 
-#include "common.h"
+#include "arduheater.h"
 
-/**
- * Analog to Digital Converter interrupt handler
- */
-ISR(ADC_vect) { thermistor::single::instance().isr(ADC); }
+// Timer1 interrupt handler
+ISR(TIMER1_COMPA_vect) {;}
 
-/**
- * Pin Change interrupt handler for PORTB aka 2
- */
-ISR(PCINT0_vect) { keypad::single::instance().isr(2); }
+// Analog to Digital Converter interrupt handler
+ISR(ADC_vect) {
+  adc::runtime.value = ADCW;
+  sys.state |= STATE_ADC_COMPLETE;
+}
 
-/**
- * Pin Change interrupt handler for PORTC aka 3
- */
-//ISR(PCINT1_vect) { keypad::single::instance().isr(3); }
+// Serial RX interrupt handler
+ISR(USART_RX_vect) {
+  // check for parity errors
+  if (bit_is_clear(UCSR0A, UPE0)) {
+    uint8_t data = UDR0; // read a byte
 
-/**
- * Pin Change interrupt handler for PORTD aka 4
- */
-//ISR(PCINT2_vect) { keypad::single::instance().isr(4); }
+    switch (data) {
+      default: {
+        // write data to buffer unless it is full
+        //TODO: trigger an alarm or overflow
+        serial::buffer.rx.enqueue(data);
+        break;
+      }
+    }
+  } else { /* discard */ UDR0; }
+}
 
-/**
- * Timer1 interrupt handler
- */
-ISR(TIMER1_COMPA_vect) {
-  static volatile uint8_t busy = false; // Binary semaphore
-  if (busy) { return; }                 // Prevent ISR (re)triggering
-  PORTB |= 0x20;                        // Set D13 high
-  busy = true;                          // Acquire the lock
+// Serial TX interrupt handler
+ISR(USART_UDRE_vect) {
+  // send a byte from the buffer
+  UDR0 = serial::buffer.tx.dequeue();
+  UCSR0A |= bit(TXC0);
 
-  keypad::single::instance().irq();
-  DHT22::single::instance().irq();
-  thermistor::single::instance().irq();
-  ui::single::instance().irq();
-
-  for (size_t i = 0; i < 1; i++) {
-    runtime::single::instance().heater[i].pid.input(
-      runtime::single::instance().heater[i].t()
-    );
-
-    runtime::single::instance().heater[i].pid.irq();
-
-    analogWrite(
-      HEATER_0_PIN,
-      runtime::single::instance().heater[i].pid.output()
-    );
-  }
-
-  busy = false;   // Release the lock
-  PORTB &= ~0x20; // Set D13 low
+  // turn off Data Register Empty Interrupt
+  // to stop tx-streaming if this concludes the transfer
+  if (serial::buffer.tx.empty()) { UCSR0B &= ~bit(UDRIE0); }
 }

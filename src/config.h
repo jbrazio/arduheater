@@ -1,5 +1,5 @@
 /**
- * Arduheater - Telescope heat controller
+ * Arduheater - Heat controller for astronomy usage
  * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,41 +20,43 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
-#define BAUDRATE 57600
-
-/**
- * User interface options
- */
-#define UI_LCD_TYPE     U8GLIB_SSD1306_128X64
-#define UI_LCD_OPTIONS  U8G_I2C_OPT_DEV_0 | U8G_I2C_OPT_FAST
-#define UI_LCD_FONT     u8g_font_profont11r
-#define UI_LCD_FONT_BIG u8g_font_profont22r
-#define UI_LCD_ROTATED  true
-
-//#define UI_ENCODER_ENABLE
-#define UI_KEYPAD_ENABLE
-#define UI_KEYPAD_A_PIN   12
-#define UI_KEYPAD_B_PIN   8
+#include "arduheater.h"
 
 // ----------------------------------------------------------------------------
+// SERIAL PORT configuration --------------------------------------------------
+// ----------------------------------------------------------------------------
 
-#define AMBIENT_PIN 7
-//#define NOAA_DEW_FUNCTION
+// Defines the max number of received chars over the serial line that can be
+// waiting to be processed, if the buffer gets full incoming data will be lost.
+#define SERIAL_RX_BUFFER_SIZE 16
+
+// Defines the max number of chars waiting to be sent over the serial line.
+#define SERIAL_TX_BUFFER_SIZE 64
+
+// Defines the speed at which the serial line will operate.
+// The default settings are: 8-bit, no parity, 1 stop bit.
+#define SERIAL_BAUDRATE       57600
+
+// Defines the char which will represent a null buffer value, do not change this.
+#define SERIAL_NO_DATA        0xff
 
 
-#define HEATER_0_PIN 5
-#define HEATER_1_PIN 6
-#define HEATER_2_PIN 7
-#define HEATER_3_PIN 8
+#define COMMAND_BUFFER_SIZE   16
 
-#define THERMISTOR_NOMINAL_TEMP      25.0
-#define THERMISTOR_BCOEFFICIENT    3950.0
-#define THERMISTOR_NOMINAL_VAL    10000.0
-#define THERMISTOR_SERIESRESISTOR 10000.0
+/*
+ * Timer1 heartbeat in milliseconds
+ * Note: Changing the value here is not enough, timer1 must be updated also.
+ */
+#define HEARTBEAT 50
 
-#define THERMISTOR_MAX_TEMP  50
-#define THERMISTOR_MIN_TEMP -50
-#define THERMISTOR_ERR_TEMP -273
 
+// ----------------------------------------------------------------------------
+// OUTPUT CHANNEL configuration -----------------------------------------------
+// ----------------------------------------------------------------------------
+
+// Defines the number of heater outputs supported by this configuration, it
+// should be defined as a integer value between 1 and 4.
+// (PWM: 3, 5, 6, 9, 10, and 11)
+#define NUM_OUTPUT_CHANNELS 4
 
 #endif

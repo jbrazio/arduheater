@@ -1,5 +1,5 @@
 /**
- * Arduheater - Telescope heat controller
+ * Arduheater - Heat controller for astronomy usage
  * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,7 @@
 #ifndef __PRINT_H__
 #define __PRINT_H__
 
-#include "common.h"
+#include "arduheater.h"
 
 namespace serial {
   namespace print {
@@ -36,9 +36,11 @@ namespace serial {
         ++s;
       }
     }
+  }
+};
 
-    void banner();
-
+namespace serial {
+  namespace print {
     namespace chr {
       inline void eol() {
         serial::print::PGM(string_eol);
@@ -64,150 +66,10 @@ namespace serial {
         serial::print::PGM(string_zero);
       }
     }
-
-    void number(uint32_t n, const uint8_t& base, const uint8_t& digits);
-
-    inline void number(const uint32_t& n, const uint8_t& base) {
-      if (!n) {
-        serial::print::chr::zero();
-        return;
-      }
-
-      uint32_t c = n;
-      uint8_t digits = 0;
-      while (c) { c /= 10; digits++; }
-      serial::print::number(n, base, digits);
-    }
-
-    // uint8: 0 to 255
-    inline void uint8(const uint8_t& n) {
-      uint8_t digits = 3;
-      if (n < 10) { digits = 1; }
-      else if (n < 100) { digits = 2; }
-      serial::print::number(n, 10, digits);
-    }
-
-    // int8: -127 to 127
-    inline void int8(const int8_t& n) {
-      if (n < 0) {
-        serial::print::chr::minus();
-        serial::print::uint8(-n);
-      } else serial::print::uint8(n);
-    }
-
-    // uint16: 0 to 65535
-    inline void uint16(const uint16_t& n) {
-      serial::print::number(n, 10);
-    }
-
-    // int16: -32768 to 32767
-    inline void int16(const int16_t& n) {
-      if (n < 0) {
-        serial::print::chr::minus();
-        serial::print::uint16(-n);
-      } else serial::print::uint16(n);
-    }
-
-    // uint32: 0 to 4294967295L
-    inline void uint32(const uint32_t& n) {
-      serial::print::number(n, 10);
-    }
-
-    // int32: -2147483648L to 2147483647L
-    inline void int32(const int32_t& n) {
-      if (n < 0) {
-        serial::print::chr::minus();
-        serial::print::uint32(-n);
-      } else serial::print::uint32(n);
-    }
-
-    void float32(float n, const uint8_t& decimal_places);
-
-    namespace base2 {
-      inline void uint8(const uint8_t& n) {
-        serial::print::number(n, 2, 8);
-      }
-
-      inline void int8(const int8_t& n) {
-        serial::print::number(n, 2, 8);
-      }
-
-      inline void uint16(const uint16_t& n) {
-        serial::print::number(n, 2, 16);
-      }
-
-      inline void int16(const int16_t& n) {
-        serial::print::number(n, 2, 16);
-      }
-
-      inline void uint32(const uint32_t& n) {
-        serial::print::number(n, 2, 32);
-      }
-
-      inline void int32(const int32_t& n) {
-        serial::print::number(n, 2, 32);
-      }
-    }
-
-    namespace pair {
-      inline void uint8(const char* s, const uint8_t& n) {
-        serial::print::PGM(s);
-        serial::print::chr::colon();
-        serial::print::chr::space();
-        serial::print::uint8(n);
-        serial::print::chr::eol();
-      }
-
-      inline void int8(const char* s, const int8_t& n) {
-        serial::print::PGM(s);
-        serial::print::chr::colon();
-        serial::print::chr::space();
-        serial::print::int8(n);
-        serial::print::chr::eol();
-      }
-
-      inline void uint16(const char* s, const uint16_t& n) {
-        serial::print::PGM(s);
-        serial::print::chr::colon();
-        serial::print::chr::space();
-        serial::print::uint16(n);
-        serial::print::chr::eol();
-      }
-
-      inline void int16(const char* s, const int16_t& n) {
-        serial::print::PGM(s);
-        serial::print::chr::colon();
-        serial::print::chr::space();
-        serial::print::int16(n);
-        serial::print::chr::eol();
-      }
-
-      inline void uint32(const char* s, const uint32_t& n) {
-        serial::print::PGM(s);
-        serial::print::chr::colon();
-        serial::print::chr::space();
-        serial::print::uint32(n);
-        serial::print::chr::eol();
-      }
-
-      inline void int32(const char* s, const int32_t& n) {
-        serial::print::PGM(s);
-        serial::print::chr::colon();
-        serial::print::chr::space();
-        serial::print::int32(n);
-        serial::print::chr::eol();
-      }
-
-      inline void float32(const char* s, float n, const uint8_t& decimal_places) {
-        serial::print::PGM(s);
-        serial::print::chr::colon();
-        serial::print::chr::space();
-        serial::print::float32(n, decimal_places);
-        serial::print::chr::eol();
-      }
-    }
   }
+};
 
+namespace serial {
   namespace println {
     inline void string(const char* s) {
       serial::print::string(s);
@@ -217,77 +79,6 @@ namespace serial {
     inline void PGM(const char* s) {
       serial::print::PGM(s);
       serial::print::chr::eol();
-    }
-
-    inline void number(uint32_t n, const uint8_t& base, const uint8_t& digits) {
-      serial::print::number(n, base, digits);
-      serial::print::chr::eol();
-    }
-
-    inline void number(const uint32_t& n, const uint8_t& base) {
-      serial::print::number(n, base);
-      serial::print::chr::eol();
-    }
-
-    inline void uint8(const uint8_t& n) {
-      serial::print::uint8(n);
-      serial::print::chr::eol();
-    }
-
-    inline void int8(const int8_t& n) {
-      serial::print::int8(n);
-      serial::print::chr::eol();
-    }
-
-    inline void uint16(const uint16_t& n) {
-      serial::print::uint16(n);
-      serial::print::chr::eol();
-    }
-
-    inline void int16(const int16_t& n) {
-      serial::print::int16(n);
-      serial::print::chr::eol();
-    }
-
-    inline void uint32(const uint32_t& n) {
-      serial::print::uint32(n);
-      serial::print::chr::eol();
-    }
-
-    inline void int32(const int32_t& n) {
-      serial::print::int32(n);
-      serial::print::chr::eol();
-    }
-
-    inline void float32(float n, const uint8_t& decimal_places) {
-      serial::print::float32(n, decimal_places);
-      serial::print::chr::eol();
-    }
-
-    namespace base2 {
-      inline void uint8(const uint8_t& n) {
-        serial::print::uint8(n);
-      }
-
-      inline void int8(const int8_t& n) {
-        serial::print::int8(n);
-      }
-
-      inline void uint16(const uint16_t& n) {
-        serial::print::uint16(n);
-      }
-
-      inline void int16(const int16_t& n) {
-        serial::print::int16(n);
-      }
-
-      inline void uint32(const uint32_t& n) {
-        serial::print::uint32(n);
-      }
-
-      inline void int32(const int32_t& n) {
-        serial::print::int32(n);
-      }
     }
   }
 };

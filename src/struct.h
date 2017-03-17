@@ -1,5 +1,5 @@
 /**
- * Arduheater - Telescope heat controller
+ * Arduheater - Heat controller for astronomy usage
  * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,42 +20,19 @@
 #ifndef __STRUCT_H__
 #define __STRUCT_H__
 
-#include "common.h"
-
-struct message_t {
-  msg_category_t category;
-  union {
-    bool       bol; // boolean
-    float        f; // float
-    int32_t     dw; // double word
-    uint32_t   udw; // unsigned double word
-    int16_t   w[2]; // word
-    uint16_t uw[2]; // unsigned word
-    int8_t    b[4]; // byte
-    uint8_t  ub[4]; // unsigned byte
-  } data[2];
+struct system_t {
+  uint8_t state;
+  uint8_t status;
 };
 
-struct key_t {
-  int8_t     pin;
-  keypress_t state;
-  uint8_t    timeout;
+struct serial_buffer_t {
+  CircularQueue<uint8_t, SERIAL_RX_BUFFER_SIZE> rx;
+  CircularQueue<uint8_t, SERIAL_TX_BUFFER_SIZE> tx;
 };
 
-/*
- * Heartbeat timer
- * TODO: We need a better name for this
- */
-struct hb_timer_t {
-  // uint16_t will allow up to ~65s periods but due to the way we do time
-  // accounting the max value is capped to ~32s.
-  uint16_t period;
-  int16_t  timeleft;
-};
-
-struct tick_timer_t {
-  uint8_t period;
-  uint8_t ticks;
+struct adc_t {
+  uint8_t channel;
+  int16_t value;
 };
 
 #endif

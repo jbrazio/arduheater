@@ -1,5 +1,5 @@
 /**
- * Arduheater - Telescope heat controller
+ * Arduheater - Heat controller for astronomy usage
  * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,7 @@
 #ifndef __CIRCULARQUEUE_H__
 #define __CIRCULARQUEUE_H__
 
-#include "common.h"
+#include "arduheater.h"
 
 /**
  * @brief   Circular Queue class

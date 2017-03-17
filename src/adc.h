@@ -17,20 +17,14 @@
  *
  */
 
-#ifndef __SERIAL_H__
-#define __SERIAL_H__
+#ifndef __ADC_H__
+#define __ADC_H__
 
-#include "arduheater.h"
+namespace adc {
+  extern adc_t runtime;
 
-namespace serial {
-  bool    available();
-  uint8_t read();
-  void    write(const uint8_t& c);
-
-  void    banner();
-  void    process();
-
-  extern serial_buffer_t buffer;
+  void selchan(const uint8_t& channel);
+  void update();
 };
 
 #endif

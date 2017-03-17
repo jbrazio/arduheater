@@ -1,5 +1,5 @@
 /**
- * Arduheater - Heat controller for astronomy usage
+ * Arduheater - Telescope heat controller
  * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,17 +20,31 @@
 #ifndef __SERIAL_H__
 #define __SERIAL_H__
 
-#include "arduheater.h"
+#include "common.h"
+
+#ifndef RX_BUFFER_SIZE
+  #define RX_BUFFER_SIZE 16
+#endif
+
+#ifndef TX_BUFFER_SIZE
+  #define TX_BUFFER_SIZE 64
+#endif
+
+#ifndef BAUDRATE
+  #define BAUDRATE 57600
+#endif
+
+#ifndef SERIAL_NO_DATA
+  #define SERIAL_NO_DATA 0xff
+#endif
 
 namespace serial {
-  bool    available();
+  extern CircularQueue<uint8_t, RX_BUFFER_SIZE> rx_buffer;
+  extern CircularQueue<uint8_t, TX_BUFFER_SIZE> tx_buffer;
+
   uint8_t read();
-  void    write(const uint8_t& c);
-
-  void    banner();
-  void    process();
-
-  extern serial_buffer_t buffer;
+  void    init();
+  void    write(const uint8_t& s);
 };
 
 #endif

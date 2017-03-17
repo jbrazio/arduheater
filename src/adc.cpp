@@ -17,20 +17,18 @@
  *
  */
 
-#ifndef __SERIAL_H__
-#define __SERIAL_H__
-
 #include "arduheater.h"
 
-namespace serial {
-  bool    available();
-  uint8_t read();
-  void    write(const uint8_t& c);
+adc_t adc::runtime;
 
-  void    banner();
-  void    process();
+void adc::selchan(const uint8_t& channel) {
+  sys.state &= ~(STATE_ADC_COMPLETE);
 
-  extern serial_buffer_t buffer;
-};
+  runtime.channel = channel;  // store the active channel
+  runtime.value = -1;         // reset last reading
+  ADMUX = (channel & 0x07);   // select adc channel
+}
 
-#endif
+void adc::update() {
+  ADCSRA |= bit(ADSC) | bit(ADIE);
+}

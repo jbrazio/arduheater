@@ -17,20 +17,36 @@
  *
  */
 
-#ifndef __SERIAL_H__
-#define __SERIAL_H__
+#ifndef __ARDUHEATER_H__
+#define __ARDUHEATER_H__
 
-#include "arduheater.h"
+ // Program version and release
+#define ARDUHEATER_VERSION "0.1a"
+#define ARDUHEATER_VERSION_BUILD "20170316"
 
-namespace serial {
-  bool    available();
-  uint8_t read();
-  void    write(const uint8_t& c);
+// Define standard libraries used by Arduheater
+#include <avr/io.h>
+#include <avr/pgmspace.h>
+#include <avr/interrupt.h>
+//#include <avr/wdt.h>
+//#include <util/delay.h>
+//#include <math.h>
+//#include <inttypes.h>
+#include <string.h>
+#include <stdlib.h>
+//#include <stdint.h>
+//#include <stdbool.h>
 
-  void    banner();
-  void    process();
-
-  extern serial_buffer_t buffer;
-};
+// Define the Arduheater system include files.
+// NOTE: Do not alter organization.
+#include "config.h"
+#include "macros.h"
+#include "ringbuf.h"
+#include "struct.h"
+#include "system.h"
+#include "serial.h"
+#include "strings.h"
+#include "print.h"
+#include "adc.h"
 
 #endif

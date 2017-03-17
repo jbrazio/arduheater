@@ -32,10 +32,7 @@ public:
   typedef Singleton<thermistor> single;
 
 public:
-  thermistor(): Sensor(
-    THERMISTOR_WARMUP_TIME,
-    THERMISTOR_SLEEP_TIME,
-    THERMISTOR_REFRESH_TIME)
+  thermistor(): Sensor(THERMISTOR_WARMUP_TIME, THERMISTOR_SLEEP_TIME, THERMISTOR_REFRESH_TIME)
   {
     ADCSRA  = bit(ADEN);                               // activate the ADC
     ADCSRA |= bit(ADPS0)  |  bit(ADPS1) | bit(ADPS2);  // with prescaler of 128
@@ -57,7 +54,6 @@ protected:
 
 public:
   inline float get_temperature(const uint8_t& channel) { return m_cache[channel]; }
-  inline void irq() { Sensor::irq(); }
 
 public:
   void isr(int16_t reading);

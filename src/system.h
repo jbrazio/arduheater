@@ -17,20 +17,25 @@
  *
  */
 
-#ifndef __SERIAL_H__
-#define __SERIAL_H__
+#ifndef __SYSTEM_H__
+#define __SYSTEM_H__
 
 #include "arduheater.h"
 
-namespace serial {
-  bool    available();
-  uint8_t read();
-  void    write(const uint8_t& c);
+// Arduheater state machine bit map -------------------------------------------
+#define STATE_RUNNING       bit(0)
+#define STATE_ADC_COMPLETE  bit(1)
 
-  void    banner();
-  void    process();
+// Internal module status bit map ---------------------------------------------
+// Each bit represents a boolean status for the module readiness
+#define STATUS_SERIAL_READY   bit(0)  // bitmask 00000001
+#define STATUS_ISR_READY      bit(1)  // bitmask 00000010
+#define STATUS_KEYPAD_READY   bit(2)  // bitmask 00000100
+#define STATUS_LCD_READY      bit(3)  // bitmask 00001000
+#define STATUS_AMBIENT_READY  bit(4)  // bitmask 00010000
+#define STATUS_HEATER_READY   bit(5)  // bitmask 00100000
+#define STATUS_THERMAL_READY  bit(6)  // bitmask 01000000
 
-  extern serial_buffer_t buffer;
-};
+extern system_t sys;
 
 #endif

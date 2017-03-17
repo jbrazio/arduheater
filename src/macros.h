@@ -1,5 +1,5 @@
 /**
- * Arduheater - Telescope heat controller
+ * Arduheater - Heat controller for astronomy usage
  * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,20 +20,8 @@
 #ifndef __MACROS_H__
 #define __MACROS_H__
 
-#include "common.h"
+#include "arduheater.h"
 
-#define array_size(a) sizeof(a) / sizeof(*a)
-
-/*
-serial::print::string(__PRETTY_FUNCTION__); \
-serial::print::chr::space(); \
-*/
-
-#ifdef VERBOSE
-  #define DEBUGPRN(a, b) do { \
-    if (a <= VERBOSE) { serial::println::PGM(PSTR(b)); }} while(0)
-#else
-  #define DEBUGPRN(a, b) do {} while(0)
-#endif
+#define bit(n) (1 << n)
 
 #endif

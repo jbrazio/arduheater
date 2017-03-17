@@ -1,5 +1,5 @@
 /**
- * Arduheater - Telescope heat controller
+ * Arduheater - Heat controller for astronomy usage
  * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,47 +17,100 @@
  *
  */
 
-#include "common.h"
+#include "arduheater.h"
 
-void setup() {
+// Declare system global variable structure
+system_t sys;
+
+int main(void)
+{
   DDRB |= 0x20; // Enable D13 as output
+  memset(&sys, 0, sizeof(system_t));  // Clear all system variables
 
-  pinMode(HEATER_0_PIN, OUTPUT);
-  pinMode(HEATER_1_PIN, OUTPUT);
-  pinMode(HEATER_2_PIN, OUTPUT);
-  pinMode(HEATER_3_PIN, OUTPUT);
+  // --------------------------------------------------------------------------
+  // Serial port init routine -------------------------------------------------
+  // --------------------------------------------------------------------------
+  #if SERIAL_BAUDRATE < 57600
+    uint16_t UBRR0_value = ((F_CPU / (8L * SERIAL_BAUDRATE)) - 1) /2;
+    UCSR0A &= ~bit(U2X0); // baud doubler off (required by UNO)
+  #else
+    uint16_t UBRR0_value = ((F_CPU / (4L * SERIAL_BAUDRATE)) - 1) /2;
+    UCSR0A |= bit(U2X0);  // baud doubler on for high baud rates
+  #endif
 
-  ui::single::instance().show(CARD_SPLASH);
+  // set baudrate
+  UBRR0H = UBRR0_value >> 8;
+  UBRR0L = UBRR0_value;
 
-  serial::init();
-  timer1::init();
+  // enable rx and tx
+  UCSR0B |= bit(RXEN0);
+  UCSR0B |= bit(TXEN0);
 
-  serial::print::banner();
+  // enable interrupt on complete reception of a byte
+  UCSR0B |= bit(RXCIE0);
 
-  keypad::single::instance().attach(&runtime::single::instance());
-  DHT22::single::instance().attach(&runtime::single::instance());
-  thermistor::single::instance().attach(&runtime::single::instance());
+  // set serial status as ready
+  sys.status |= STATUS_SERIAL_READY;
 
-  for (size_t i = 0; i < 1; i++) {
-    runtime::single::instance().heater[i].pid.setpoint(50);
-    runtime::single::instance().heater[i].pid.tune(25.00, 00.20, 15.00);
-    //p->pid.mode(PID::AUTOMATIC);
+
+  // --------------------------------------------------------------------------
+  // Timer1 ISR init routine --------------------------------------------------
+  // --------------------------------------------------------------------------
+  TCCR1A  = TCCR1B = TCNT1 = 0;         // clears timer1 registers
+  OCR1A   = 0xC35;                      // sets the frequency to 20Hz
+  TCCR1B |= bit(WGM12) | bit(CS12);     // enable CTC mode with a 256 prescaler
+  TIMSK1 |= bit(OCIE1A);                // enable the compare interrupt
+
+
+  // --------------------------------------------------------------------------
+  // ADC init routine ---------------------------------------------------------
+  // --------------------------------------------------------------------------
+  ADCSRA  = bit(ADEN);                            // activate the ADC
+  ADCSRA |= bit(ADPS0) | bit(ADPS1) | bit(ADPS2); // with prescaler of 128
+  ADMUX   = bit(REFS0) | bit(REFS1);              // select aref 1.1V
+
+  #if NUM_OUTPUT_CHANNELS == 1
+    // disable digital buffer from A1 to A3
+    DIDR0 |= ADC1D | ADC2D | ADC3D;
+  #elif NUM_OUTPUT_CHANNELS == 2
+    // disable digital buffer from A2 to A3
+    DIDR0 |= ADC2D | ADC3D;
+  #elif NUM_OUTPUT_CHANNELS == 3
+    // disable digital buffer on A3
+    DIDR0 |= ADC3D;
+  #endif
+
+  // disable digital buffer from A4 to A5
+  DIDR0 |= ADC4D | ADC5D;
+
+  // clears the ADC runtime structure
+  memset(&adc::runtime, 0, sizeof(adc_t));
+
+
+  // --------------------------------------------------------------------------
+  // Enable interrupts --------------------------------------------------------
+  // --------------------------------------------------------------------------
+  sei();
+
+  // set ISR status as ready
+  sys.status |= STATUS_ISR_READY;
+
+
+  // --------------------------------------------------------------------------
+  // Miscellaneous ------------------------------------------------------------
+  // --------------------------------------------------------------------------
+  serial::banner();
+
+
+  // --------------------------------------------------------------------------
+  // Loop routine -------------------------------------------------------------
+  // --------------------------------------------------------------------------
+  for(;;) {
+
+    serial::process();
+
   }
 
-  /*while(runtime::single::instance().ambient.t() == 0
-    || runtime::single::instance().ambient.rh() == 0
-    || ! runtime::single::instance().heater[3].t.full()) {;}*/
-
-  ui::single::instance().show(CARD_HOME);
-}
-
-void loop() {
-  uint32_t now = millis();
-  static unsigned long wait_ui = now;
-
-  if ((uint32_t) (now >= wait_ui)) {
-    wait_ui = now + 1000L;
-  }
-
-  ui::single::instance().draw();
+  // We should not reach this
+  return 0;
 }
