@@ -20,7 +20,8 @@
 #ifndef __ADC_H__
 #define __ADC_H__
 
-namespace adc {
+namespace adc
+{
   extern adc_t runtime;
 
   void selchan(const uint8_t& channel);

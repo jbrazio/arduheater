@@ -17,17 +17,20 @@
  *
  */
 
-#ifndef __MACROS_H__
-#define __MACROS_H__
+#ifndef __ENUM_H__
+#define __ENUM_H__
 
 #include "arduheater.h"
 
-#ifndef bit
-  #define bit(n) (1 << n)
-#endif
-
-#ifndef array_size
-  #define array_size(a) (sizeof(a) / sizeof(*a))
-#endif
+enum sensor_state_t
+{
+  SENSOR_UNKNOWN,
+  SENSOR_WARMUP,
+  SENSOR_READY,
+  SENSOR_BUSY,
+  SENSOR_SLEEP,
+  SENSOR_TIMEOUT,
+  SENSOR_ERROR,
+};
 
 #endif

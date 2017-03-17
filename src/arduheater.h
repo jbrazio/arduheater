@@ -30,23 +30,41 @@
 #include <avr/interrupt.h>
 //#include <avr/wdt.h>
 //#include <util/delay.h>
-//#include <math.h>
+#include <math.h>
 //#include <inttypes.h>
 #include <string.h>
 #include <stdlib.h>
 //#include <stdint.h>
 //#include <stdbool.h>
 
+#include <Arduino.h>
+
+// Cleanup some Arduino stuff
+#undef SERIAL_RX_BUFFER_SIZE
+#undef SERIAL_TX_BUFFER_SIZE
+
 // Define the Arduheater system include files.
 // NOTE: Do not alter organization.
 #include "config.h"
 #include "macros.h"
 #include "ringbuf.h"
+#include "types.h"
+#include "enum.h"
 #include "struct.h"
+#include "utils.h"
 #include "system.h"
 #include "serial.h"
 #include "strings.h"
 #include "print.h"
+#include "movingmean.h"
 #include "adc.h"
+#include "sensor.h"
+#include "thermistor.h"
+#include "dht22.h"
+
+
+extern system_t     sys;
+extern thermistor   ntc;
+extern dht22        amb;
 
 #endif

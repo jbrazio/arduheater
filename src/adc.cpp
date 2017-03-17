@@ -21,14 +21,16 @@
 
 adc_t adc::runtime;
 
-void adc::selchan(const uint8_t& channel) {
-  sys.state &= ~(STATE_ADC_COMPLETE);
+void adc::selchan(const uint8_t& channel)
+{
+  sys.state &= ~(ADC_READING_DONE);
 
-  runtime.channel = channel;  // store the active channel
-  runtime.value = -1;         // reset last reading
-  ADMUX = (channel & 0x07);   // select adc channel
+  runtime.channel = channel;                            // store the active channel
+  runtime.value = -1;                                   // reset last reading
+  ADMUX = bit (REFS0) | bit (REFS1) | (channel & 0x07); // select aref 1.1V and adc channel
 }
 
-void adc::update() {
+void adc::update()
+{
   ADCSRA |= bit(ADSC) | bit(ADIE);
 }

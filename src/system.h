@@ -22,9 +22,15 @@
 
 #include "arduheater.h"
 
+/*
+ * Timer1 heartbeat in milliseconds
+ * Note: Changing the value here is not enough, timer1 must be updated also.
+ */
+#define HEARTBEAT 50
+
 // Arduheater state machine bit map -------------------------------------------
-#define STATE_RUNNING       bit(0)
-#define STATE_ADC_COMPLETE  bit(1)
+#define RUNNING             bit(0)  // bitmask 00000001
+#define ADC_READING_DONE    bit(1)  // bitmask 00000010
 
 // Internal module status bit map ---------------------------------------------
 // Each bit represents a boolean status for the module readiness
@@ -36,6 +42,9 @@
 #define STATUS_HEATER_READY   bit(5)  // bitmask 00100000
 #define STATUS_THERMAL_READY  bit(6)  // bitmask 01000000
 
-extern system_t sys;
+// Sensor bit map -------------------------------------------------------------
+#define SENSOR_NEEDS_WARMUP   bit(0)  // bitmask 00000001
+#define SENSOR_NEEDS_SLEEP    bit(1)  // bitmask 00000010
+#define SENSOR_NEEDS_REFRESH  bit(2)  // bitmask 00000100
 
 #endif

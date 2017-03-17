@@ -17,17 +17,29 @@
  *
  */
 
-#ifndef __MACROS_H__
-#define __MACROS_H__
+#ifndef __DHT22_H__
+#define __DHT22_H__
 
 #include "arduheater.h"
 
-#ifndef bit
-  #define bit(n) (1 << n)
-#endif
+#define DHT22_WARMUP_TIME   3000L
+#define DHT22_SLEEP_TIME    1999L
+#define DHT22_REFRESH_TIME  5000L
 
-#ifndef array_size
-  #define array_size(a) (sizeof(a) / sizeof(*a))
-#endif
+class dht22: public sensor
+{
+public:
+  dht22();
+
+protected:
+  movingmean<float, 10> m_cache[2];
+
+public:
+  inline float t()  { return m_cache[0](); }
+  inline float rh() { return m_cache[1](); }
+
+public:
+  bool hwupdate();
+};
 
 #endif

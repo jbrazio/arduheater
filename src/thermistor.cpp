@@ -17,17 +17,32 @@
  *
  */
 
-#ifndef __MACROS_H__
-#define __MACROS_H__
-
 #include "arduheater.h"
 
-#ifndef bit
-  #define bit(n) (1 << n)
-#endif
+// TODO: Build a thermal protection system
 
-#ifndef array_size
-  #define array_size(a) (sizeof(a) / sizeof(*a))
-#endif
+thermistor::thermistor()
+  : sensor(THERMISTOR_WARMUP_TIME, THERMISTOR_SLEEP_TIME, THERMISTOR_REFRESH_TIME)
+{
+  m_active_channel = 0;
+}
 
-#endif
+bool thermistor::hwupdate()
+{
+  m_state = SENSOR_BUSY;          // mark the hw as busy
+  adc::selchan(m_active_channel); // select the adc channel
+  adc::update();                  // trigger an adc update
+  return false;                   // waiting for the adc to get a reading
+}
+
+bool thermistor::hwbusy()
+{
+  if (m_state == SENSOR_BUSY) {
+    if (sys.state & ADC_READING_DONE) {
+      m_cache[m_active_channel](adc::runtime.value);
+      m_active_channel = (m_active_channel +1) % NUM_OUTPUT_CHANNELS;
+      return true; // the hw update is complete
+    }
+  }
+  return false; // the hw update is not complete
+}

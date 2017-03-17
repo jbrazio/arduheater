@@ -20,19 +20,30 @@
 #ifndef __STRUCT_H__
 #define __STRUCT_H__
 
-struct system_t {
-  uint8_t state;
-  uint8_t status;
+#include "arduheater.h"
+
+struct system_t
+{
+  flag_t state;
+  flag_t status;
 };
 
-struct serial_buffer_t {
-  CircularQueue<uint8_t, SERIAL_RX_BUFFER_SIZE> rx;
-  CircularQueue<uint8_t, SERIAL_TX_BUFFER_SIZE> tx;
+struct serial_buffer_t
+{
+  ringbuf<uint8_t, SERIAL_RX_BUFFER_SIZE> rx;
+  ringbuf<uint8_t, SERIAL_TX_BUFFER_SIZE> tx;
 };
 
-struct adc_t {
+struct adc_t
+{
   uint8_t channel;
   int16_t value;
+};
+
+struct ticker_t
+{
+  uint8_t period;
+  uint8_t ticks;
 };
 
 #endif

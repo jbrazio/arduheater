@@ -17,17 +17,25 @@
  *
  */
 
-#ifndef __MACROS_H__
-#define __MACROS_H__
-
 #include "arduheater.h"
 
-#ifndef bit
-  #define bit(n) (1 << n)
-#endif
+// WARNING: max 12750ms as input
+uint8_t utils::msectotick(const uint16_t& ms)
+{
+  return (ms / HEARTBEAT);
+}
 
-#ifndef array_size
-  #define array_size(a) (sizeof(a) / sizeof(*a))
-#endif
+float utils::steinhart(uint16_t raw)
+{
+  if (raw > 1023) { raw = 1023; }
 
-#endif
+  float steinhart;
+  steinhart  = THERMISTOR_SERIESRESISTOR / (1023.0 / raw - 1);  // convert raw to ohms
+  steinhart  = steinhart / THERMISTOR_NOMINAL_VAL;              // (R/Ro)
+  steinhart  = log(steinhart);                                  // ln(R/Ro)
+  steinhart /= THERMISTOR_BCOEFFICIENT;                         // 1/B * ln(R/Ro)
+  steinhart += 1.0 / (THERMISTOR_NOMINAL_TEMP + 273.15);        // + (1/To)
+  steinhart  = 1.0 / steinhart;                                 // invert
+  steinhart -= 273.15;                                          // convert to K to C
+  return steinhart;
+}

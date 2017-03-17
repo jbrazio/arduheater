@@ -20,7 +20,9 @@
 #include "arduheater.h"
 
 // Declare system global variable structure
-system_t sys;
+system_t    sys;
+thermistor  ntc;
+dht22       amb;
 
 int main(void)
 {
@@ -90,17 +92,22 @@ int main(void)
   // --------------------------------------------------------------------------
   // Enable interrupts --------------------------------------------------------
   // --------------------------------------------------------------------------
-  sei();
+  sei();                          // enable them all
+  sys.status |= STATUS_ISR_READY; // set ISR status as ready
 
-  // set ISR status as ready
-  sys.status |= STATUS_ISR_READY;
+
+  // --------------------------------------------------------------------------
+  // Thermal ------------------------------------------------------------------
+  // --------------------------------------------------------------------------
+  ntc.init();
+  sys.status |= STATUS_THERMAL_READY;
 
 
   // --------------------------------------------------------------------------
   // Miscellaneous ------------------------------------------------------------
   // --------------------------------------------------------------------------
   serial::banner();
-
+  amb.init();
 
   // --------------------------------------------------------------------------
   // Loop routine -------------------------------------------------------------
@@ -109,6 +116,18 @@ int main(void)
 
     serial::process();
 
+    static uint16_t counter = 0;
+    ++counter;
+
+    if (counter == 0) {
+      serial::print::pair::float32(PSTR("ntc0"), ntc.t(0), 2);
+      serial::print::pair::float32(PSTR("ntc1"), ntc.t(1), 2);
+      serial::print::pair::float32(PSTR("ntc2"), ntc.t(2), 2);
+      serial::print::pair::float32(PSTR("ntc3"), ntc.t(3), 2);
+
+      serial::print::pair::float32(PSTR("t"), amb.t(), 2);
+      serial::print::pair::float32(PSTR("rh"), amb.rh(), 2);
+    }
   }
 
   // We should not reach this

@@ -43,12 +43,6 @@
 
 #define COMMAND_BUFFER_SIZE   16
 
-/*
- * Timer1 heartbeat in milliseconds
- * Note: Changing the value here is not enough, timer1 must be updated also.
- */
-#define HEARTBEAT 50
-
 
 // ----------------------------------------------------------------------------
 // OUTPUT CHANNEL configuration -----------------------------------------------
@@ -58,5 +52,24 @@
 // should be defined as a integer value between 1 and 4.
 // (PWM: 3, 5, 6, 9, 10, and 11)
 #define NUM_OUTPUT_CHANNELS 4
+
+
+// ----------------------------------------------------------------------------
+// THERMISTOR configuration ---------------------------------------------------
+// ----------------------------------------------------------------------------
+#define THERMISTOR_NOMINAL_TEMP      25.0
+#define THERMISTOR_BCOEFFICIENT    3950.0
+#define THERMISTOR_NOMINAL_VAL    10000.0
+#define THERMISTOR_SERIESRESISTOR 10000.0
+
+#define THERMISTOR_MAX_TEMP  50
+#define THERMISTOR_MIN_TEMP -50
+#define THERMISTOR_ERR_TEMP -273
+
+
+
+
+
+#define AMBIENT_DHT22_PIN 7
 
 #endif

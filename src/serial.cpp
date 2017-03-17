@@ -22,15 +22,18 @@
 // RX/TX buffer structure
 serial_buffer_t serial::buffer;
 
-bool serial::available() {
+bool serial::available()
+{
   return (! serial::buffer.rx.empty());
 }
 
-uint8_t serial::read() {
+uint8_t serial::read()
+{
   return (buffer.rx.empty()) ? SERIAL_NO_DATA : buffer.rx.dequeue();
 }
 
-void serial::write(const uint8_t& c) {
+void serial::write(const uint8_t& c)
+{
   // wait until there is space in the buffer
   while (!buffer.tx.enqueue(c)) {
     // at this point interrupts are disabled so we need to
@@ -54,11 +57,13 @@ void serial::write(const uint8_t& c) {
 }
 
 
-void serial::banner() {
+void serial::banner()
+{
   serial::println::PGM(PSTR("Arduheater " ARDUHEATER_VERSION " ['$' for help]"));
 }
 
-void serial::process() {
+void serial::process()
+{
   static size_t pos = 0;
   static char   buffer[COMMAND_BUFFER_SIZE];
 

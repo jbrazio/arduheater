@@ -26,7 +26,8 @@
  * @brief   Circular Queue class
  * @details Implementation of the classic ring buffer data structure
  */
-template<typename T, uint8_t N> class  CircularQueue {
+template<typename T, uint8_t N> class ringbuf
+{
 private:
   /**
    * @brief   Buffer structure
@@ -46,7 +47,8 @@ public:
    *          of item this queue will handle and N defines the maximum number of
    *          items that can be stored on the queue.
    */
-  CircularQueue() {
+  ringbuf()
+  {
     m_buffer.head = 0;
     m_buffer.tail = 0;
   }
@@ -58,7 +60,8 @@ public:
    * @param   item Item to be added to the queue
    * @return  true if the operation was successful
    */
-  bool enqueue(T const &item) {
+  bool enqueue(T const &item)
+  {
     if (full()) { return false; }
     m_buffer.queue[m_buffer.tail] = item;
     m_buffer.tail = (m_buffer.tail +1) % N;
@@ -101,7 +104,8 @@ public:
    *          buffer_t head field. The element is returned to the caller.
    * @return  type T element
    */
-  T dequeue() {
+  T dequeue()
+  {
     if (empty()) { return T(); }
     const T item = m_buffer.queue[m_buffer.head];
     m_buffer.head = (m_buffer.head +1) % N;

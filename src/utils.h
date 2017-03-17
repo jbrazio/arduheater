@@ -17,17 +17,15 @@
  *
  */
 
-#ifndef __MACROS_H__
-#define __MACROS_H__
+#ifndef __UTILS_H__
+#define __UTILS_H__
 
 #include "arduheater.h"
 
-#ifndef bit
-  #define bit(n) (1 << n)
-#endif
-
-#ifndef array_size
-  #define array_size(a) (sizeof(a) / sizeof(*a))
-#endif
+namespace utils
+{
+  uint8_t msectotick(const uint16_t& ms);
+  float   steinhart(uint16_t raw);
+};
 
 #endif

@@ -17,17 +17,32 @@
  *
  */
 
-#ifndef __MACROS_H__
-#define __MACROS_H__
+#ifndef __THERMISTOR_H__
+#define __THERMISTOR_H__
 
 #include "arduheater.h"
 
-#ifndef bit
-  #define bit(n) (1 << n)
-#endif
+#define THERMISTOR_WARMUP_TIME   500
+#define THERMISTOR_SLEEP_TIME    0
+#define THERMISTOR_REFRESH_TIME  1
 
-#ifndef array_size
-  #define array_size(a) (sizeof(a) / sizeof(*a))
-#endif
+class thermistor: public sensor
+{
+public:
+  thermistor();
+
+protected:
+  movingmean<int16_t, 10> m_cache[4];
+  uint8_t                 m_active_channel;
+
+public:
+  inline float t(const uint8_t& channel) {
+    return utils::steinhart(m_cache[channel]());
+  }
+
+public:
+  bool hwbusy();
+  bool hwupdate();
+};
 
 #endif

@@ -17,17 +17,9 @@
  *
  */
 
-#ifndef __MACROS_H__
-#define __MACROS_H__
+#ifndef __TYPES_H__
+#define __TYPES_H__
 
-#include "arduheater.h"
-
-#ifndef bit
-  #define bit(n) (1 << n)
-#endif
-
-#ifndef array_size
-  #define array_size(a) (sizeof(a) / sizeof(*a))
-#endif
+typedef uint8_t flag_t;
 
 #endif

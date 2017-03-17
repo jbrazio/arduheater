@@ -20,16 +20,25 @@
 #include "arduheater.h"
 
 // Timer1 interrupt handler
-ISR(TIMER1_COMPA_vect) {;}
+ISR(TIMER1_COMPA_vect)
+{
+  ntc.irq();
+  amb.irq();
+
+
+  if (amb.t() && amb.rh()) { sys.status |= STATUS_AMBIENT_READY; }
+}
 
 // Analog to Digital Converter interrupt handler
-ISR(ADC_vect) {
+ISR(ADC_vect)
+{
   adc::runtime.value = ADCW;
-  sys.state |= STATE_ADC_COMPLETE;
+  sys.state |= ADC_READING_DONE;
 }
 
 // Serial RX interrupt handler
-ISR(USART_RX_vect) {
+ISR(USART_RX_vect)
+{
   // check for parity errors
   if (bit_is_clear(UCSR0A, UPE0)) {
     uint8_t data = UDR0; // read a byte
@@ -46,7 +55,8 @@ ISR(USART_RX_vect) {
 }
 
 // Serial TX interrupt handler
-ISR(USART_UDRE_vect) {
+ISR(USART_UDRE_vect)
+{
   // send a byte from the buffer
   UDR0 = serial::buffer.tx.dequeue();
   UCSR0A |= bit(TXC0);

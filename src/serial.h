@@ -22,7 +22,8 @@
 
 #include "arduheater.h"
 
-namespace serial {
+namespace serial
+{
   bool    available();
   uint8_t read();
   void    write(const uint8_t& c);
