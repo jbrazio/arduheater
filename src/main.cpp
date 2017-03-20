@@ -19,15 +19,23 @@
 
 #include "arduheater.h"
 
-// Declare system global variable structure
-system_t    sys;
-thermistor  ntc;
-dht22       amb;
+// System global control structures
+volatile system_t    sys;
+         thermistor  ntc;
+         dht22       amb;
+         out_t       out[NUM_OUTPUTS];
 
 int main(void)
 {
   DDRB |= 0x20; // Enable D13 as output
-  memset(&sys, 0, sizeof(system_t));  // Clear all system variables
+  //memset(&sys, 0, sizeof(system_t));  // Clear all system variables
+
+  // --------------------------------------------------------------------------
+  // Enable interrupts --------------------------------------------------------
+  // --------------------------------------------------------------------------
+  init();                         // call ardunino interrupt init function
+  sys.status |= STATUS_ISR_READY; // set ISR status as ready
+
 
   // --------------------------------------------------------------------------
   // Serial port init routine -------------------------------------------------
@@ -90,43 +98,57 @@ int main(void)
 
 
   // --------------------------------------------------------------------------
-  // Enable interrupts --------------------------------------------------------
-  // --------------------------------------------------------------------------
-  sei();                          // enable them all
-  sys.status |= STATUS_ISR_READY; // set ISR status as ready
-
-
-  // --------------------------------------------------------------------------
-  // Thermal ------------------------------------------------------------------
+  // Sensor init --------------------------------------------------------------
   // --------------------------------------------------------------------------
   ntc.init();
-  sys.status |= STATUS_THERMAL_READY;
-
-
-  // --------------------------------------------------------------------------
-  // Miscellaneous ------------------------------------------------------------
-  // --------------------------------------------------------------------------
-  serial::banner();
   amb.init();
+
+
+  // --------------------------------------------------------------------------
+  // Outputs ------------------------------------------------------------------
+  // --------------------------------------------------------------------------
+  pinMode(HEATER_0_PIN, OUTPUT);
+  pinMode(HEATER_1_PIN, OUTPUT);
+  pinMode(HEATER_2_PIN, OUTPUT);
+  pinMode(HEATER_3_PIN, OUTPUT);
+
+  while (! (sys.status & STATUS_NTC0_READY)) {;}
+  serial::banner();
+  out[0].alg.autotune(0, 25, 5);
+
+  //analogWrite(HEATER_0_PIN, 255);
+  //while(true) {;}
+
 
   // --------------------------------------------------------------------------
   // Loop routine -------------------------------------------------------------
   // --------------------------------------------------------------------------
-  for(;;) {
+  serial::banner();
 
+
+  for(;;) {
     serial::process();
 
     static uint16_t counter = 0;
     ++counter;
 
     if (counter == 0) {
-      serial::print::pair::float32(PSTR("ntc0"), ntc.t(0), 2);
-      serial::print::pair::float32(PSTR("ntc1"), ntc.t(1), 2);
-      serial::print::pair::float32(PSTR("ntc2"), ntc.t(2), 2);
-      serial::print::pair::float32(PSTR("ntc3"), ntc.t(3), 2);
+      if (sys.status & STATUS_NTC0_READY)
+        serial::print::pair::float32(PSTR("ntc0"), ntc.t(0), 2);
 
-      serial::print::pair::float32(PSTR("t"), amb.t(), 2);
-      serial::print::pair::float32(PSTR("rh"), amb.rh(), 2);
+      if (sys.status & STATUS_NTC1_READY)
+        serial::print::pair::float32(PSTR("ntc1"), ntc.t(1), 2);
+
+      if (sys.status & STATUS_NTC2_READY)
+        serial::print::pair::float32(PSTR("ntc2"), ntc.t(2), 2);
+
+      if (sys.status & STATUS_NTC3_READY)
+        serial::print::pair::float32(PSTR("ntc3"), ntc.t(3), 2);
+
+      if (sys.status & STATUS_AMBIENT_READY) {
+        serial::print::pair::float32(PSTR("t"), amb.t(), 2);
+        serial::print::pair::float32(PSTR("rh"), amb.rh(), 2);
+      }
     }
   }
 

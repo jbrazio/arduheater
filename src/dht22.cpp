@@ -75,5 +75,9 @@ bool dht22::hwupdate() {
   // cache the received temperature data
   m_cache[0] += ((int16_t) t) * 0.1;
 
+  // update the global status for the ambient sensor
+  if (t && h) { sys.status |= STATUS_AMBIENT_READY; }
+  else { sys.status &= ~STATUS_AMBIENT_READY; }
+
   return true;
 }

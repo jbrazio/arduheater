@@ -30,4 +30,12 @@
   #define array_size(a) (sizeof(a) / sizeof(*a))
 #endif
 
+#ifndef no_more
+  #define no_more(var, high) do { if (var > high) var = high; } while(0)
+#endif
+
+#ifndef no_less
+  #define no_less(var, low) do { if (var < low) var = low; } while(0)
+#endif
+
 #endif

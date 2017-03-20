@@ -51,7 +51,7 @@
 // Defines the number of heater outputs supported by this configuration, it
 // should be defined as a integer value between 1 and 4.
 // (PWM: 3, 5, 6, 9, 10, and 11)
-#define NUM_OUTPUT_CHANNELS 4
+#define NUM_OUTPUTS 4
 
 
 // ----------------------------------------------------------------------------
@@ -62,12 +62,15 @@
 #define THERMISTOR_NOMINAL_VAL    10000.0
 #define THERMISTOR_SERIESRESISTOR 10000.0
 
-#define THERMISTOR_MAX_TEMP  50
-#define THERMISTOR_MIN_TEMP -50
-#define THERMISTOR_ERR_TEMP -273
+#define THERMISTOR_MAX_VAL   100  // 400 aka ~34C
+#define THERMISTOR_MIN_VAL   900  // ~(-13C)
+#define THERMISTOR_ERR_TEMP 1023
 
 
-
+#define HEATER_0_PIN 5
+#define HEATER_1_PIN 6
+#define HEATER_2_PIN 10
+#define HEATER_3_PIN 11
 
 
 #define AMBIENT_DHT22_PIN 7

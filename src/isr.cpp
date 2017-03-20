@@ -25,8 +25,9 @@ ISR(TIMER1_COMPA_vect)
   ntc.irq();
   amb.irq();
 
+  for (size_t i = 0; i < NUM_OUTPUTS; i++) { out[i].alg.irq(); }
 
-  if (amb.t() && amb.rh()) { sys.status |= STATUS_AMBIENT_READY; }
+  analogWrite(HEATER_0_PIN, out[0].alg.output());
 }
 
 // Analog to Digital Converter interrupt handler

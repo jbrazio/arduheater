@@ -47,12 +47,13 @@
 // NOTE: Do not alter organization.
 #include "config.h"
 #include "macros.h"
+#include "system.h"
 #include "ringbuf.h"
+#include "pid.h"
 #include "types.h"
 #include "enum.h"
 #include "struct.h"
 #include "utils.h"
-#include "system.h"
 #include "serial.h"
 #include "strings.h"
 #include "print.h"
@@ -62,9 +63,10 @@
 #include "thermistor.h"
 #include "dht22.h"
 
-
-extern system_t     sys;
-extern thermistor   ntc;
-extern dht22        amb;
+// System global control structures
+extern volatile system_t   sys;
+extern thermistor ntc;
+extern dht22      amb;
+extern out_t      out[NUM_OUTPUTS];
 
 #endif

@@ -39,8 +39,19 @@ bool thermistor::hwbusy()
 {
   if (m_state == SENSOR_BUSY) {
     if (sys.state & ADC_READING_DONE) {
-      m_cache[m_active_channel](adc::runtime.value);
-      m_active_channel = (m_active_channel +1) % NUM_OUTPUT_CHANNELS;
+      if (adc::runtime.value > THERMISTOR_MIN_VAL
+         || adc::runtime.value < THERMISTOR_MAX_VAL) {
+        // once we got a out of bounds reading set the cache to the error value
+        // by force resetting the smoothing algorithm.
+        m_cache[m_active_channel] = THERMISTOR_ERR_TEMP;
+        sys.status &= ~bit(m_active_channel + 4);
+
+      } else {
+        m_cache[m_active_channel](adc::runtime.value);
+        sys.status |= bit(m_active_channel + 4);
+      }
+
+      m_active_channel = (m_active_channel +1) % NUM_OUTPUTS;
       return true; // the hw update is complete
     }
   }

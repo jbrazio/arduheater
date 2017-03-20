@@ -266,27 +266,33 @@ namespace serial {
 
     namespace base2 {
       inline void uint8(const uint8_t& n) {
-        serial::print::uint8(n);
+        serial::print::number(n, 2, 8);
+        serial::print::chr::eol();
       }
 
       inline void int8(const int8_t& n) {
-        serial::print::int8(n);
+        serial::print::number(n, 2, 8);
+        serial::print::chr::eol();
       }
 
       inline void uint16(const uint16_t& n) {
-        serial::print::uint16(n);
+        serial::print::number(n, 2, 16);
+        serial::print::chr::eol();
       }
 
       inline void int16(const int16_t& n) {
-        serial::print::int16(n);
+        serial::print::number(n, 2, 16);
+        serial::print::chr::eol();
       }
 
       inline void uint32(const uint32_t& n) {
-        serial::print::uint32(n);
+        serial::print::number(n, 2, 32);
+        serial::print::chr::eol();
       }
 
       inline void int32(const int32_t& n) {
-        serial::print::int32(n);
+        serial::print::number(n, 2, 32);
+        serial::print::chr::eol();
       }
     }
   }

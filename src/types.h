@@ -20,6 +20,8 @@
 #ifndef __TYPES_H__
 #define __TYPES_H__
 
-typedef uint8_t flag_t;
+typedef uint8_t  flag_t;
+typedef uint16_t flag16_t;
+typedef uint32_t millis_t;
 
 #endif

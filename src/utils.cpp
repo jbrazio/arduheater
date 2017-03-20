@@ -25,17 +25,15 @@ uint8_t utils::msectotick(const uint16_t& ms)
   return (ms / HEARTBEAT);
 }
 
-float utils::steinhart(uint16_t raw)
+float utils::steinhart(const uint16_t& raw)
 {
-  if (raw > 1023) { raw = 1023; }
-
-  float steinhart;
-  steinhart  = THERMISTOR_SERIESRESISTOR / (1023.0 / raw - 1);  // convert raw to ohms
-  steinhart  = steinhart / THERMISTOR_NOMINAL_VAL;              // (R/Ro)
-  steinhart  = log(steinhart);                                  // ln(R/Ro)
-  steinhart /= THERMISTOR_BCOEFFICIENT;                         // 1/B * ln(R/Ro)
-  steinhart += 1.0 / (THERMISTOR_NOMINAL_TEMP + 273.15);        // + (1/To)
-  steinhart  = 1.0 / steinhart;                                 // invert
-  steinhart -= 273.15;                                          // convert to K to C
-  return steinhart;
+  float ret = constrain(raw, 1, 1022);
+  ret  = THERMISTOR_SERIESRESISTOR / (1023.0 / ret - 1);  // convert raw to ohms
+  ret  = ret / THERMISTOR_NOMINAL_VAL;                    // (R/Ro)
+  ret  = log(ret);                                        // ln(R/Ro)
+  ret /= THERMISTOR_BCOEFFICIENT;                         // 1/B * ln(R/Ro)
+  ret += 1.0 / (THERMISTOR_NOMINAL_TEMP + 273.15);        // + (1/To)
+  ret  = 1.0 / ret;                                       // invert
+  ret -= 273.15;                                          // convert to K to C
+  return ret;
 }

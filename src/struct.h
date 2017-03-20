@@ -24,8 +24,8 @@
 
 struct system_t
 {
-  flag_t state;
-  flag_t status;
+  flag_t   state;
+  flag16_t status;
 };
 
 struct serial_buffer_t
@@ -38,6 +38,15 @@ struct adc_t
 {
   uint8_t channel;
   int16_t value;
+};
+
+struct out_t
+{
+  pid   alg;
+  float Kp;
+  float Ki;
+  float Kd;
+  float offset;
 };
 
 struct ticker_t

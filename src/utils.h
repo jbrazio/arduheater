@@ -25,7 +25,7 @@
 namespace utils
 {
   uint8_t msectotick(const uint16_t& ms);
-  float   steinhart(uint16_t raw);
+  float   steinhart(const uint16_t& raw);
 };
 
 #endif
