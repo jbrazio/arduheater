@@ -23,104 +23,130 @@
 
 #include "arduheater.h"
 
-void pid::autotune(const uint8_t& thermistor, const uint8_t& temp, const uint8_t& cycles) {
-  bool     heating = true;
-  float    Ku, Tu, Wp, Wi, Wd;
-  float    max = 0, min = 10000;
-  long     th, tl;
-  millis_t t0, t1, t2;
-  uint8_t  bias, d, n;
-
-  m_output = bias = d = m_max / 2.0;
-  t0 = t1 = t2 = 0;
-  th = tl = 0;
-  n = 0;
-
+void pid::autotune() {
   serial::println::PGM(PSTR("PID autotune start"));
 
-  if (ntc.t(thermistor) > temp) {
-    serial::println::PGM(PSTR("PID autotune failed"));
-    output(0);
-    return;
-  }
+  bool running = m_running;
+  if (running) m_running = false;
+
+  millis_t t0 = 0;
+  millis_t t1 = 0;
+  millis_t peak1 = 0;
+  millis_t peak2 = 0;
+
+  float oStep = 30;
+  float noiseBand = 0.5;
+
+  float lastInputs[101];
+  float peaks[10];
+
+  // assuming 10sec lookback
+  int16_t nLookBack = 40;
+  int16_t sampleTime = 250;
+
+  int16_t peakType = 0;
+  int16_t peakCount = 0;
+  bool justchanged = false;
+  float absMax = m_input;
+  float absMin = m_input;
+  float setpoint = m_input;
+  float outputStart = m_output;
+
+  output(outputStart + oStep);
 
   for (;;) {
-    millis_t now = millis();
-    float input = ntc.t(thermistor);
-
-    no_less(max, input);
-    no_more(min, input);
-
-    if (heating && input > temp) {
-      if (now > t2 + 5000UL) {
-        heating = false;
-        output((bias - d) / 2.0);
-
-        t1 = now;
-        th = t1 - t2;
-        max = temp;
-      }
+    if( peakCount > 9) {
+      serial::println::PGM(PSTR("PID autotune timeout"));
+      if (running) m_running = true;
+      output(outputStart);
+      return;
     }
 
-    if (!heating && input < temp) {
-      if (now > t1 + 5000UL) {
-        heating = true;
-        t2 = now;
-        tl = t2 - t1;
+    millis_t now = millis();
 
-        if (n > 0) {
-          long maxpower = m_max;
-          bias += (d * (th - tl)) / (tl + th);
-          bias = constrain(bias, 20, maxpower - 20);
-          d = (bias > maxpower / 2.0) ? maxpower - 1 - bias : bias;
+    if (now > t1) {
+      t1 = now + 1000L;
+      cmd::status();
+    }
 
-          serial::print::pair::int32(PSTR("bias"), bias);
-          serial::print::pair::int32(PSTR("d"), d);
-          serial::print::pair::float32(PSTR("min"), min, 2);
-          serial::print::pair::float32(PSTR("max"), max, 2);
+    if (now > t0) {
+      t0 = now + sampleTime;
+      //serial::print::PGM(PSTR("."));
 
-          if (n > 2) {
-            Ku = (4.0 * d) / (M_PI * (max - min) * 0.5);
-            Tu = ((float) (tl + th) * 0.001);
+      float refVal = m_input;
 
-            serial::print::pair::float32(PSTR("Ku"), Ku, 2);
-            serial::print::pair::float32(PSTR("Tu"), Tu, 2);
+      if (refVal > absMax) { absMax = refVal; }
+      if (refVal < absMin) { absMin = refVal; }
 
-            Wp = Ku * 0.7;
-            Wi = Tu / 2.5;
-            Wd = 3 * Tu / 20.0;
+      //oscillate the output base on the input's relation to the setpoint
+      if (refVal > setpoint + noiseBand) { output(outputStart - oStep); }
+      else if (refVal < setpoint - noiseBand) {output(outputStart + oStep); }
+
+      bool isMax = true;
+      bool isMin = true;
+
+      //id peaks
+      for (int i = nLookBack - 1; i >= 0; i--) {
+        float val = lastInputs[i];
+        if (isMax) { isMax = (refVal > val); }
+        if (isMin) { isMin = (refVal < val); }
+        lastInputs[i+1] = lastInputs[i];
+      }
+
+      lastInputs[0] = refVal;
+
+      if (nLookBack > 9) {
+        if (isMax) {
+          if (peakType == 0) { peakType = 1; }
+          else if (peakType == -1) {
+            peakType = 1;
+            justchanged = true;
+            peak2 = peak1;
+          }
+
+          peak1 = now;
+          peaks[peakCount] = refVal;
+        } else if (isMin) {
+          if (peakType == 0) { peakType=-1; }
+          else if (peakType == 1) {
+            peakType = -1;
+            peakCount++;
+            justchanged = true;
+          }
+
+          if (peakCount < 10) peaks[peakCount] = refVal;
+        }
+
+        //we've transitioned.  check if we can autotune based on the last peaks
+        if (justchanged && peakCount > 2) {
+          float avgSeparation = (abs(peaks[peakCount-1] - peaks[peakCount-2])
+            + abs(peaks[peakCount-2] - peaks[peakCount-3])) / 2.0;
+
+          if (avgSeparation < 0.05 * (absMax-absMin)) {
+            serial::println::PGM(PSTR("PID autotune finished"));
+
+            output(outputStart);
+            if (running) m_running = true;
+
+            float Ku = 4 * (2 * oStep) / ((absMax-absMin) * M_PI);
+            float Pu = (float) (peak1 - peak2) / 1000.0;
+
+            //serial::print::pair::float32(PSTR("Ku"), Ku, 2);
+            //serial::print::pair::float32(PSTR("Pu"), Pu, 2);
+
+            float Wp = 0.6 * Ku;
+            float Wi = 1.2 * Ku / Pu;
+            float Wd = 0.075 * Ku * Pu;
 
             serial::print::pair::float32(PSTR("Wp"), Wp, 2);
             serial::print::pair::float32(PSTR("Wi"), Wi, 2);
             serial::print::pair::float32(PSTR("Wd"), Wd, 2);
+            return;
           }
         }
 
-        output((bias + d) / 2.0);
-        ++n;
-        min = temp;
+        justchanged = false;
       }
-    }
-
-    if (now > t0) {
-      serial::print::pair::float32(PSTR("ntc"), ntc.t(thermistor), 2);
-      serial::print::pair::float32(PSTR("m_output"), m_output, 2);
-      t0 = now + 5000UL;
-    }
-
-    if (((now - t1) + (now - t2)) > (10L * 60L * 1000L * 2L)) {
-      serial::println::PGM(PSTR("PID autotune 2m timeout"));
-      output(0);
-      return;
-    }
-
-    if (n > cycles) {
-      serial::println::PGM(PSTR("PID autotune finished"));
-      serial::print::pair::float32(PSTR("Kp"), Wp, 2);
-      serial::print::pair::float32(PSTR("Ki"), Wi, 2);
-      serial::print::pair::float32(PSTR("Kd"), Wd, 2);
-      output(0);
-      return;
     }
   }
 }

@@ -33,9 +33,6 @@ ISR(TIMER1_COMPA_vect)
       out[i].alg.input(ntc.t(i));
       out[i].alg.irq();
       analogWrite(heater[i], out[i].alg.output());
-
-      if (out[i].alg.output() > 0)
-        serial::print::pair::float32(PSTR("pwm:"), out[i].alg.output(), 2);
     }
   }
 }
@@ -51,7 +48,6 @@ ISR(ADC_vect)
 ISR(USART_RX_vect)
 {
   uint8_t c = UDR0; // read a byte
-
   // check for parity errors and filter for ASCII chars
   if (bit_is_clear(UCSR0A, UPE0) && c <= 0x7f) {
     //TODO: trigger an alarm on buffer overflow

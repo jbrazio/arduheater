@@ -42,7 +42,7 @@ protected:
   float m_min, m_max;
 
 public:
-  void autotune(const uint8_t& thermistor, const uint8_t& temp, const uint8_t& cycles);
+  void autotune();
   void input(const float& lhs) { m_input = lhs; }
   void irq(const bool& reset = false);
   void limit(const float& min, const float& max);

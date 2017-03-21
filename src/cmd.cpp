@@ -175,7 +175,7 @@ void cmd::enableheater(const char& c) {
         result(REPLY_OUTPUT_ACTIVE);
       } else {
         sys.status |= (STATUS_OUT0_ENABLED << id);
-        out[id].alg.tune(40.48, 17.86, 6.70);
+        out[id].alg.tune(21.01, 0.67, 165.48);
         //out[id].alg.limit(0, 100);
         out[id].alg.setpoint(30);
         out[id].alg.start();
@@ -218,12 +218,15 @@ void cmd::autotune(const char& c) {
     if (sys.status & (STATUS_NTC0_READY << id)) {
       // only allow autotune commands to be sent to outputs
       // where the ntc is reporting correct data
-      if (sys.status & (STATUS_OUT0_ENABLED << id)) {
+      /*if (sys.status & (STATUS_OUT0_ENABLED << id)) {
         // do not start the autotune on a heater which is
         // currently active
         result(REPLY_OUTPUT_ACTIVE);
       } else {
-        out[id].alg.autotune(id, 25, 10);
-      }
+        out[id].alg.autotune();
+      }*/
+
+      out[id].alg.autotune();
+
     } else { result(REPLY_NTC_NOT_READY); }
 }
