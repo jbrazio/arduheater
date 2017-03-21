@@ -49,15 +49,6 @@ public:
     return m_sum_of_values / m_count;
   }
 
-  inline void operator()(const T &lhs) {
-    m_sum_of_values    -= m_values[m_index];
-    m_values[m_index++] = lhs;
-    m_sum_of_values    += lhs;
-
-    if (m_index >= N) { m_index = 0; }
-    else if (m_count <  N) { ++m_count; }
-  }
-
   inline movingmean& operator=(const T &lhs) {
     reset();
     m_count = m_index = 1;
@@ -67,7 +58,13 @@ public:
   }
 
   inline movingmean& operator+=(const T &lhs) {
-    if (! isnan(lhs)) { operator()(lhs); }
+    m_sum_of_values    -= m_values[m_index];
+    m_values[m_index++] = lhs;
+    m_sum_of_values    += lhs;
+
+    if (m_index >= N) { m_index = 0; }
+    else if (m_count <  N) { ++m_count; }
+
     return (*this);
   }
 };

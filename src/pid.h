@@ -30,35 +30,38 @@ class pid
 {
 public:
   pid() {
+    stop();
     limit(0, 255);
-    mode(pid::MANUAL);
     sampletime(HEARTBEAT);
   }
 
-public:
-  enum mode_t { MANUAL, AUTOMATIC };
-
 protected:
-  float m_input, m_output, m_setpoint;
+  bool m_running;
   float m_Kp, m_Ki, m_Kd, m_dt;
+  float m_input, m_output, m_setpoint;
   float m_min, m_max;
 
-protected:
-  mode_t m_mode;
-
 public:
-  float output();
-  pid::mode_t mode();
-  void input(const float& lhs);
+  void autotune(const uint8_t& thermistor, const uint8_t& temp, const uint8_t& cycles);
+  void input(const float& lhs) { m_input = lhs; }
   void irq(const bool& reset = false);
   void limit(const float& min, const float& max);
-  void mode(const pid::mode_t& lhs);
   void output(const float& lhs);
-  void sampletime(const float& lhs);
-  void setpoint(const float& lhs);
-  void tune(const float& Kp, const float& Ki, const float& Kd);
+  void tune(const float& Np, const float& Ni, const float& Nd);
 
-  void autotune(const uint8_t& thermistor, const uint8_t& temp, const uint8_t& cycles);
+public:
+  inline float Kd()                         { return m_Kd;        }
+  inline float Ki()                         { return m_Ki;        }
+  inline float Kp()                         { return m_Kp;        }
+  inline float output()                     { return m_output;    }
+  inline float setpoint()                   { return m_setpoint;  }
+  inline void  Kd(const float& lhs)         { m_Kd = lhs;         }
+  inline void  Ki(const float& lhs)         { m_Ki = lhs;         }
+  inline void  Kp(const float& lhs)         { m_Kp = lhs;         }
+  inline void  sampletime(const float& lhs) { m_dt = lhs / 1000L; }
+  inline void  setpoint(const float& lhs)   { m_setpoint = lhs;   }
+  inline void  start()                      { m_running = true;   }
+  inline void  stop()                       { m_running = false;  }
 };
 
 #endif

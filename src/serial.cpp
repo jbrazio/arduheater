@@ -69,23 +69,20 @@ void serial::process()
 
   while(serial::available()) {
     char c = serial::read();
+
     switch(c) {
       case '\r':
       case '\n':
-        if (!pos) break;
-
-        buffer[pos] = 0x00; // null byte
-
-        serial::print::string("ok: ");
-        serial::println::string(buffer);
-
-        memset(&buffer, 0, COMMAND_BUFFER_SIZE);
-        pos = 0;
+        if (!pos) { break; }                        // reject empty buffers
+        buffer[pos] = 0x00;                         // mark the string end
+        pos = 0;                                    // reset the buffer pointer
+        cmd::process(buffer);                       // process the data
         break;
 
       default:
-        buffer[pos] = c;
-        pos = (pos + 1) % COMMAND_BUFFER_SIZE;
+        if ((c >= 65) && (c <= 90)) { c = c + 32; } // convert to lowercase
+        buffer[pos] = c;                            // store char in buffer
+        pos = (pos + 1) % COMMAND_BUFFER_SIZE;      // increase buffer pointer
         break;
     }
   }

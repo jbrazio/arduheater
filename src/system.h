@@ -35,17 +35,16 @@
 // Internal module status bit map ---------------------------------------------
 // Each bit represents a boolean status for the module readiness
 #define STATUS_SERIAL_READY   bit( 0) // bitmask 00000000 00000001
-#define STATUS_ISR_READY      bit( 1) // bitmask 00000000 00000010
-#define STATUS_AMBIENT_READY  bit( 2) // bitmask 00000000 00000100
-#define STATUS_HEATER_READY   bit( 3) // bitmask 00000000 00001000
-#define STATUS_NTC0_READY     bit( 4) // bitmask 00000000 00010000
-#define STATUS_NTC1_READY     bit( 5) // bitmask 00000000 00100000
-#define STATUS_NTC2_READY     bit( 6) // bitmask 00000000 01000000
-#define STATUS_NTC3_READY     bit( 7) // bitmask 00000000 10000000
-#define STATUS_OUT0_ACTIVE    bit( 8) // bitmask 00000001 00000000
-#define STATUS_OUT1_ACTIVE    bit( 9) // bitmask 00000010 00000000
-#define STATUS_OUT2_ACTIVE    bit(10) // bitmask 00000100 00000000
-#define STATUS_OUT3_ACTIVE    bit(11) // bitmask 00001000 00000000
+#define STATUS_AMBIENT_READY  bit( 1) // bitmask 00000000 00000100
+#define STATUS_HEATER_READY   bit( 2) // bitmask 00000000 00001000
+#define STATUS_NTC0_READY     bit( 3) // bitmask 00000000 00010000
+#define STATUS_NTC1_READY     bit( 4) // bitmask 00000000 00100000
+#define STATUS_NTC2_READY     bit( 5) // bitmask 00000000 01000000
+#define STATUS_NTC3_READY     bit( 6) // bitmask 00000000 10000000
+#define STATUS_OUT0_ENABLED   bit( 7) // bitmask 00000001 00000000
+#define STATUS_OUT1_ENABLED   bit( 8) // bitmask 00000010 00000000
+#define STATUS_OUT2_ENABLED   bit( 9) // bitmask 00000100 00000000
+#define STATUS_OUT3_ENABLED   bit(10) // bitmask 00001000 00000000
 
 
 // Sensor bit map -------------------------------------------------------------

@@ -25,9 +25,19 @@ ISR(TIMER1_COMPA_vect)
   ntc.irq();
   amb.irq();
 
-  for (size_t i = 0; i < NUM_OUTPUTS; i++) { out[i].alg.irq(); }
+  const uint8_t heater[] = HEATER_PINS;
+  for (size_t i = 0; i < NUM_OUTPUTS; i++) {
+    if (sys.status & (STATUS_NTC0_READY << i)) {
+      // only evalutate the heater PID if the thermistor
+      // is correctly outputing a temperature value.
+      out[i].alg.input(ntc.t(i));
+      out[i].alg.irq();
+      analogWrite(heater[i], out[i].alg.output());
 
-  analogWrite(HEATER_0_PIN, out[0].alg.output());
+      if (out[i].alg.output() > 0)
+        serial::print::pair::float32(PSTR("pwm:"), out[i].alg.output(), 2);
+    }
+  }
 }
 
 // Analog to Digital Converter interrupt handler
@@ -40,19 +50,13 @@ ISR(ADC_vect)
 // Serial RX interrupt handler
 ISR(USART_RX_vect)
 {
-  // check for parity errors
-  if (bit_is_clear(UCSR0A, UPE0)) {
-    uint8_t data = UDR0; // read a byte
+  uint8_t c = UDR0; // read a byte
 
-    switch (data) {
-      default: {
-        // write data to buffer unless it is full
-        //TODO: trigger an alarm or overflow
-        serial::buffer.rx.enqueue(data);
-        break;
-      }
-    }
-  } else { /* discard */ UDR0; }
+  // check for parity errors and filter for ASCII chars
+  if (bit_is_clear(UCSR0A, UPE0) && c <= 0x7f) {
+    //TODO: trigger an alarm on buffer overflow
+    serial::buffer.rx.enqueue(c);
+  } /* else { discard byte } */
 }
 
 // Serial TX interrupt handler

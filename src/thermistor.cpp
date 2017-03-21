@@ -44,11 +44,11 @@ bool thermistor::hwbusy()
         // once we got a out of bounds reading set the cache to the error value
         // by force resetting the smoothing algorithm.
         m_cache[m_active_channel] = THERMISTOR_ERR_TEMP;
-        sys.status &= ~bit(m_active_channel + 4);
+        sys.status &= ~(STATUS_NTC0_READY << m_active_channel);
 
       } else {
-        m_cache[m_active_channel](adc::runtime.value);
-        sys.status |= bit(m_active_channel + 4);
+        m_cache[m_active_channel] += static_cast<int16_t>(adc::runtime.value);
+        sys.status |= (STATUS_NTC0_READY << m_active_channel);
       }
 
       m_active_channel = (m_active_channel +1) % NUM_OUTPUTS;

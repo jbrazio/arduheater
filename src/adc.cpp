@@ -19,7 +19,7 @@
 
 #include "arduheater.h"
 
-adc_t adc::runtime;
+volatile adc_t adc::runtime;
 
 void adc::selchan(const uint8_t& channel)
 {

@@ -62,11 +62,12 @@
 #include "sensor.h"
 #include "thermistor.h"
 #include "dht22.h"
+#include "cmd.h"
 
 // System global control structures
-extern volatile system_t   sys;
-extern thermistor ntc;
 extern dht22      amb;
 extern out_t      out[NUM_OUTPUTS];
+extern thermistor ntc;
+extern volatile system_t sys;
 
 #endif

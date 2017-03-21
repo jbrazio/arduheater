@@ -20,10 +20,10 @@
 #include "arduheater.h"
 
 // System global control structures
-volatile system_t    sys;
-         thermistor  ntc;
-         dht22       amb;
-         out_t       out[NUM_OUTPUTS];
+dht22       amb;
+out_t       out[NUM_OUTPUTS];
+thermistor  ntc;
+volatile system_t sys;
 
 int main(void)
 {
@@ -34,7 +34,6 @@ int main(void)
   // Enable interrupts --------------------------------------------------------
   // --------------------------------------------------------------------------
   init();                         // call ardunino interrupt init function
-  sys.status |= STATUS_ISR_READY; // set ISR status as ready
 
 
   // --------------------------------------------------------------------------
@@ -94,7 +93,7 @@ int main(void)
   DIDR0 |= ADC4D | ADC5D;
 
   // clears the ADC runtime structure
-  memset(&adc::runtime, 0, sizeof(adc_t));
+  //memset(static_cast<void *>(&adc::runtime), 0, sizeof(adc_t));
 
 
   // --------------------------------------------------------------------------
@@ -107,17 +106,8 @@ int main(void)
   // --------------------------------------------------------------------------
   // Outputs ------------------------------------------------------------------
   // --------------------------------------------------------------------------
-  pinMode(HEATER_0_PIN, OUTPUT);
-  pinMode(HEATER_1_PIN, OUTPUT);
-  pinMode(HEATER_2_PIN, OUTPUT);
-  pinMode(HEATER_3_PIN, OUTPUT);
-
-  while (! (sys.status & STATUS_NTC0_READY)) {;}
-  serial::banner();
-  out[0].alg.autotune(0, 25, 5);
-
-  //analogWrite(HEATER_0_PIN, 255);
-  //while(true) {;}
+  const uint8_t heater[] = HEATER_PINS;
+  for (size_t i = 0; i < NUM_OUTPUTS; i++ ) { pinMode(heater[i], OUTPUT); }
 
 
   // --------------------------------------------------------------------------
@@ -128,28 +118,6 @@ int main(void)
 
   for(;;) {
     serial::process();
-
-    static uint16_t counter = 0;
-    ++counter;
-
-    if (counter == 0) {
-      if (sys.status & STATUS_NTC0_READY)
-        serial::print::pair::float32(PSTR("ntc0"), ntc.t(0), 2);
-
-      if (sys.status & STATUS_NTC1_READY)
-        serial::print::pair::float32(PSTR("ntc1"), ntc.t(1), 2);
-
-      if (sys.status & STATUS_NTC2_READY)
-        serial::print::pair::float32(PSTR("ntc2"), ntc.t(2), 2);
-
-      if (sys.status & STATUS_NTC3_READY)
-        serial::print::pair::float32(PSTR("ntc3"), ntc.t(3), 2);
-
-      if (sys.status & STATUS_AMBIENT_READY) {
-        serial::print::pair::float32(PSTR("t"), amb.t(), 2);
-        serial::print::pair::float32(PSTR("rh"), amb.rh(), 2);
-      }
-    }
   }
 
   // We should not reach this
