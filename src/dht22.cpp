@@ -29,9 +29,7 @@ bool dht22::hwupdate() {
   pinMode(AMBIENT_DHT22_PIN, OUTPUT);
   digitalWrite(AMBIENT_DHT22_PIN, LOW);
 
-  for (volatile uint16_t i = 0; i < 16000; i++) {
-    __asm__ __volatile__ ("nop");
-  }
+  utils::delay(1);
 
   digitalWrite(AMBIENT_DHT22_PIN, HIGH);
   pinMode(AMBIENT_DHT22_PIN, INPUT);

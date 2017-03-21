@@ -28,7 +28,7 @@
 #include <avr/io.h>
 #include <avr/pgmspace.h>
 #include <avr/interrupt.h>
-//#include <avr/wdt.h>
+#include <avr/wdt.h>
 //#include <util/delay.h>
 #include <math.h>
 //#include <inttypes.h>
@@ -37,7 +37,9 @@
 //#include <stdint.h>
 //#include <stdbool.h>
 
-#include <Arduino.h>
+#ifdef ARDUINO
+  #include <Arduino.h>
+#endif
 
 // Cleanup some Arduino stuff
 #undef SERIAL_RX_BUFFER_SIZE
@@ -63,11 +65,20 @@
 #include "thermistor.h"
 #include "dht22.h"
 #include "cmd.h"
+#include "eeprom.h"
 
 // System global control structures
 extern dht22      amb;
 extern out_t      out[NUM_OUTPUTS];
 extern thermistor ntc;
 extern volatile system_t sys;
+
+#ifndef ARDUINO
+  volatile uint32_t timer0_overflow_count = 0;
+  volatile uint32_t timer0_millis = 0;
+  static   uint32_t timer0_fract = 0;
+#endif
+
+const uint8_t heater_ouput_pins[] PROGMEM = HEATER_PINS;
 
 #endif

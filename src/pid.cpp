@@ -62,7 +62,7 @@ void pid::autotune() {
       return;
     }
 
-    millis_t now = millis();
+    millis_t now = utils::millis();
 
     if (now > t1) {
       t1 = now + 1000L;

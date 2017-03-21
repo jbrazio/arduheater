@@ -27,13 +27,10 @@ volatile system_t sys;
 
 int main(void)
 {
-  DDRB |= 0x20; // Enable D13 as output
-  //memset(&sys, 0, sizeof(system_t));  // Clear all system variables
-
   // --------------------------------------------------------------------------
-  // Enable interrupts --------------------------------------------------------
+  // Arduino's interrupt init -------------------------------------------------
   // --------------------------------------------------------------------------
-  init();                         // call ardunino interrupt init function
+  init(); // call ardunino interrupt init function
 
 
   // --------------------------------------------------------------------------
@@ -104,19 +101,54 @@ int main(void)
 
 
   // --------------------------------------------------------------------------
-  // Outputs ------------------------------------------------------------------
+  // Load settings ------------------------------------------------------------
   // --------------------------------------------------------------------------
-  const uint8_t heater[] = HEATER_PINS;
-  for (size_t i = 0; i < NUM_OUTPUTS; i++ ) { pinMode(heater[i], OUTPUT); }
+  eeprom::load();
+
+  // --------------------------------------------------------------------------
+  // Output init --------------------------------------------------------------
+  // --------------------------------------------------------------------------
+  for (size_t i = 0; i < NUM_OUTPUTS; i++ )
+    pinMode(ouput_pin(i), OUTPUT);          // Enable PWM outputs
+  DDRB |= 0x20;                             // Enable D13 as output
+
+
+  // --------------------------------------------------------------------------
+  // Startup check ------------------------------------------------------------
+  // --------------------------------------------------------------------------
+  while (!ntc_ready(0) && !ntc_ready(1) && !ntc_ready(2) && !ntc_ready(3)) {
+    millis_t now = utils::millis();
+    static millis_t next = now + 5000L;
+    if (now > next) {
+      serial::println::PGM(PSTR("warn: no outputs available"));
+      break;
+    }
+  }
+
+  while (!(sys.status & STATUS_AMBIENT_READY)) {
+    millis_t now = utils::millis();
+    static millis_t next = now + 10000L;
+    if (now > next) {
+      serial::print::PGM(PSTR("err: ambient sensor error"));
+      serial::println::PGM(PSTR(", system halted"));
+      while(1) {;}
+    }
+  }
+
+  serial::banner();
+
+
+  // --------------------------------------------------------------------------
+  // Wathcdog -----------------------------------------------------------------
+  // --------------------------------------------------------------------------
+  //wdt_enable(WDTO_4S);
 
 
   // --------------------------------------------------------------------------
   // Loop routine -------------------------------------------------------------
   // --------------------------------------------------------------------------
-  serial::banner();
-
-
   for(;;) {
+    wdt_reset();
     serial::process();
   }
 

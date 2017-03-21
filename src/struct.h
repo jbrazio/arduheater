@@ -40,19 +40,34 @@ struct adc_t
   int16_t value;
 };
 
-struct out_t
-{
-  pid   alg;
-  float Kp;
-  float Ki;
-  float Kd;
-  float offset;
-};
-
 struct ticker_t
 {
   uint8_t period;
   uint8_t ticks;
+};
+
+struct ambient_t
+{
+  float t_offset;
+  float rh_offset;
+  float dew_offset;
+};
+
+struct heater_t
+{
+  uint8_t autostart;
+  uint8_t offset;
+  uint8_t min;
+  uint8_t max;
+  float   Kp;
+  float   Ki;
+  float   Kd;
+};
+
+struct out_t
+{
+  heater_t  config;
+  pid       alg;
 };
 
 #endif

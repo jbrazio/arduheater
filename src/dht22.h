@@ -35,6 +35,9 @@ protected:
   movingmean<float, 10> m_cache[2];
 
 public:
+  ambient_t config;
+
+public:
   inline float t()  { return m_cache[0](); }
   inline float rh() { return m_cache[1](); }
 

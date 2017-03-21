@@ -70,3 +70,34 @@ float utils::dew(const float& t, const float& rh) {
     return (237.7f * temp) / (17.271f - temp);
   #endif
 }
+
+millis_t utils::millis()
+{
+  #ifdef ARDUINO
+    return ::millis();
+  #else
+    unsigned long m;
+    uint8_t oldSREG = SREG;
+
+    // disable interrupts while we read timer0_millis or we might get an
+    // inconsistent value (e.g. in the middle of a write to timer0_millis)
+    cli();
+
+    m = timer0_millis;
+    SREG = oldSREG;
+    return m;
+  #endif
+}
+
+void utils::delay(uint32_t ms)
+{
+  uint32_t start = micros();
+
+  while (ms > 0) {
+    wdt_reset();
+    while (ms > 0 && (micros() - start) >= 1000) {
+      ms--;
+      start += 1000;
+    }
+  }
+}

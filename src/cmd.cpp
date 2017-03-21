@@ -125,11 +125,11 @@ void cmd::status() {
 
 void cmd::result(const uint8_t& code) {
   if (code == REPLY_OK) {
-    serial::println::PGM(PSTR(":ok"));
+    serial::println::PGM(PSTR("ok"));
     return;
   }
 
-  serial::print::PGM(PSTR(":err: "));
+  serial::print::PGM(PSTR("err: "));
 
   switch (code) {
     case REPLY_INVALID_COMMAND:
@@ -166,7 +166,7 @@ void cmd::enableheater(const char& c) {
       return;
     }
 
-    if (sys.status & (STATUS_NTC0_READY << id)) {
+    if (ntc_ready(id)) {
       // only allow enable commands to be sent to outputs
       // where the ntc is reporting correct data
       if (sys.status & (STATUS_OUT0_ENABLED << id)) {
@@ -192,7 +192,7 @@ void cmd::disableheater(const char& c) {
       return;
     }
 
-    if (sys.status & (STATUS_NTC0_READY << id)) {
+    if (ntc_ready(id)) {
       // only allow enable commands to be sent to outputs
       // where the ntc is reporting correct data
       if (sys.status & (STATUS_OUT0_ENABLED << id)) {
@@ -215,7 +215,7 @@ void cmd::autotune(const char& c) {
       return;
     }
 
-    if (sys.status & (STATUS_NTC0_READY << id)) {
+    if (ntc_ready(id)) {
       // only allow autotune commands to be sent to outputs
       // where the ntc is reporting correct data
       /*if (sys.status & (STATUS_OUT0_ENABLED << id)) {

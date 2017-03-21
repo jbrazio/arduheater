@@ -22,6 +22,14 @@
 
 #include "arduheater.h"
 
+#ifndef cbi
+  #define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
+#endif
+
+#ifndef sbi
+  #define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
+#endif
+
 #ifndef bit
   #define bit(n) (1 << n)
 #endif
@@ -36,6 +44,29 @@
 
 #ifndef no_less
   #define no_less(var, low) do { if (var < low) var = low; } while(0)
+#endif
+
+#ifndef ouput_pin
+  #define ouput_pin(N) (pgm_read_byte(heater_ouput_pins + (N)))
+#endif
+
+#ifndef ntc_ready
+  #define ntc_ready(N) (sys.status & STATUS_NTC0_READY << N)
+#endif
+
+#ifndef ARDUINO
+  // the prescaler is set so that timer0 ticks every 64 clock cycles, and the
+  // the overflow handler is called every 256 ticks.
+  #define MICROSECONDS_PER_TIMER0_OVERFLOW (clockCyclesToMicroseconds(64 * 256))
+
+  // the whole number of milliseconds per timer0 overflow
+  #define MILLIS_INC (MICROSECONDS_PER_TIMER0_OVERFLOW / 1000)
+
+  // the fractional number of milliseconds per timer0 overflow. we shift right
+  // by three to fit these numbers into a byte. (for the clock speeds we care
+  // about - 8 and 16 MHz - this doesn't lose precision.)
+  #define FRACT_INC ((MICROSECONDS_PER_TIMER0_OVERFLOW % 1000) >> 3)
+  #define FRACT_MAX (1000 >> 3)
 #endif
 
 #endif

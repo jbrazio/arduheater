@@ -22,14 +22,6 @@
 
 #include "arduheater.h"
 
-#define REPLY_INVALID_COMMAND   1
-#define REPLY_INVALID_SYNTAX    2
-#define REPLY_NTC_NOT_READY     3
-#define REPLY_OK                4
-#define REPLY_OUTPUT_ACTIVE     5
-#define REPLY_OUTPUT_INACTIVE   6
-#define REPLY_OUTPUT_OUTBOUNDS  7
-
 namespace cmd {
   void autotune(const char& c);
   void buildinfo();

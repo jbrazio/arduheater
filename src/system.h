@@ -52,4 +52,14 @@
 #define SENSOR_NEEDS_SLEEP    bit(1)  // bitmask 00000010
 #define SENSOR_NEEDS_REFRESH  bit(2)  // bitmask 00000100
 
+
+// Serial status --------------------------------------------------------------
+#define REPLY_INVALID_COMMAND   1
+#define REPLY_INVALID_SYNTAX    2
+#define REPLY_NTC_NOT_READY     3
+#define REPLY_OK                4
+#define REPLY_OUTPUT_ACTIVE     5
+#define REPLY_OUTPUT_INACTIVE   6
+#define REPLY_OUTPUT_OUTBOUNDS  7
+
 #endif

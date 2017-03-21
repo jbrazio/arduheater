@@ -19,20 +19,41 @@
 
 #include "arduheater.h"
 
+#ifndef ARDUINO
+  // Timer0 interrupt handler
+  ISR(TIMER0_OVF_vect)
+  {
+    // copy these to local variables so they can be stored in registers
+    // (volatile variables must be read from memory on every access)
+    unsigned long m = timer0_millis;
+    unsigned char f = timer0_fract;
+
+    m += MILLIS_INC;
+    f += FRACT_INC;
+    if (f >= FRACT_MAX) {
+      f -= FRACT_MAX;
+      m += 1;
+    }
+
+    timer0_fract = f;
+    timer0_millis = m;
+    timer0_overflow_count++;
+  }
+#endif
+
 // Timer1 interrupt handler
 ISR(TIMER1_COMPA_vect)
 {
   ntc.irq();
   amb.irq();
 
-  const uint8_t heater[] = HEATER_PINS;
   for (size_t i = 0; i < NUM_OUTPUTS; i++) {
-    if (sys.status & (STATUS_NTC0_READY << i)) {
+    if (ntc_ready(i)) {
       // only evalutate the heater PID if the thermistor
       // is correctly outputing a temperature value.
       out[i].alg.input(ntc.t(i));
       out[i].alg.irq();
-      analogWrite(heater[i], out[i].alg.output());
+      analogWrite(ouput_pin(i), out[i].alg.output());
     }
   }
 }
