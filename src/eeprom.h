@@ -64,16 +64,26 @@
  * 0x47 float     Heater #3 PID Ki
  * 0x4b float     Heater #3 PID Kd
  *
+ * 0x4f uint8_t   End byte 0xff
+ *
  */
 
-#define EEPROM_VERSION  1
-#define EEPROM_OFFSET   10
+#define EEPROM_VERSION  0x02
+#define EEPROM_OFFSET   0x10
+
+#define EEPROM_ADDR_HEADER  (EEPROM_OFFSET       + 0x00)
+#define EEPROM_ADDR_VERSION (EEPROM_ADDR_HEADER  + sizeof(uint16_t))
+#define EEPROM_ADDR_AMBIENT (EEPROM_ADDR_VERSION + sizeof(uint8_t))
+#define EEPROM_ADDR_HEATER0 (EEPROM_ADDR_AMBIENT + sizeof(ambient_t))
+#define EEPROM_ADDR_HEATER1 (EEPROM_ADDR_HEATER0 + sizeof(heater_t))
+#define EEPROM_ADDR_HEATER2 (EEPROM_ADDR_HEATER1 + sizeof(heater_t))
+#define EEPROM_ADDR_HEATER3 (EEPROM_ADDR_HEATER2 + sizeof(heater_t))
+#define EEPROM_ADDR_END     (EEPROM_ADDR_HEATER3 + sizeof(heater_t))
 
 namespace eeprom {
-  void read(void* src, const uint16_t& dst, const size_t& n);
-  void write(const void* src, const uint16_t& dst, const size_t& n);
-  void save();
+  void defaults();
   void load();
+  void save();
 };
 
 #endif

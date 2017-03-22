@@ -33,6 +33,11 @@ void cmd::process(const char* buffer) {
           } else { /* do nothing */ }
           break;
 
+        case 's':
+          if (buffer[3] != 0x00) {
+            result(REPLY_INVALID_SYNTAX);
+          } else { save(); }
+          break;
 
         case 'i':
           if (buffer[3] != 0x00) {
@@ -76,9 +81,10 @@ void cmd::process(const char* buffer) {
 }
 
 void cmd::help() {
-  serial::println::PGM(PSTR("$$ (view Arduheater settings)"));
+  serial::println::PGM(PSTR("$$ (view settings)"));
+  serial::println::PGM(PSTR("$$ (save settings)"));
   serial::println::PGM(PSTR("$i (view build info)"));
-  serial::println::PGM(PSTR("? (current status)"));
+  serial::println::PGM(PSTR("?  (current status)"));
   //serial::println::PGM(PSTR(""));
 }
 
@@ -229,4 +235,9 @@ void cmd::autotune(const char& c) {
       out[id].alg.autotune();
 
     } else { result(REPLY_NTC_NOT_READY); }
+}
+
+void cmd::save() {
+  result(REPLY_OK);
+  eeprom::save();
 }

@@ -30,6 +30,7 @@ namespace cmd {
   void help();
   void process(const char* buffer);
   void result(const uint8_t& code);
+  void save();
   void status();
 };
 

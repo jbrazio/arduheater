@@ -68,6 +68,11 @@
 
 
 #define HEATER_PINS {5, 6, 10, 11}
-#define AMBIENT_DHT22_PIN 7
+
+#define AMBIENT_PIN         7
+#define AMBIENT_T_OFFSET    0
+#define AMBIENT_RH_OFFSET   0
+#define AMBIENT_DEW_OFFSET  0
+
 
 #endif

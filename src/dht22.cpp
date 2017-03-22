@@ -26,16 +26,16 @@ bool dht22::hwupdate() {
   m_state = SENSOR_BUSY;
 
   // send the start signal and switch into receive mode
-  pinMode(AMBIENT_DHT22_PIN, OUTPUT);
-  digitalWrite(AMBIENT_DHT22_PIN, LOW);
+  pinMode(AMBIENT_PIN, OUTPUT);
+  digitalWrite(AMBIENT_PIN, LOW);
 
   utils::delay(1);
 
-  digitalWrite(AMBIENT_DHT22_PIN, HIGH);
-  pinMode(AMBIENT_DHT22_PIN, INPUT);
+  digitalWrite(AMBIENT_PIN, HIGH);
+  pinMode(AMBIENT_PIN, INPUT);
 
   // TODO: stop using pulsein
-  if (! pulseIn(AMBIENT_DHT22_PIN, LOW, 115)) {
+  if (! pulseIn(AMBIENT_PIN, LOW, 115)) {
     // return timeout if no data is received
     m_state = SENSOR_TIMEOUT;
     return false;
@@ -48,7 +48,7 @@ bool dht22::hwupdate() {
     d <<= 1;
 
     // TODO: stop using pulsein
-    if (pulseIn(AMBIENT_DHT22_PIN, HIGH, 200) > 30) { d |= 1; }
+    if (pulseIn(AMBIENT_PIN, HIGH, 200) > 30) { d |= 1; }
 
     switch (i) {
       case 15: h = d;

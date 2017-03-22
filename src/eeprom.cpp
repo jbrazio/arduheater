@@ -19,39 +19,55 @@
 
 #include "arduheater.h"
 
-void eeprom::read(void* src, const uint16_t& dst, const size_t& n) {
-  eeprom_read_block(src, (void*) dst, n);
-}
-
-void eeprom::write(const void* src, const uint16_t& dst, const size_t& n) {
-  eeprom_update_block(src, (void*) dst, n);
-}
-
 void eeprom::save() {
   // magic header
-  eeprom_write_word((uint16_t*) EEPROM_OFFSET + 0x00, 0x4148);
+  eeprom_write_word((uint16_t*) EEPROM_ADDR_HEADER, 0x4148);
 
   // layout version
-  eeprom_write_byte((uint8_t*) EEPROM_OFFSET + 0x02, EEPROM_VERSION);
+  eeprom_write_byte((uint8_t*) EEPROM_ADDR_VERSION, EEPROM_VERSION);
 
   // ambient config
-  eeprom_update_block(&amb.config, (void *)(EEPROM_OFFSET + 0x03), sizeof(ambient_t));
+  eeprom_update_block(&amb.config, (void *) EEPROM_ADDR_AMBIENT, sizeof(ambient_t));
 
   // heaters config
-  eeprom_update_block(&out[0].config, (void *)(EEPROM_OFFSET + 0x1f), sizeof(heater_t));
-  eeprom_update_block(&out[1].config, (void *)(EEPROM_OFFSET + 0x2f), sizeof(heater_t));
-  eeprom_update_block(&out[2].config, (void *)(EEPROM_OFFSET + 0x3f), sizeof(heater_t));
-  eeprom_update_block(&out[3].config, (void *)(EEPROM_OFFSET + 0x4f), sizeof(heater_t));
+  eeprom_update_block(&out[0].config, (void *) EEPROM_ADDR_HEATER0, sizeof(heater_t));
+  eeprom_update_block(&out[1].config, (void *) EEPROM_ADDR_HEATER1, sizeof(heater_t));
+  eeprom_update_block(&out[2].config, (void *) EEPROM_ADDR_HEATER2, sizeof(heater_t));
+  eeprom_update_block(&out[3].config, (void *) EEPROM_ADDR_HEATER3, sizeof(heater_t));
+
+  // end
+  eeprom_write_byte((uint8_t*) EEPROM_ADDR_END, 0xff);
 }
 
 void eeprom::load() {
-  if (eeprom_read_word((uint16_t*) EEPROM_OFFSET) != 0x4148) {
-    serial::println::PGM(PSTR("err: eeprom read error"));
-    return;
+  if (eeprom_read_word((uint16_t*) EEPROM_ADDR_HEADER) != 0x4148) {
+    defaults();
+    save();
+  }
+  else if (eeprom_read_byte((uint8_t*) EEPROM_ADDR_VERSION) != EEPROM_VERSION) {
+    defaults();
+    save();
+  }
+  else {
+    // ambient config
+    eeprom_read_block(&amb.config, (void *) EEPROM_ADDR_AMBIENT, sizeof(ambient_t));
+
+    // heaters config
+    eeprom_read_block(&out[0].config, (void *) EEPROM_ADDR_HEATER0, sizeof(heater_t));
+    eeprom_read_block(&out[1].config, (void *) EEPROM_ADDR_HEATER1, sizeof(heater_t));
+    eeprom_read_block(&out[2].config, (void *) EEPROM_ADDR_HEATER2, sizeof(heater_t));
+    eeprom_read_block(&out[3].config, (void *) EEPROM_ADDR_HEATER3, sizeof(heater_t));
   }
 
-  if (eeprom_read_byte((uint8_t*) EEPROM_OFFSET + 0x02) != EEPROM_VERSION) {
-    serial::println::PGM(PSTR("err: eeprom layout missmatch"));
-    return;
+  // TODO: currently we do nothing with the extra ambient sensor config
+  for (size_t i = 0; i < NUM_OUTPUTS; i++ ) {
+    out[i].alg.limit(out[i].config.min, out[i].config.max);
+    out[i].alg.tune(out[i].config.Kp, out[i].config.Ki, out[i].config.Kd);
   }
+}
+
+void eeprom::defaults() {
+  //serial::println::PGM(PSTR("warn: default settings loaded"));
+  amb.config = { AMBIENT_T_OFFSET, AMBIENT_RH_OFFSET, AMBIENT_DEW_OFFSET };
+  for (size_t i = 0; i < NUM_OUTPUTS; i++ ) { out[i].config = { false, 0, 0, 255, 10, 0, 10 }; }
 }
