@@ -43,6 +43,7 @@ bool thermistor::hwbusy()
          || adc::runtime.value < THERMISTOR_MAX_VAL) {
         // once we got a out of bounds reading set the cache to the error value
         // by force resetting the smoothing algorithm.
+        digitalWrite(output_pin(m_active_channel), LOW);
         m_cache[m_active_channel] = THERMISTOR_ERR_TEMP;
         sys.status &= ~(STATUS_NTC0_READY << m_active_channel);
 

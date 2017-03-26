@@ -69,5 +69,5 @@ void eeprom::load() {
 void eeprom::defaults() {
   //serial::println::PGM(PSTR("warn: default settings loaded"));
   amb.config = { AMBIENT_T_OFFSET, AMBIENT_RH_OFFSET, AMBIENT_DEW_OFFSET };
-  for (size_t i = 0; i < NUM_OUTPUTS; i++ ) { out[i].config = { false, 0, 0, 255, 10, 0, 10 }; }
+  for (size_t i = 0; i < NUM_OUTPUTS; i++ ) { out[i].config = { false, 0, 0, 255, 15, 0, 0 }; }
 }

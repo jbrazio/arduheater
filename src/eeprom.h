@@ -33,42 +33,42 @@
  * 0x0b float     Ambient dew offset
  *
  * 0x0f uint8_t   Heater #0 autostart
- * 0x10 uint8_t   Heater #0 temperature offset
- * 0x11 uint8_t   Heater #0 PID min value
- * 0x12 uint8_t   Heater #0 PID max value
- * 0x13 float     Heater #0 PID Kp
- * 0x17 float     Heater #0 PID Ki
- * 0x1b float     Heater #0 PID Kd
+ * 0x10 float     Heater #0 temperature offset
+ * 0x15 uint8_t   Heater #0 PID min value
+ * 0x16 uint8_t   Heater #0 PID max value
+ * 0x1a float     Heater #0 PID Kp
+ * 0x1e float     Heater #0 PID Ki
+ * 0x22 float     Heater #0 PID Kd
  *
- * 0x1f uint8_t   Heater #1 autostart
- * 0x20 uint8_t   Heater #1 temperature offset
- * 0x21 uint8_t   Heater #1 PID min value
- * 0x22 uint8_t   Heater #1 PID max value
- * 0x23 float     Heater #1 PID Kp
- * 0x27 float     Heater #1 PID Ki
- * 0x2b float     Heater #1 PID Kd
+ * 0x26 uint8_t   Heater #1 autostart
+ * 0x27 float     Heater #1 temperature offset
+ * 0x2b uint8_t   Heater #1 PID min value
+ * 0x2c uint8_t   Heater #1 PID max value
+ * 0x2d float     Heater #1 PID Kp
+ * 0x31 float     Heater #1 PID Ki
+ * 0x35 float     Heater #1 PID Kd
  *
- * 0x2f uint8_t   Heater #2 autostart
- * 0x30 uint8_t   Heater #2 temperature offset
- * 0x31 uint8_t   Heater #2 PID min value
- * 0x32 uint8_t   Heater #2 PID max value
- * 0x33 float     Heater #2 PID Kp
- * 0x37 float     Heater #2 PID Ki
- * 0x3b float     Heater #2 PID Kd
+ * 0x39 uint8_t   Heater #2 autostart
+ * 0x3a float     Heater #2 temperature offset
+ * 0x3e uint8_t   Heater #2 PID min value
+ * 0x3f uint8_t   Heater #2 PID max value
+ * 0x40 float     Heater #2 PID Kp
+ * 0x44 float     Heater #2 PID Ki
+ * 0x48 float     Heater #2 PID Kd
  *
- * 0x3f uint8_t   Heater #3 autostart
- * 0x40 uint8_t   Heater #3 temperature offset
- * 0x41 uint8_t   Heater #3 PID min value
- * 0x42 uint8_t   Heater #3 PID max value
- * 0x43 float     Heater #3 PID Kp
- * 0x47 float     Heater #3 PID Ki
- * 0x4b float     Heater #3 PID Kd
+ * 0x4c uint8_t   Heater #3 autostart
+ * 0x4d float     Heater #3 temperature offset
+ * 0x51 uint8_t   Heater #3 PID min value
+ * 0x52 uint8_t   Heater #3 PID max value
+ * 0x53 float     Heater #3 PID Kp
+ * 0x57 float     Heater #3 PID Ki
+ * 0x5b float     Heater #3 PID Kd
  *
- * 0x4f uint8_t   End byte 0xff
+ * 0x5f uint8_t   End byte 0xff
  *
  */
 
-#define EEPROM_VERSION  0x02
+#define EEPROM_VERSION  0x01
 #define EEPROM_OFFSET   0x10
 
 #define EEPROM_ADDR_HEADER  (EEPROM_OFFSET       + 0x00)

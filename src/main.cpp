@@ -58,6 +58,9 @@ int main(void)
   // set serial status as ready
   sys.status |= STATUS_SERIAL_READY;
 
+  // loading message
+  serial::println::PGM(PSTR("Booting, please wait.."));
+
 
   // --------------------------------------------------------------------------
   // Timer1 ISR init routine --------------------------------------------------
@@ -110,7 +113,7 @@ int main(void)
   // Output init --------------------------------------------------------------
   // --------------------------------------------------------------------------
   for (size_t i = 0; i < NUM_OUTPUTS; i++ )
-    pinMode(ouput_pin(i), OUTPUT);          // Enable PWM outputs
+    pinMode(output_pin(i), OUTPUT);         // Enable PWM outputs
   DDRB |= 0x20;                             // Enable D13 as output
 
 
@@ -123,17 +126,16 @@ int main(void)
     if (now > next) {
       serial::println::PGM(PSTR("warn: no outputs available"));
       break;
-    }
+    } else { delay(1); }
   }
 
   while (!(sys.status & STATUS_AMBIENT_READY)) {
     millis_t now = utils::millis();
     static millis_t next = now + 10000L;
     if (now > next) {
-      serial::print::PGM(PSTR("err: ambient sensor error"));
-      serial::println::PGM(PSTR(", system halted"));
-      while(1) {;}
-    }
+      serial::println::PGM(PSTR("err: ambient sensor error"));
+      halt();
+    } else { delay(1); }
   }
 
   serial::banner();

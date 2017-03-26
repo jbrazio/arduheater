@@ -56,7 +56,7 @@ struct ambient_t
 struct heater_t
 {
   bool    autostart;
-  uint8_t offset;
+  float   offset;
   uint8_t min;
   uint8_t max;
   float   Kp;

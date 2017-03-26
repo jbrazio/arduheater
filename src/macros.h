@@ -46,12 +46,27 @@
   #define no_less(var, low) do { if (var < low) var = low; } while(0)
 #endif
 
-#ifndef ouput_pin
-  #define ouput_pin(N) (pgm_read_byte(heater_ouput_pins + (N)))
+#ifndef output_pin
+  #define output_pin(N) (pgm_read_byte(heater_ouput_pins + (N)))
 #endif
 
 #ifndef ntc_ready
   #define ntc_ready(N) (sys.status & STATUS_NTC0_READY << N)
+#endif
+
+#ifndef disable_all_outputs
+  #define disable_all_outputs() do { \
+    digitalWrite(output_pin(0), LOW); \
+    digitalWrite(output_pin(1), LOW); \
+    digitalWrite(output_pin(2), LOW); \
+    digitalWrite(output_pin(3), LOW); } while(0)
+#endif
+
+#ifndef halt
+  #define halt() do { \
+    serial::println::PGM(PSTR("err: system halted")); \
+    disable_all_outputs(); \
+    while(1) { wdt_reset(); } } while(0)
 #endif
 
 #ifndef ARDUINO

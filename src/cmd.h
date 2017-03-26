@@ -31,6 +31,8 @@ namespace cmd {
   void process(const char* buffer);
   void result(const uint8_t& code);
   void save();
+  void set(const uint8_t& key, const float& val);
+  void settings();
   void status();
 };
 

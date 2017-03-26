@@ -47,13 +47,51 @@ ISR(TIMER1_COMPA_vect)
   ntc.irq();
   amb.irq();
 
+  // the following section will calculate the total required
+  // power by the active outputs
+  uint16_t totalpower = 0;
   for (size_t i = 0; i < NUM_OUTPUTS; i++) {
     if (ntc_ready(i)) {
-      // only evalutate the heater PID if the thermistor
-      // is correctly outputing a temperature value.
-      out[i].alg.input(ntc.t(i));
-      out[i].alg.irq();
-      analogWrite(ouput_pin(i), out[i].alg.output());
+      // thermal protection
+      if (ntc.t(i) >= HEATER_MAX_TEMP) {
+        serial::print::PGM(PSTR("warn: out"));
+        serial::print::uint8(i);
+        serial::println::PGM(PSTR(" max temp thermal protection"));
+        disable_all_outputs();
+        halt();
+      }
+
+      // if the output is active evaluate the pid
+      else if (out[i].alg.active()) {
+        out[i].alg.input(ntc.t(i));
+        out[i].alg.irq();
+        totalpower += out[i].alg.output();
+      }
+    }
+
+    else {
+      // thermal protection
+      if (out[i].alg.active()) {
+        serial::print::PGM(PSTR("warn: out"));
+        serial::print::uint8(i);
+        serial::println::PGM(PSTR(" thermal protection"));
+        disable_all_outputs();
+        halt();
+      }
+    }
+  }
+
+  // the following section will cal
+  for (size_t i = 0; i < NUM_OUTPUTS; i++) {
+    if (ntc_ready(i) && out[i].alg.active()) {
+      if (totalpower > 255) {
+        out[i].alg.output((out[i].alg.output() / totalpower) * 255);
+        serial::print::PGM(PSTR("warn: out"));
+        serial::print::uint8(i);
+        serial::print::PGM(PSTR(" output capped to "));
+        serial::println::uint8(out[i].alg.output());
+      }
+      analogWrite(output_pin(i), out[i].alg.output());
     }
   }
 }

@@ -75,8 +75,9 @@ void serial::process()
       case '\n':
         if (!pos) { break; }                        // reject empty buffers
         buffer[pos] = 0x00;                         // mark the string end
-        pos = 0;                                    // reset the buffer pointer
+        pos         = 0;                            // reset the buffer pointer
         cmd::process(buffer);                       // process the data
+        memset(&buffer, 0, sizeof(buffer));         // clears the buffer
         break;
 
       default:

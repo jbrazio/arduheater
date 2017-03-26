@@ -26,46 +26,40 @@
 void pid::autotune() {
   serial::println::PGM(PSTR("PID autotune start"));
 
-  bool running = m_running;
-  if (running) m_running = false;
+  m_tunning = true;
 
   millis_t t0 = 0;
   millis_t t1 = 0;
   millis_t peak1 = 0;
   millis_t peak2 = 0;
 
-  float oStep = 30;
-  float noiseBand = 0.5;
+  const float noiseBand = 0.5;
+  const float oStep = 30;
+  const float outputStart = m_output;
+  const float setpoint = m_input;
+  const int16_t nLookBack = 40;   // assuming 10sec lookback
+  const int16_t sampleTime = 250; // assuming 10sec lookback
 
-  float lastInputs[101];
-  float peaks[10];
-
-  // assuming 10sec lookback
-  int16_t nLookBack = 40;
-  int16_t sampleTime = 250;
-
-  int16_t peakType = 0;
-  int16_t peakCount = 0;
   bool justchanged = false;
   float absMax = m_input;
   float absMin = m_input;
-  float setpoint = m_input;
-  float outputStart = m_output;
-
-  output(outputStart + oStep);
+  float lastInputs[101];
+  float peaks[10];
+  int16_t peakCount = 0;
+  int16_t peakType = 0;
 
   for (;;) {
     if( peakCount > 9) {
       serial::println::PGM(PSTR("PID autotune timeout"));
-      if (running) m_running = true;
       output(outputStart);
+      m_tunning = false;
       return;
     }
 
-    millis_t now = utils::millis();
+    const millis_t now = utils::millis();
 
     if (now > t1) {
-      t1 = now + 1000L;
+      t1 = now + 15000L;
       cmd::status();
     }
 
@@ -73,14 +67,18 @@ void pid::autotune() {
       t0 = now + sampleTime;
       //serial::print::PGM(PSTR("."));
 
-      float refVal = m_input;
+      const float refVal = m_input;
 
       if (refVal > absMax) { absMax = refVal; }
       if (refVal < absMin) { absMin = refVal; }
 
+      /*serial::print::pair::float32(PSTR("refVal"), refVal, 2);
+      serial::print::pair::float32(PSTR("setpoint"), setpoint, 2);
+      serial::print::pair::float32(PSTR("setpoint + noiseBand"), setpoint + noiseBand, 2);*/
+
       //oscillate the output base on the input's relation to the setpoint
       if (refVal > setpoint + noiseBand) { output(outputStart - oStep); }
-      else if (refVal < setpoint - noiseBand) {output(outputStart + oStep); }
+      else if (refVal < setpoint - noiseBand) { output(outputStart + oStep); }
 
       bool isMax = true;
       bool isMin = true;
@@ -126,21 +124,23 @@ void pid::autotune() {
             serial::println::PGM(PSTR("PID autotune finished"));
 
             output(outputStart);
-            if (running) m_running = true;
+            m_tunning = false;
 
-            float Ku = 4 * (2 * oStep) / ((absMax-absMin) * M_PI);
-            float Pu = (float) (peak1 - peak2) / 1000.0;
+            const float Ku = 4 * (2 * oStep) / ((absMax-absMin) * M_PI);
+            const float Pu = (float) (peak1 - peak2) / 1000.0;
 
             //serial::print::pair::float32(PSTR("Ku"), Ku, 2);
             //serial::print::pair::float32(PSTR("Pu"), Pu, 2);
 
-            float Wp = 0.6 * Ku;
-            float Wi = 1.2 * Ku / Pu;
-            float Wd = 0.075 * Ku * Pu;
+            const float Wp = 0.6 * Ku;
+            const float Wi = 1.2 * Ku / Pu;
+            const float Wd = 0.075 * Ku * Pu;
 
             serial::print::pair::float32(PSTR("Wp"), Wp, 2);
             serial::print::pair::float32(PSTR("Wi"), Wi, 2);
             serial::print::pair::float32(PSTR("Wd"), Wd, 2);
+
+            //Kp(Wp); Ki(Wi); Kd(Wd);
             return;
           }
         }
@@ -152,11 +152,11 @@ void pid::autotune() {
 }
 
 void pid::irq(const bool& reset) {
-  if (! m_running) { return; }
+  if (! m_running || m_tunning) { return; }
 
-  static float s_last_input = 0;            // input value from last cycle
-  float error  = m_setpoint - m_input;      // calculate current error
-  float dInput = m_input - s_last_input;    // calculate input derivative
+  static float s_last_input = 0;                // input value from last cycle
+  const float error  = m_setpoint - m_input;    // calculate current error
+  float dInput = m_input - s_last_input;        // calculate input derivative
 
   static float s_error = 0;         // integration of error from 0 to present
   s_error += m_Ki * (error * m_dt); // adding the Ki term at this point will

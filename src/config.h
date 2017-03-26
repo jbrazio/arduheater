@@ -51,6 +51,9 @@
 // Defines the number of heater outputs supported by this configuration, it
 // should be defined as a integer value between 1 and 4.
 // (PWM: 3, 5, 6, 9, 10, and 11)
+// Pins 5 and 6: controlled by timer0
+// Pins 9 and 10: controlled by timer1
+// Pins 11 and 3: controlled by timer2
 #define NUM_OUTPUTS 4
 
 
@@ -67,9 +70,10 @@
 #define THERMISTOR_ERR_TEMP 1023
 
 
-#define HEATER_PINS {5, 6, 10, 11}
+#define HEATER_PINS     { 3, 5, 6, 11 }
+#define HEATER_MAX_TEMP 35
 
-#define AMBIENT_PIN         7
+#define AMBIENT_PIN         2
 #define AMBIENT_T_OFFSET    0
 #define AMBIENT_RH_OFFSET   0
 #define AMBIENT_DEW_OFFSET  0

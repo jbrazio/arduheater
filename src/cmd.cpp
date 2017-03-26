@@ -30,7 +30,7 @@ void cmd::process(const char* buffer) {
         case '$':
           if (buffer[3] != 0x00) {
             result(REPLY_INVALID_SYNTAX);
-          } else { /* do nothing */ }
+          } else { settings(); }
           break;
 
         case 's':
@@ -46,7 +46,30 @@ void cmd::process(const char* buffer) {
           break;
 
         default:
-          result(REPLY_INVALID_SYNTAX);
+          char* str = (char*) buffer;
+
+          // we use strtod with a typecast instead of strtol because the AVR version
+          // of strtod will store nullptr at __endptr if the conversion fails.
+          // we skip one byte because we already know it's value '$'
+          uint8_t key = (uint8_t) strtod(str +1, &str);
+          serial::print::pair::uint8(PSTR("key"), key);
+
+          if ((key == 0L && str == nullptr) || *str != '=') {
+            result(REPLY_INVALID_SYNTAX);
+            break;
+          }
+
+          // we skip one byte because we already know it's value '='
+          float val = strtod(str +1, &str);
+          serial::print::pair::float32(PSTR("val"), val, 2);
+
+          if ((val == 0.0F && str == nullptr) || *str != 0x00) {
+            result(REPLY_INVALID_SYNTAX);
+            break;
+          }
+
+          set(key, val);
+          break;
       }
       break;
 
@@ -82,9 +105,9 @@ void cmd::process(const char* buffer) {
 
 void cmd::help() {
   serial::println::PGM(PSTR("$$ (view settings)"));
-  serial::println::PGM(PSTR("$$ (save settings)"));
-  serial::println::PGM(PSTR("$i (view build info)"));
-  serial::println::PGM(PSTR("?  (current status)"));
+  serial::println::PGM(PSTR("$I (view build info)"));
+  serial::println::PGM(PSTR("$x=value (save setting)"));
+  serial::println::PGM(PSTR("? (current status)"));
   //serial::println::PGM(PSTR(""));
 }
 
@@ -181,9 +204,7 @@ void cmd::enableheater(const char& c) {
         result(REPLY_OUTPUT_ACTIVE);
       } else {
         sys.status |= (STATUS_OUT0_ENABLED << id);
-        out[id].alg.tune(21.01, 0.67, 165.48);
-        //out[id].alg.limit(0, 100);
-        out[id].alg.setpoint(30);
+        out[id].alg.setpoint(25);
         out[id].alg.start();
         result(REPLY_OK);
       }
@@ -240,4 +261,191 @@ void cmd::autotune(const char& c) {
 void cmd::save() {
   result(REPLY_OK);
   eeprom::save();
+}
+
+void cmd::set(const uint8_t& key, const float& val) {
+  switch (key) {
+    // Ambient sensor ---------------------------------------------------------
+    case 1:
+      amb.config.t_offset = val;
+      break;
+
+    case 2:
+      amb.config.rh_offset = val;
+      break;
+
+    case 3:
+      amb.config.dew_offset = val;
+      break;
+
+    // Heater #0 --------------------------------------------------------------
+    case 4:
+      out[0].config.autostart = (bool) val;
+      break;
+
+    case 5:
+      out[0].config.offset = val;
+      break;
+
+    case 6:
+      out[0].config.min = (uint8_t) val;
+      break;
+
+    case 7:
+      out[0].config.max = (uint8_t) val;
+      break;
+
+    case 8:
+      out[0].config.Kp = val;
+      break;
+
+    case 9:
+      out[0].config.Ki = val;
+      break;
+
+    case 10:
+      out[0].config.Kd = val;
+      break;
+
+    // Heater #1 --------------------------------------------------------------
+    case 11:
+      out[1].config.autostart = (bool) val;
+      break;
+
+    case 12:
+      out[1].config.offset = val;
+      break;
+
+    case 13:
+      out[1].config.min = (uint8_t) val;
+      break;
+
+    case 14:
+      out[1].config.max = (uint8_t) val;
+      break;
+
+    case 15:
+      out[1].config.Kp = val;
+      break;
+
+    case 16:
+      out[1].config.Ki = val;
+      break;
+
+    case 17:
+      out[1].config.Kd = val;
+      break;
+
+    // Heater #2 --------------------------------------------------------------
+    case 18:
+      out[2].config.autostart = (bool) val;
+      break;
+
+    case 19:
+      out[2].config.offset = val;
+      break;
+
+    case 20:
+      out[2].config.min = (uint8_t) val;
+      break;
+
+    case 21:
+      out[2].config.max = (uint8_t) val;
+      break;
+
+    case 22:
+      out[2].config.Kp = val;
+      break;
+
+    case 23:
+      out[2].config.Ki = val;
+      break;
+
+    case 24:
+      out[2].config.Kd = val;
+      break;
+
+    // Heater #3 --------------------------------------------------------------
+    case 25:
+      out[3].config.autostart = (bool) val;
+      break;
+
+    case 26:
+      out[3].config.offset = val;
+      break;
+
+    case 27:
+      out[3].config.min = (uint8_t) val;
+      break;
+
+    case 28:
+      out[3].config.max = (uint8_t) val;
+      break;
+
+    case 29:
+      out[3].config.Kp = val;
+      break;
+
+    case 30:
+      out[3].config.Ki = val;
+      break;
+
+    case 31:
+      out[3].config.Kd = val;
+      break;
+  }
+
+  save();
+}
+
+void cmd::settings() {
+  #ifndef print_setting_uint8
+    #define print_setting_uint8(id, key, desc) do { \
+      serial::print::PGM(PSTR("$" #id "=")); \
+      serial::print::uint8(key); \
+      serial::println::PGM(PSTR(" (" #desc ")")); } while(0)
+  #endif
+
+  #ifndef print_setting_float32
+    #define print_setting_float32(id, key, desc) do { \
+      serial::print::PGM(PSTR("$" #id "=")); \
+      serial::print::float32(key, 2); \
+      serial::println::PGM(PSTR(" (" #desc ")")); } while(0)
+  #endif
+
+  print_setting_float32(1,  amb.config.t_offset,     ambient temperature offset);
+  print_setting_float32(2,  amb.config.rh_offset,    ambient relative humidity offset);
+  print_setting_float32(3,  amb.config.dew_offset,   ambient dew offset);
+
+  print_setting_uint8  (4,  out[0].config.autostart, heater #0 autostart);
+  print_setting_float32(5,  out[0].config.offset,    heater #0 temperature offset);
+  print_setting_uint8  (6,  out[0].config.min,       heater #0 PID min value);
+  print_setting_uint8  (7,  out[0].config.max,       heater #0 PID max value);
+  print_setting_float32(8,  out[0].config.Kp,        heater #0 PID Kp);
+  print_setting_float32(9,  out[0].config.Ki,        heater #0 PID Ki);
+  print_setting_float32(10, out[0].config.Kd,        heater #0 PID Kd);
+
+  print_setting_uint8  (11, out[1].config.autostart, heater #1 autostart);
+  print_setting_float32(12, out[1].config.offset,    heater #1 temperature offset);
+  print_setting_uint8  (13, out[1].config.min,       heater #1 PID min value);
+  print_setting_uint8  (14, out[1].config.max,       heater #1 PID max value);
+  print_setting_float32(15, out[1].config.Kp,        heater #1 PID Kp);
+  print_setting_float32(16, out[1].config.Ki,        heater #1 PID Ki);
+  print_setting_float32(17, out[1].config.Kd,        heater #1 PID Kd);
+
+  print_setting_uint8  (18, out[2].config.autostart, heater #2 autostart);
+  print_setting_float32(19, out[2].config.offset,    heater #2 temperature offset);
+  print_setting_uint8  (20, out[2].config.min,       heater #2 PID min value);
+  print_setting_uint8  (21, out[2].config.max,       heater #2 PID max value);
+  print_setting_float32(22, out[2].config.Kp,        heater #2 PID Kp);
+  print_setting_float32(23, out[2].config.Ki,        heater #2 PID Ki);
+  print_setting_float32(24, out[2].config.Kd,        heater #2 PID Kd);
+
+  print_setting_uint8  (25, out[3].config.autostart, heater #3 autostart);
+  print_setting_float32(26, out[3].config.offset,    heater #3 temperature offset);
+  print_setting_uint8  (27, out[3].config.min,       heater #3 PID min value);
+  print_setting_uint8  (28, out[3].config.max,       heater #3 PID max value);
+  print_setting_float32(29, out[3].config.Kp,        heater #3 PID Kp);
+  print_setting_float32(30, out[3].config.Ki,        heater #3 PID Ki);
+  print_setting_float32(31, out[3].config.Kd,        heater #3 PID Kd);
 }

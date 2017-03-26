@@ -33,10 +33,11 @@ public:
     stop();
     limit(0, 255);
     sampletime(HEARTBEAT);
+    m_running = m_tunning = false;
   }
 
 protected:
-  bool m_running;
+  bool m_running, m_tunning;
   float m_Kp, m_Ki, m_Kd, m_dt;
   float m_input, m_output, m_setpoint;
   float m_min, m_max;
@@ -50,6 +51,7 @@ public:
   void tune(const float& Np, const float& Ni, const float& Nd);
 
 public:
+  inline bool  active()                     { return m_running;   }
   inline float Kd()                         { return m_Kd;        }
   inline float Ki()                         { return m_Ki;        }
   inline float Kp()                         { return m_Kp;        }
