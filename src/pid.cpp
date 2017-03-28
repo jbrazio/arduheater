@@ -33,23 +33,23 @@ void pid::autotune() {
   millis_t peak1 = 0;
   millis_t peak2 = 0;
 
-  const float noiseBand = 0.5;
+  const float noiseBand = 1;
   const float oStep = 30;
   const float outputStart = m_output;
   const float setpoint = m_input;
-  const int16_t nLookBack = 40;   // assuming 10sec lookback
-  const int16_t sampleTime = 250; // assuming 10sec lookback
+  const int16_t nLookBack = 200; // assuming 10sec lookback
+  const int16_t sampleTime = 50; // assuming 10sec lookback
 
   bool justchanged = false;
   float absMax = m_input;
   float absMin = m_input;
-  float lastInputs[101];
+  float lastInputs[255];
   float peaks[10];
   int16_t peakCount = 0;
   int16_t peakType = 0;
 
   for (;;) {
-    if( peakCount > 9) {
+    if (peakCount > 9) {
       serial::println::PGM(PSTR("PID autotune timeout"));
       output(outputStart);
       m_tunning = false;
@@ -104,6 +104,7 @@ void pid::autotune() {
 
           peak1 = now;
           peaks[peakCount] = refVal;
+
         } else if (isMin) {
           if (peakType == 0) { peakType=-1; }
           else if (peakType == 1) {
@@ -127,14 +128,20 @@ void pid::autotune() {
             m_tunning = false;
 
             const float Ku = 4 * (2 * oStep) / ((absMax-absMin) * M_PI);
-            const float Pu = (float) (peak1 - peak2) / 1000.0;
+            const float Tu = (float) (peak1 - peak2) / 1000.0;
 
             //serial::print::pair::float32(PSTR("Ku"), Ku, 2);
             //serial::print::pair::float32(PSTR("Pu"), Pu, 2);
 
+            const float Wp = 0.6F   * Ku;
+            const float Wi = 1.2F   * Ku / Tu;
+            const float Wd = 0.075F * Ku * Tu;
+
+            /*
             const float Wp = 0.6 * Ku;
-            const float Wi = 1.2 * Ku / Pu;
-            const float Wd = 0.075 * Ku * Pu;
+            const float Wi = 0.5 * Tu;
+            const float Wd = 0.125 * Tu;
+            */
 
             serial::print::pair::float32(PSTR("Wp"), Wp, 2);
             serial::print::pair::float32(PSTR("Wi"), Wi, 2);
@@ -153,9 +160,14 @@ void pid::autotune() {
 
 void pid::irq(const bool& reset) {
   if (! m_running || m_tunning) { return; }
+  // calculate sampletime
+  const  millis_t now = millis();
+  static millis_t before = now;
+  const  float  m_dt = (now - before) / 1000.0F;
+  before = now;
 
   static float s_last_input = 0;                // input value from last cycle
-  const float error  = m_setpoint - m_input;    // calculate current error
+  const  float error = m_setpoint - m_input;    // calculate current error
   float dInput = m_input - s_last_input;        // calculate input derivative
 
   static float s_error = 0;         // integration of error from 0 to present

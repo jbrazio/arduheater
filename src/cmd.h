@@ -26,7 +26,7 @@ namespace cmd {
   void autotune(const char& c);
   void buildinfo();
   void disableheater(const char& c);
-  void enableheater(const char&c);
+  void enableheater(const char& c);
   void help();
   void process(const char* buffer);
   void result(const uint8_t& code);

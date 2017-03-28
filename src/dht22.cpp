@@ -37,6 +37,7 @@ bool dht22::hwupdate() {
   // TODO: stop using pulsein
   if (! pulseIn(AMBIENT_PIN, LOW, 115)) {
     // return timeout if no data is received
+    sys.status &= ~STATUS_AMBIENT_READY;
     m_state = SENSOR_TIMEOUT;
     return false;
   }
@@ -61,6 +62,7 @@ bool dht22::hwupdate() {
 
   // checksum validation
   if ((byte) (((byte) h) + (h >> 8) + ((byte) t) + (t >> 8)) != d) {
+    sys.status &= ~STATUS_AMBIENT_READY;
     m_state = SENSOR_ERROR;
     return false;
   }

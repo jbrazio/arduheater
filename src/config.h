@@ -54,7 +54,7 @@
 // Pins 5 and 6: controlled by timer0
 // Pins 9 and 10: controlled by timer1
 // Pins 11 and 3: controlled by timer2
-#define NUM_OUTPUTS 4
+#define NUM_OUTPUTS 2
 
 
 // ----------------------------------------------------------------------------
@@ -65,18 +65,15 @@
 #define THERMISTOR_NOMINAL_VAL    10000.0
 #define THERMISTOR_SERIESRESISTOR 10000.0
 
-#define THERMISTOR_MAX_VAL   100  // 400 aka ~34C
+#define THERMISTOR_MAX_VAL   250  // ~52C
 #define THERMISTOR_MIN_VAL   900  // ~(-13C)
 #define THERMISTOR_ERR_TEMP 1023
 
 
-#define HEATER_PINS     { 3, 5, 6, 11 }
-#define HEATER_MAX_TEMP 35
+#define HEATER_PINS { 11, 6, 3, 5 }
+#define HEATER_MAX_TEMP 50
 
-#define AMBIENT_PIN         2
-#define AMBIENT_T_OFFSET    0
-#define AMBIENT_RH_OFFSET   0
-#define AMBIENT_DEW_OFFSET  0
+#define AMBIENT_PIN 2
 
 
 #endif

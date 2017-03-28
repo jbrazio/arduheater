@@ -26,10 +26,10 @@ namespace serial
 {
   bool    available();
   uint8_t read();
-  void    write(const uint8_t& c);
-
   void    banner();
+  void    flush();
   void    process();
+  void    write(const uint8_t& c);
 
   extern serial_buffer_t buffer;
 };

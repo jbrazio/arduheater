@@ -68,7 +68,7 @@
  *
  */
 
-#define EEPROM_VERSION  0x01
+#define EEPROM_VERSION  0x011
 #define EEPROM_OFFSET   0x10
 
 #define EEPROM_ADDR_HEADER  (EEPROM_OFFSET       + 0x00)
@@ -84,6 +84,7 @@ namespace eeprom {
   void defaults();
   void load();
   void save();
+  void sync();
 };
 
 #endif

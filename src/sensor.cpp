@@ -48,7 +48,6 @@ void sensor::init()
 void sensor::reset()
 {
   m_needs_updating = false;
-
   if (m_register & SENSOR_NEEDS_SLEEP) {
     m_state = SENSOR_SLEEP;
     m_timer.sleep.ticks = m_timer.sleep.period;

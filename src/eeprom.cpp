@@ -53,21 +53,50 @@ void eeprom::load() {
     eeprom_read_block(&amb.config, (void *) EEPROM_ADDR_AMBIENT, sizeof(ambient_t));
 
     // heaters config
-    eeprom_read_block(&out[0].config, (void *) EEPROM_ADDR_HEATER0, sizeof(heater_t));
-    eeprom_read_block(&out[1].config, (void *) EEPROM_ADDR_HEATER1, sizeof(heater_t));
-    eeprom_read_block(&out[2].config, (void *) EEPROM_ADDR_HEATER2, sizeof(heater_t));
-    eeprom_read_block(&out[3].config, (void *) EEPROM_ADDR_HEATER3, sizeof(heater_t));
+    #if (NUM_OUTPUTS > 3)
+      eeprom_read_block(&out[0].config, (void *) EEPROM_ADDR_HEATER0, sizeof(heater_t));
+      eeprom_read_block(&out[1].config, (void *) EEPROM_ADDR_HEATER1, sizeof(heater_t));
+      eeprom_read_block(&out[2].config, (void *) EEPROM_ADDR_HEATER2, sizeof(heater_t));
+      eeprom_read_block(&out[3].config, (void *) EEPROM_ADDR_HEATER3, sizeof(heater_t));
+    #elif (NUM_OUTPUTS > 2)
+      eeprom_read_block(&out[0].config, (void *) EEPROM_ADDR_HEATER0, sizeof(heater_t));
+      eeprom_read_block(&out[1].config, (void *) EEPROM_ADDR_HEATER1, sizeof(heater_t));
+      eeprom_read_block(&out[2].config, (void *) EEPROM_ADDR_HEATER2, sizeof(heater_t));
+    #elif (NUM_OUTPUTS > 1)
+      eeprom_read_block(&out[0].config, (void *) EEPROM_ADDR_HEATER0, sizeof(heater_t));
+      eeprom_read_block(&out[1].config, (void *) EEPROM_ADDR_HEATER1, sizeof(heater_t));
+    #elif (NUM_OUTPUTS > 0)
+      eeprom_read_block(&out[0].config, (void *) EEPROM_ADDR_HEATER0, sizeof(heater_t));
+    #endif
   }
 
+  sync();
+}
+
+void eeprom::defaults() {
+  // clear the eeprom
+  for (size_t i = 0 ; i < E2END; i++) {
+    eeprom_write_byte((uint8_t*) i, 0xff);
+  }
+
+  // set output defaults
+  for (size_t i = 0; i < NUM_OUTPUTS; i++ ) {
+    out[i].config = { false, 0, 0, 255, 15, 0, 0 };
+  }
+
+  // set ambient sensor defaults
+  amb.config = { 0, 0, 0 };
+
+  // sync the running values
+  sync();
+
+  serial::println::PGM(PSTR("warn: default settings loaded"));
+}
+
+void eeprom::sync() {
   // TODO: currently we do nothing with the extra ambient sensor config
   for (size_t i = 0; i < NUM_OUTPUTS; i++ ) {
     out[i].alg.limit(out[i].config.min, out[i].config.max);
     out[i].alg.tune(out[i].config.Kp, out[i].config.Ki, out[i].config.Kd);
   }
-}
-
-void eeprom::defaults() {
-  //serial::println::PGM(PSTR("warn: default settings loaded"));
-  amb.config = { AMBIENT_T_OFFSET, AMBIENT_RH_OFFSET, AMBIENT_DEW_OFFSET };
-  for (size_t i = 0; i < NUM_OUTPUTS; i++ ) { out[i].config = { false, 0, 0, 255, 15, 0, 0 }; }
 }

@@ -23,7 +23,7 @@
 #include "arduheater.h"
 
 #define DHT22_WARMUP_TIME   3000L
-#define DHT22_SLEEP_TIME    1999L
+#define DHT22_SLEEP_TIME    2000L
 #define DHT22_REFRESH_TIME  5000L
 
 class dht22: public sensor

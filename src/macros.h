@@ -54,8 +54,20 @@
   #define ntc_ready(N) (sys.status & STATUS_NTC0_READY << N)
 #endif
 
+#ifndef any_ntc_ready
+  #if (NUM_OUTPUTS > 3)
+    #define any_ntc_ready() (ntc_ready(0) || ntc_ready(1) || ntc_ready(2) || ntc_ready(3))
+  #elif (NUM_OUTPUTS > 2)
+    #define any_ntc_ready() (ntc_ready(0) || ntc_ready(1) || ntc_ready(2))
+  #elif (NUM_OUTPUTS > 1)
+    #define any_ntc_ready() (ntc_ready(0) || ntc_ready(1))
+  #elif (NUM_OUTPUTS > 0)
+    #define any_ntc_ready() (ntc_ready(0))
+  #endif
+#endif
+
 #ifndef disable_all_outputs
-  #define disable_all_outputs() do { \
+  #define disable_all_outputs() do {  \
     digitalWrite(output_pin(0), LOW); \
     digitalWrite(output_pin(1), LOW); \
     digitalWrite(output_pin(2), LOW); \
@@ -63,10 +75,12 @@
 #endif
 
 #ifndef halt
-  #define halt() do { \
+  #define halt() do {                                 \
+    cli();                                            \
+    disable_all_outputs();                            \
     serial::println::PGM(PSTR("err: system halted")); \
-    disable_all_outputs(); \
-    while(1) { wdt_reset(); } } while(0)
+    serial::flush();                                  \
+    while(1) { utils::delay(1); } } while(0)
 #endif
 
 #ifndef ARDUINO

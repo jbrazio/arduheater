@@ -32,15 +32,14 @@ public:
   pid() {
     stop();
     limit(0, 255);
-    sampletime(HEARTBEAT);
     m_running = m_tunning = false;
   }
 
 protected:
-  bool m_running, m_tunning;
-  float m_Kp, m_Ki, m_Kd, m_dt;
-  float m_input, m_output, m_setpoint;
   float m_min, m_max;
+  float m_Kp, m_Ki, m_Kd;
+  bool  m_running, m_tunning;
+  float m_input, m_output, m_setpoint;
 
 public:
   void autotune();
@@ -60,7 +59,6 @@ public:
   inline void  Kd(const float& lhs)         { m_Kd = lhs;         }
   inline void  Ki(const float& lhs)         { m_Ki = lhs;         }
   inline void  Kp(const float& lhs)         { m_Kp = lhs;         }
-  inline void  sampletime(const float& lhs) { m_dt = lhs / 1000L; }
   inline void  setpoint(const float& lhs)   { m_setpoint = lhs;   }
   inline void  start()                      { m_running = true;   }
   inline void  stop()                       { m_running = false;  }

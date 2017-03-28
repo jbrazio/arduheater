@@ -52,6 +52,20 @@ ISR(TIMER1_COMPA_vect)
   uint16_t totalpower = 0;
   for (size_t i = 0; i < NUM_OUTPUTS; i++) {
     if (ntc_ready(i)) {
+      // update the dew setpoint once per minute
+      // based on a 20Hz ISR
+      static uint16_t counter = 1200;
+      if (counter == 1200) {
+        const float t = amb.t() + amb.config.t_offset;
+        const float h = amb.rh() + amb.config.rh_offset;
+        const float d = utils::dew(t, h) + amb.config.dew_offset;
+        const float s = d + out[i].config.offset;
+
+        out[i].alg.setpoint(s);
+        counter = 0;
+
+      } else { ++counter; }
+
       // thermal protection
       if (ntc.t(i) >= HEATER_MAX_TEMP) {
         serial::print::PGM(PSTR("warn: out"));
@@ -86,10 +100,12 @@ ISR(TIMER1_COMPA_vect)
     if (ntc_ready(i) && out[i].alg.active()) {
       if (totalpower > 255) {
         out[i].alg.output((out[i].alg.output() / totalpower) * 255);
+        /*
         serial::print::PGM(PSTR("warn: out"));
         serial::print::uint8(i);
         serial::print::PGM(PSTR(" output capped to "));
         serial::println::uint8(out[i].alg.output());
+        */
       }
       analogWrite(output_pin(i), out[i].alg.output());
     }

@@ -22,9 +22,9 @@
 
 #include "arduheater.h"
 
-#define THERMISTOR_WARMUP_TIME   500
-#define THERMISTOR_SLEEP_TIME    0
-#define THERMISTOR_REFRESH_TIME  1
+#define THERMISTOR_WARMUP_TIME   500L
+#define THERMISTOR_SLEEP_TIME    0L
+#define THERMISTOR_REFRESH_TIME  1L
 
 class thermistor: public sensor
 {
@@ -32,8 +32,8 @@ public:
   thermistor();
 
 protected:
-  movingmean<int16_t, 3> m_cache[4];
-  uint8_t                m_active_channel;
+  movingmean<int16_t, 10> m_cache[NUM_OUTPUTS];
+  uint8_t                 m_active_channel;
 
 public:
   inline float t(const uint8_t& channel) {

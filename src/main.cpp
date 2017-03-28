@@ -28,9 +28,9 @@ volatile system_t sys;
 int main(void)
 {
   // --------------------------------------------------------------------------
-  // Arduino's interrupt init -------------------------------------------------
+  // Enable global interrupts -------------------------------------------------
   // --------------------------------------------------------------------------
-  init(); // call ardunino interrupt init function
+  sei();
 
 
   // --------------------------------------------------------------------------
@@ -58,43 +58,6 @@ int main(void)
   // set serial status as ready
   sys.status |= STATUS_SERIAL_READY;
 
-  // loading message
-  serial::println::PGM(PSTR("Booting, please wait.."));
-
-
-  // --------------------------------------------------------------------------
-  // Timer1 ISR init routine --------------------------------------------------
-  // --------------------------------------------------------------------------
-  TCCR1A  = TCCR1B = TCNT1 = 0;         // clears timer1 registers
-  OCR1A   = 0xC35;                      // sets the frequency to 20Hz
-  TCCR1B |= bit(WGM12) | bit(CS12);     // enable CTC mode with a 256 prescaler
-  TIMSK1 |= bit(OCIE1A);                // enable the compare interrupt
-
-
-  // --------------------------------------------------------------------------
-  // ADC init routine ---------------------------------------------------------
-  // --------------------------------------------------------------------------
-  ADCSRA  = bit(ADEN);                            // activate the ADC
-  ADCSRA |= bit(ADPS0) | bit(ADPS1) | bit(ADPS2); // with prescaler of 128
-  ADMUX   = bit(REFS0) | bit(REFS1);              // select aref 1.1V
-
-  #if NUM_OUTPUT_CHANNELS == 1
-    // disable digital buffer from A1 to A3
-    DIDR0 |= ADC1D | ADC2D | ADC3D;
-  #elif NUM_OUTPUT_CHANNELS == 2
-    // disable digital buffer from A2 to A3
-    DIDR0 |= ADC2D | ADC3D;
-  #elif NUM_OUTPUT_CHANNELS == 3
-    // disable digital buffer on A3
-    DIDR0 |= ADC3D;
-  #endif
-
-  // disable digital buffer from A4 to A5
-  DIDR0 |= ADC4D | ADC5D;
-
-  // clears the ADC runtime structure
-  //memset(static_cast<void *>(&adc::runtime), 0, sizeof(adc_t));
-
 
   // --------------------------------------------------------------------------
   // Sensor init --------------------------------------------------------------
@@ -104,29 +67,87 @@ int main(void)
 
 
   // --------------------------------------------------------------------------
+  // Timer0 ISR init routine --------------------------------------------------
+  // --------------------------------------------------------------------------
+  // set waveform generation mode to Fast PWM
+  TCCR0A |= bit(WGM01) | bit(WGM00);
+
+  // set clock select to 64 (from prescaler)
+  TCCR0B |= bit(CS01) | bit(CS00);
+
+  // set overflow interrupt enable
+  TIMSK0 |= bit(TOIE0);
+
+
+  // --------------------------------------------------------------------------
+  // Timer1 ISR init routine --------------------------------------------------
+  // --------------------------------------------------------------------------
+  // set output compare register A to 20Hz
+  OCR1A = 0xC35;
+
+  // set waveform generation mode to CTC
+  TCCR1B |= bit(WGM12);
+
+  // set clock select to 256 (from prescaler)
+  TCCR1B |= bit(CS12);
+
+  // set output compare A match interrupt enable
+  TIMSK1 |= bit(OCIE1A);
+
+
+  // --------------------------------------------------------------------------
+  // Timer2 ISR init routine --------------------------------------------------
+  // --------------------------------------------------------------------------
+  // set waveform generation mode to PWM Phase Correct
+  TCCR2A |= bit(WGM20);
+
+  // set clock select to 64 (from prescaler)
+  TCCR2B |= bit(CS22);
+
+
+  // --------------------------------------------------------------------------
+  // ADC init routine ---------------------------------------------------------
+  // --------------------------------------------------------------------------
+  // set ADC prescaler select to 128
+  ADCSRA |= bit(ADPS2) | bit(ADPS1) | bit(ADPS0);
+
+  // set ADC Enable
+  ADCSRA |= bit(ADEN);
+
+  // set ADC multiplexer selection to internal 1.1V
+  ADMUX  |= bit(REFS1) | bit(REFS0);
+
+  #if (NUM_OUTPUTS > 3)
+    // set digital input disable register to A4-A5
+    DIDR0 |= bit(ADC5D) | bit(ADC4D);
+  #elif (NUM_OUTPUTS > 2)
+    // set digital input disable register to A3-A5
+    DIDR0 |= bit(ADC5D) | bit(ADC4D) | bit(ADC3D);
+  #elif (NUM_OUTPUTS > 1)
+    // set digital input disable register to A2-A5
+    DIDR0 |= bit(ADC5D) | bit(ADC4D) | bit(ADC3D) | bit(ADC2D);
+  #elif (NUM_OUTPUTS > 0)
+    // set digital input disable register to A1-A5
+    DIDR0 |= bit(ADC5D) | bit(ADC4D) | bit(ADC3D) | bit(ADC2D) | bit(ADC1D);
+  #endif
+
+
+  // --------------------------------------------------------------------------
   // Load settings ------------------------------------------------------------
   // --------------------------------------------------------------------------
   eeprom::load();
 
 
   // --------------------------------------------------------------------------
-  // Output init --------------------------------------------------------------
-  // --------------------------------------------------------------------------
-  for (size_t i = 0; i < NUM_OUTPUTS; i++ )
-    pinMode(output_pin(i), OUTPUT);         // Enable PWM outputs
-  DDRB |= 0x20;                             // Enable D13 as output
-
-
-  // --------------------------------------------------------------------------
   // Startup check ------------------------------------------------------------
   // --------------------------------------------------------------------------
-  while (!ntc_ready(0) && !ntc_ready(1) && !ntc_ready(2) && !ntc_ready(3)) {
+  while (!any_ntc_ready()) {
     millis_t now = utils::millis();
     static millis_t next = now + 5000L;
     if (now > next) {
       serial::println::PGM(PSTR("warn: no outputs available"));
       break;
-    } else { delay(1); }
+    } else { utils::delay(1); }
   }
 
   while (!(sys.status & STATUS_AMBIENT_READY)) {
@@ -135,10 +156,24 @@ int main(void)
     if (now > next) {
       serial::println::PGM(PSTR("err: ambient sensor error"));
       halt();
-    } else { delay(1); }
+    } else { utils::delay(1); }
   }
 
   serial::banner();
+
+
+  // --------------------------------------------------------------------------
+  // Output init --------------------------------------------------------------
+  // --------------------------------------------------------------------------
+  DDRB |= 0x20; // Enable D13 as output
+  for (size_t i = 0; i < NUM_OUTPUTS; i++ ) {
+    pinMode(output_pin(i), OUTPUT); // Enable PWM outputs
+    if (out[i].config.autostart) {
+      serial::print::PGM(PSTR("warn: auto started out"));
+      serial::println::uint8(i);
+      cmd::enableheater(i);
+    }
+  }
 
 
   // --------------------------------------------------------------------------
@@ -153,6 +188,19 @@ int main(void)
   for(;;) {
     wdt_reset();
     serial::process();
+
+    millis_t now = millis();
+    static millis_t next = 0;
+
+    if (now > next) {
+      next = now + 500L;
+      serial::print::float32(ntc.t(0), 2);
+      serial::print::chr::space();
+      serial::print::float32(out[0].alg.setpoint(), 2);
+      serial::print::chr::space();
+      serial::print::float32(out[0].alg.output(), 2);
+      serial::print::chr::eol();
+    }
   }
 
   // We should not reach this
