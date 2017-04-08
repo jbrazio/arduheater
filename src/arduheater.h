@@ -68,9 +68,9 @@
 #include "eeprom.h"
 
 // System global control structures
-extern dht22      amb;
-extern out_t      out[NUM_OUTPUTS];
+extern dht22 amb;
 extern thermistor ntc;
+extern out_t out[NUM_OUTPUTS];
 extern volatile system_t sys;
 
 #ifndef ARDUINO

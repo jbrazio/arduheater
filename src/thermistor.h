@@ -40,6 +40,10 @@ public:
     return utils::steinhart(m_cache[channel]());
   }
 
+  inline float raw(const uint8_t& channel) {
+    return m_cache[channel]();
+  }
+
 public:
   bool hwbusy();
   bool hwupdate();

@@ -65,7 +65,7 @@ namespace serial {
       }
     }
 
-    void number(uint32_t n, const uint8_t& base, const uint8_t& digits);
+    extern void number(uint32_t n, const uint8_t& base, const uint8_t& digits);
 
     inline void number(const uint32_t& n, const uint8_t& base) {
       if (!n) {
@@ -121,7 +121,7 @@ namespace serial {
       } else serial::print::uint32(n);
     }
 
-    void float32(float n, const uint8_t& decimal_places);
+    extern void float32(float n, const uint8_t& decimal_places);
 
     namespace base2 {
       inline void uint8(const uint8_t& n) {

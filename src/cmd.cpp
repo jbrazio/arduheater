@@ -57,7 +57,7 @@ void cmd::process(const char* buffer) {
           // we use strtod with a typecast instead of strtol because the AVR version
           // of strtod will store nullptr at __endptr if the conversion fails.
           // we skip one byte because we already know it's value '$'
-          uint8_t key = (uint8_t) strtod(str +1, &str);
+          const uint8_t key = (uint8_t) strtod(str +1, &str);
           //serial::print::pair::uint8(PSTR("key"), key);
 
           if ((key == 0.0F && str == nullptr) || *str != '=') {
@@ -66,7 +66,7 @@ void cmd::process(const char* buffer) {
           }
 
           // we skip one byte because we already know it's value '='
-          float val = strtod(str +1, &str);
+          const float val = strtod(str +1, &str);
           //serial::print::pair::float32(PSTR("val"), val, 2);
 
           if ((val == 0.0F && str == nullptr) || *str != 0x00) {
@@ -246,7 +246,6 @@ void cmd::enableheater(const char& c) {
       result(REPLY_OUTPUT_ACTIVE);
     } else {
       sys.status |= (STATUS_OUT0_ENABLED << id);
-      out[id].alg.setpoint(25);
       out[id].alg.start();
 
       // only reply OK if this function is called from serial

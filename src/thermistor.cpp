@@ -48,7 +48,11 @@ bool thermistor::hwbusy()
         sys.status &= ~(STATUS_NTC0_READY << m_active_channel);
 
       } else {
-        m_cache[m_active_channel] += static_cast<int16_t>(adc::runtime.value);
+        // low pass filter
+        const float old = m_cache[m_active_channel]();
+        const float now = 0.2F * old + 0.8 * static_cast<int16_t>(adc::runtime.value);
+
+        m_cache[m_active_channel] += now;
         sys.status |= (STATUS_NTC0_READY << m_active_channel);
       }
 

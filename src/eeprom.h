@@ -81,10 +81,10 @@
 #define EEPROM_ADDR_END     (EEPROM_ADDR_HEATER3 + sizeof(heater_t))
 
 namespace eeprom {
-  void defaults();
-  void load();
-  void save();
-  void sync();
+  extern void defaults();
+  extern void load();
+  extern void save();
+  extern void sync();
 };
 
 #endif

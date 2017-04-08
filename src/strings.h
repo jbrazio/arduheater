@@ -23,25 +23,12 @@
 #include "arduheater.h"
 
 // Special characters
-const char string_colon             [] PROGMEM = { 0x3a, 0x00 };
-const char string_comma             [] PROGMEM = { 0x2c, 0x00 };
-const char string_eol               [] PROGMEM = { 0x0a, 0x00 };
-const char string_minus             [] PROGMEM = { 0x2d, 0x00 };
-const char string_percent           [] PROGMEM = { 0x25, 0x00 };
-const char string_space             [] PROGMEM = { 0x20, 0x00 };
-const char string_zero              [] PROGMEM = { 0x30, 0x00 };
-
-// Serial strings
-const char string_serial_start      [] PROGMEM = { "is starting" };
-const char string_no_pci            [] PROGMEM = { "PIN is not interrupt-capable" };
-
-
-// LCD strig
-const char string_lcd_ambient       [] PROGMEM = { "Ambient" };
-const char string_lcd_dew_point     [] PROGMEM = { "Dew point" };
-const char string_lcd_humidity      [] PROGMEM = { "Humidity" };
-const char string_lcd_not_apply     [] PROGMEM = { "N/A" };
-const char string_lcd_unit_C        [] PROGMEM = { "C" };
-const char string_lcd_please_wait   [] PROGMEM = { "Please wait.." };
+const char string_colon   [] PROGMEM = { 0x3a, 0x00 };
+const char string_comma   [] PROGMEM = { 0x2c, 0x00 };
+const char string_eol     [] PROGMEM = { 0x0a, 0x00 };
+const char string_minus   [] PROGMEM = { 0x2d, 0x00 };
+const char string_percent [] PROGMEM = { 0x25, 0x00 };
+const char string_space   [] PROGMEM = { 0x20, 0x00 };
+const char string_zero    [] PROGMEM = { 0x30, 0x00 };
 
 #endif

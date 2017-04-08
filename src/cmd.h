@@ -23,17 +23,17 @@
 #include "arduheater.h"
 
 namespace cmd {
-  void autotune(const char& c);
-  void buildinfo();
-  void disableheater(const char& c);
-  void enableheater(const char& c);
-  void help();
-  void process(const char* buffer);
-  void result(const uint8_t& code);
-  void save();
-  void set(const uint8_t& key, const float& val);
-  void settings();
-  void status();
+  extern void autotune(const char& c);
+  extern void buildinfo();
+  extern void disableheater(const char& c);
+  extern void enableheater(const char& c);
+  extern void help();
+  extern void process(const char* buffer);
+  extern void result(const uint8_t& code);
+  extern void save();
+  extern void set(const uint8_t& key, const float& val);
+  extern void settings();
+  extern void status();
 };
 
 #endif

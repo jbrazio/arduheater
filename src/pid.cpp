@@ -28,8 +28,8 @@ void pid::autotune() {
 
   m_tunning = true;
 
-  millis_t t0 = 0;
-  millis_t t1 = 0;
+  millis_t runtime = 0;
+  millis_t status = 0;
   millis_t peak1 = 0;
   millis_t peak2 = 0;
 
@@ -39,6 +39,7 @@ void pid::autotune() {
   const float setpoint = m_input;
   const int16_t nLookBack = 200; // assuming 10sec lookback
   const int16_t sampleTime = 50; // assuming 10sec lookback
+  const millis_t timeout = millis() + 1000L * 60L * 15L;
 
   bool justchanged = false;
   float absMax = m_input;
@@ -49,34 +50,28 @@ void pid::autotune() {
   int16_t peakType = 0;
 
   for (;;) {
-    if (peakCount > 9) {
+    const millis_t now = utils::millis();
+
+    if (now > status) {
+      status = now + 15000L;
+      cmd::status();
+    }
+
+    if (now > timeout) {
       serial::println::PGM(PSTR("PID autotune timeout"));
       output(outputStart);
       m_tunning = false;
       return;
     }
 
-    const millis_t now = utils::millis();
-
-    if (now > t1) {
-      t1 = now + 15000L;
-      cmd::status();
-    }
-
-    if (now > t0) {
-      t0 = now + sampleTime;
-      //serial::print::PGM(PSTR("."));
-
+    if (now > runtime) {
+      runtime = now + sampleTime;
       const float refVal = m_input;
 
       if (refVal > absMax) { absMax = refVal; }
       if (refVal < absMin) { absMin = refVal; }
 
-      /*serial::print::pair::float32(PSTR("refVal"), refVal, 2);
-      serial::print::pair::float32(PSTR("setpoint"), setpoint, 2);
-      serial::print::pair::float32(PSTR("setpoint + noiseBand"), setpoint + noiseBand, 2);*/
-
-      //oscillate the output base on the input's relation to the setpoint
+      // oscillate the output base on the input's relation to the setpoint
       if (refVal > setpoint + noiseBand) { output(outputStart - oStep); }
       else if (refVal < setpoint - noiseBand) { output(outputStart + oStep); }
 

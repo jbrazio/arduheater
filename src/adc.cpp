@@ -27,7 +27,7 @@ void adc::selchan(const uint8_t& channel)
 
   runtime.channel = channel;                            // store the active channel
   runtime.value = -1;                                   // reset last reading
-  ADMUX = bit (REFS0) | bit (REFS1) | (channel & 0x07); // select aref 1.1V and adc channel
+  ADMUX = bit (REFS1) | bit (REFS0) | (channel & 0x07); // select aref 1.1V and adc channel
 }
 
 void adc::update()

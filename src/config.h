@@ -54,7 +54,7 @@
 // Pins 5 and 6: controlled by timer0
 // Pins 9 and 10: controlled by timer1
 // Pins 11 and 3: controlled by timer2
-#define NUM_OUTPUTS 2
+#define NUM_OUTPUTS 4
 
 
 // ----------------------------------------------------------------------------

@@ -19,10 +19,10 @@
 
 #include "arduheater.h"
 
-// System global control structures
-dht22       amb;
-out_t       out[NUM_OUTPUTS];
-thermistor  ntc;
+// Global control structures
+dht22 amb;
+thermistor ntc;
+out_t out[NUM_OUTPUTS];
 volatile system_t sys;
 
 int main(void)
@@ -36,11 +36,12 @@ int main(void)
   // --------------------------------------------------------------------------
   // Serial port init routine -------------------------------------------------
   // --------------------------------------------------------------------------
+
   #if SERIAL_BAUDRATE < 57600
-    uint16_t UBRR0_value = ((F_CPU / (8L * SERIAL_BAUDRATE)) - 1) /2;
-    UCSR0A &= ~bit(U2X0); // baud doubler off (required by UNO)
+    const uint16_t UBRR0_value = ((F_CPU / (8L * SERIAL_BAUDRATE)) - 1) /2;
+    UCSR0A &= ~bit(U2X0); // baud doubler off
   #else
-    uint16_t UBRR0_value = ((F_CPU / (4L * SERIAL_BAUDRATE)) - 1) /2;
+    const uint16_t UBRR0_value = ((F_CPU / (4L * SERIAL_BAUDRATE)) - 1) /2;
     UCSR0A |= bit(U2X0);  // baud doubler on for high baud rates
   #endif
 
@@ -159,6 +160,8 @@ int main(void)
     } else { utils::delay(1); }
   }
 
+  // set the status as running
+  sys.state |= RUNNING;
   serial::banner();
 
 
@@ -188,7 +191,7 @@ int main(void)
   for(;;) {
     wdt_reset();
     serial::process();
-
+    /*
     millis_t now = millis();
     static millis_t next = 0;
 
@@ -196,11 +199,10 @@ int main(void)
       next = now + 500L;
       serial::print::float32(ntc.t(0), 2);
       serial::print::chr::space();
-      serial::print::float32(out[0].alg.setpoint(), 2);
-      serial::print::chr::space();
-      serial::print::float32(out[0].alg.output(), 2);
+      serial::print::float32(ntc.raw(0), 2);
       serial::print::chr::eol();
     }
+    */
   }
 
   // We should not reach this

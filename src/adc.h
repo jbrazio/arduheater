@@ -23,9 +23,8 @@
 namespace adc
 {
   extern volatile adc_t runtime;
-
-  void selchan(const uint8_t& channel);
-  void update();
+  extern void selchan(const uint8_t& channel);
+  extern void update();
 };
 
 #endif

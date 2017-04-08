@@ -24,11 +24,11 @@
 
 namespace utils
 {
-  uint8_t   msectotick(const uint16_t& ms);
-  float     steinhart(const uint16_t& raw);
-  float     dew(const float& t, const float& rh);
-  millis_t  millis();
-  void      delay(uint32_t ms);
+  extern uint8_t   msectotick(const uint16_t& ms);
+  extern float     steinhart(const uint16_t& raw);
+  extern float     dew(const float& t, const float& rh);
+  extern millis_t  millis();
+  extern void      delay(uint32_t ms);
 };
 
 #endif

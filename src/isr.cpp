@@ -47,6 +47,10 @@ ISR(TIMER1_COMPA_vect)
   ntc.irq();
   amb.irq();
 
+  // if our status isn't RUNNING then no need to evaluate the
+  // output channels.
+  if (! (sys.state & RUNNING)) return;
+
   // the following section will calculate the total required
   // power by the active outputs
   uint16_t totalpower = 0;
@@ -55,6 +59,7 @@ ISR(TIMER1_COMPA_vect)
       // update the dew setpoint once per minute
       // based on a 20Hz ISR
       static uint16_t counter = 1200;
+
       if (counter == 1200) {
         const float t = amb.t() + amb.config.t_offset;
         const float h = amb.rh() + amb.config.rh_offset;
@@ -71,11 +76,18 @@ ISR(TIMER1_COMPA_vect)
         serial::print::PGM(PSTR("warn: out"));
         serial::print::uint8(i);
         serial::println::PGM(PSTR(" max temp thermal protection"));
+
+        serial::print::PGM(PSTR("t:"));
+        serial::print::float32(ntc.t(i), 2);
+        serial::print::PGM(PSTR(", raw:"));
+        serial::println::float32(ntc.raw(i), 2);
+
         disable_all_outputs();
         halt();
       }
 
-      // if the output is active evaluate the pid
+      // calculate the total required power by the active outputs and
+      // evaluate the PID if the output is enabled
       else if (out[i].alg.active()) {
         out[i].alg.input(ntc.t(i));
         out[i].alg.irq();
@@ -89,13 +101,19 @@ ISR(TIMER1_COMPA_vect)
         serial::print::PGM(PSTR("warn: out"));
         serial::print::uint8(i);
         serial::println::PGM(PSTR(" thermal protection"));
+
+        serial::print::PGM(PSTR("t:"));
+        serial::print::float32(ntc.t(i), 2);
+        serial::print::PGM(PSTR(", raw:"));
+        serial::println::float32(ntc.raw(i), 2);
+
         disable_all_outputs();
         halt();
       }
     }
   }
 
-  // the following section will cal
+  // cap global power usage if needed
   for (size_t i = 0; i < NUM_OUTPUTS; i++) {
     if (ntc_ready(i) && out[i].alg.active()) {
       if (totalpower > 255) {
