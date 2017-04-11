@@ -22,6 +22,8 @@
 
 #include "arduheater.h"
 
+extern volatile system_t sys;
+
 #define THERMISTOR_WARMUP_TIME   500L
 #define THERMISTOR_SLEEP_TIME    0L
 #define THERMISTOR_REFRESH_TIME  1L
@@ -33,15 +35,33 @@ public:
 
 protected:
   movingmean<int16_t, 10> m_cache[NUM_OUTPUTS];
-  uint8_t                 m_active_channel;
+  uint8_t m_active_channel;
 
 public:
   inline float t(const uint8_t& channel) {
-    return utils::steinhart(m_cache[channel]());
+    if (channel > NUM_OUTPUTS) return utils::steinhart(THERMISTOR_ERR_TEMP);
+    else return utils::steinhart(m_cache[channel]());
   }
 
   inline float raw(const uint8_t& channel) {
-    return m_cache[channel]();
+    if (channel > NUM_OUTPUTS) return THERMISTOR_ERR_TEMP;
+    else return m_cache[channel]();
+  }
+
+  inline bool is_ready(const uint8_t& channel) {
+    if (channel > NUM_OUTPUTS) return false;
+    return (sys.sensor & (NTC0_SENSOR_READY << channel));
+  }
+
+  inline void mark_as_ready(const uint8_t& channel) {
+    if (channel > NUM_OUTPUTS) return;
+    sys.sensor |= (NTC0_SENSOR_READY << channel);
+  }
+
+  inline void mark_as_not_ready(const uint8_t& channel) {
+    if (channel > NUM_OUTPUTS) return;
+    sys.sensor &= ~(NTC0_SENSOR_READY << channel);
+    m_cache[channel] = THERMISTOR_ERR_TEMP;
   }
 
 public:

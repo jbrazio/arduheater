@@ -24,7 +24,7 @@
 
 #define DHT22_WARMUP_TIME   3000L
 #define DHT22_SLEEP_TIME    2000L
-#define DHT22_REFRESH_TIME  5000L
+#define DHT22_REFRESH_TIME  1000L
 
 class dht22: public sensor
 {

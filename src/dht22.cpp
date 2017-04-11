@@ -37,7 +37,7 @@ bool dht22::hwupdate() {
   // TODO: stop using pulsein
   if (! pulseIn(AMBIENT_PIN, LOW, 115)) {
     // return timeout if no data is received
-    sys.status &= ~STATUS_AMBIENT_READY;
+    sys.sensor &= ~AMBIENT_SENSOR_READY;
     m_state = SENSOR_TIMEOUT;
     return false;
   }
@@ -62,11 +62,11 @@ bool dht22::hwupdate() {
 
   // checksum validation
   if ((byte) (((byte) h) + (h >> 8) + ((byte) t) + (t >> 8)) != d) {
-    sys.status &= ~STATUS_AMBIENT_READY;
+    sys.sensor &= ~AMBIENT_SENSOR_READY;
     m_state = SENSOR_ERROR;
     return false;
   }
-
+/*
   // cache the received humidity data using a low pass filter
   const float oldh = m_cache[1]();
   m_cache[1] += 0.2F * oldh + 0.8 * (((int16_t) h) * 0.1);
@@ -76,10 +76,19 @@ bool dht22::hwupdate() {
   // cache the received temperature data using a low pass filter
   const float oldt = m_cache[0]();
   m_cache[0] += 0.2F * oldt + 0.8 * (((int16_t) t) * 0.1);
+*/
+
+  // cache the received humidity data
+  m_cache[1] += ((int16_t) h) * 0.1;
+
+  if (t & 0x8000) { t = -((int16_t) (t & 0x7FFF)); }
+
+  // cache the received temperature data using a low pass filter
+  m_cache[0] += ((int16_t) t) * 0.1;
 
   // update the global status for the ambient sensor
-  if (t && h) { sys.status |= STATUS_AMBIENT_READY; }
-  else { sys.status &= ~STATUS_AMBIENT_READY; }
+  if (t && h) { sys.sensor |= AMBIENT_SENSOR_READY; }
+  else { sys.sensor &= ~AMBIENT_SENSOR_READY; }
 
   return true;
 }

@@ -51,81 +51,105 @@ ISR(TIMER1_COMPA_vect)
   // output channels.
   if (! (sys.state & RUNNING)) return;
 
-  // the following section will calculate the total required
-  // power by the active outputs
+  uint8_t totalactive = 0;
   uint16_t totalpower = 0;
-  for (size_t i = 0; i < NUM_OUTPUTS; i++) {
-    if (ntc_ready(i)) {
-      // update the dew setpoint once per minute
-      // based on a 20Hz ISR
-      static uint16_t counter = 1200;
+  static uint8_t error_count = 0;
+  const float t = amb.t() + amb.config.t_offset;
+  const float h = roundf(amb.rh() + amb.config.rh_offset);  // DHT22 has 2 to 5% error
+  const float d = utils::dew(t, h) + amb.config.dew_offset;
 
-      if (counter == 1200) {
-        const float t = amb.t() + amb.config.t_offset;
-        const float h = amb.rh() + amb.config.rh_offset;
-        const float d = utils::dew(t, h) + amb.config.dew_offset;
-        const float s = d + out[i].config.offset;
+  for (size_t channel = 0; channel < NUM_OUTPUTS; channel++) {
+    const float     in = ntc.t(channel);
+    const float    raw = ntc.raw(channel);
+    const bool   ready = ntc.is_ready(channel);
+    const bool enabled = (sys.output & (OUTPUT0_ENABLED << channel));
 
-        out[i].alg.setpoint(s);
-        counter = 0;
+    // thermal protection
+    // checks if the raw data is out of bounds
+    if (raw != THERMISTOR_ERR_TEMP && (raw >= THERMISTOR_MIN_VAL || raw <= THERMISTOR_MAX_VAL)) {
+      out[channel].alg.stop();
+      digitalWrite(output_pin(channel), LOW);
+      sys.output &= ~(OUTPUT0_ENABLED << channel);
 
-      } else { ++counter; }
+      serial::print::PGM(PSTR("warn: out"));
+      serial::print::uint8(channel);
+      serial::println::PGM(PSTR(" output disabled, out of bounds"));
 
-      // thermal protection
-      if (ntc.t(i) >= HEATER_MAX_TEMP) {
-        serial::print::PGM(PSTR("warn: out"));
-        serial::print::uint8(i);
-        serial::println::PGM(PSTR(" max temp thermal protection"));
+      serial::print::PGM(PSTR("warn: t:"));
+      serial::print::uint8(ntc.t(channel));
+      serial::print::PGM(PSTR(", raw:"));
+      serial::println::float32(raw, 2);
 
-        serial::print::PGM(PSTR("t:"));
-        serial::print::float32(ntc.t(i), 2);
-        serial::print::PGM(PSTR(", raw:"));
-        serial::println::float32(ntc.raw(i), 2);
-
-        disable_all_outputs();
-        halt();
-      }
-
-      // calculate the total required power by the active outputs and
-      // evaluate the PID if the output is enabled
-      else if (out[i].alg.active()) {
-        out[i].alg.input(ntc.t(i));
-        out[i].alg.irq();
-        totalpower += out[i].alg.output();
-      }
+      ++error_count;
+      continue;
     }
 
-    else {
-      // thermal protection
-      if (out[i].alg.active()) {
-        serial::print::PGM(PSTR("warn: out"));
-        serial::print::uint8(i);
-        serial::println::PGM(PSTR(" thermal protection"));
+    // thermal protection
+    // check if sensor is in error but the output is enabled
+    if (! ready && enabled) {
+      out[channel].alg.stop();
+      digitalWrite(output_pin(channel), LOW);
+      sys.output &= ~(OUTPUT0_ENABLED << channel);
 
-        serial::print::PGM(PSTR("t:"));
-        serial::print::float32(ntc.t(i), 2);
-        serial::print::PGM(PSTR(", raw:"));
-        serial::println::float32(ntc.raw(i), 2);
+      serial::print::PGM(PSTR("warn: out"));
+      serial::print::uint8(channel);
+      serial::println::PGM(PSTR(" output disabled, invalid sensor data"));
 
-        disable_all_outputs();
-        halt();
+      serial::print::PGM(PSTR("warn: t:"));
+      serial::print::uint8(ntc.t(channel));
+      serial::print::PGM(PSTR(", raw:"));
+      serial::println::float32(raw, 2);
+
+      ++error_count;
+      continue;
+    }
+
+    if (ready) {
+      // update the setpoint
+      const float s = d + out[channel].config.offset;
+      out[channel].alg.setpoint(s);
+
+      if (enabled) {
+        // sync PID and output status
+        if (! out[channel].alg.active()) {
+          out[channel].alg.start();
+        }
+
+        // evaluate the pid
+        else {
+          out[channel].alg.input(in);
+          out[channel].alg.irq();
+
+          ++totalactive;
+          totalpower += out[channel].alg.output();
+        }
       }
     }
   }
 
-  // cap global power usage if needed
-  for (size_t i = 0; i < NUM_OUTPUTS; i++) {
-    if (ntc_ready(i) && out[i].alg.active()) {
-      if (totalpower > 255) {
-        out[i].alg.output((out[i].alg.output() / totalpower) * 255);
+  if (error_count >= 10) {
+    serial::println::PGM(PSTR("err: thermal protection, too many errors"));
+    disable_all_outputs();
+    halt();
+  }
+
+  for (size_t channel = 0; channel < NUM_OUTPUTS; channel++) {
+    const bool   ready = ntc.is_ready(channel);
+    const bool enabled = (sys.output & (OUTPUT0_ENABLED << channel));
+
+    if (ready && enabled && out[channel].alg.active()) {
+      if (totalpower > 510) {
+        out[channel].alg.output((out[channel].alg.output() / totalpower) * 510);
+
         /*
         serial::print::PGM(PSTR("warn: out"));
-        serial::print::uint8(i);
-        serial::print::PGM(PSTR(" output capped to "));
-        serial::println::uint8(out[i].alg.output());
+        serial::print::uint8(channel);
+        serial::print::PGM(PSTR(" output cap to "));
+        serial::println::uint8(out[channel].alg.output());
         */
       }
-      analogWrite(output_pin(i), out[i].alg.output());
+
+      analogWrite(output_pin(channel), out[channel].alg.output());
     }
   }
 }

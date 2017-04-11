@@ -29,31 +29,44 @@ thermistor::thermistor()
 
 bool thermistor::hwupdate()
 {
-  m_state = SENSOR_BUSY;          // mark the hw as busy
-  adc::selchan(m_active_channel); // select the adc channel
-  adc::update();                  // trigger an adc update
-  return false;                   // waiting for the adc to get a reading
+  m_state = SENSOR_BUSY;                          // mark the hw as busy
+  adc::selchan((const uint8_t) m_active_channel); // select the adc m_active_channel
+  adc::update();                                  // trigger an adc update
+  return false;                                   // waiting for the adc to get a reading
 }
 
 bool thermistor::hwbusy()
 {
   if (m_state == SENSOR_BUSY) {
     if (sys.state & ADC_READING_DONE) {
-      if (adc::runtime.value > THERMISTOR_MIN_VAL
-         || adc::runtime.value < THERMISTOR_MAX_VAL) {
-        // once we got a out of bounds reading set the cache to the error value
-        // by force resetting the smoothing algorithm.
-        digitalWrite(output_pin(m_active_channel), LOW);
+      if (adc::runtime.value > THERMISTOR_MIN_VAL || adc::runtime.value < THERMISTOR_MAX_VAL) {
         m_cache[m_active_channel] = THERMISTOR_ERR_TEMP;
-        sys.status &= ~(STATUS_NTC0_READY << m_active_channel);
+
+
+        if (is_ready(m_active_channel)) {
+          mark_as_not_ready(m_active_channel);
+
+          // only print disconnect messages if system is running
+          if (sys.state & RUNNING) {
+            serial::print::PGM(PSTR("warn: out"));
+            serial::print::uint8(m_active_channel);
+            serial::println::PGM(PSTR(" sensor disconnected"));
+          }
+        }
 
       } else {
-        // low pass filter
-        const float old = m_cache[m_active_channel]();
-        const float now = 0.2F * old + 0.8 * static_cast<int16_t>(adc::runtime.value);
+        m_cache[m_active_channel] += (uint16_t) adc::runtime.value;
 
-        m_cache[m_active_channel] += now;
-        sys.status |= (STATUS_NTC0_READY << m_active_channel);
+        if (! is_ready(m_active_channel)) {
+          mark_as_ready(m_active_channel);
+
+          // only print connect messages if system is running
+          if (sys.state & RUNNING) {
+            serial::print::PGM(PSTR("warn: out"));
+            serial::print::uint8(m_active_channel);
+            serial::println::PGM(PSTR(" sensor connected"));
+          }
+        }
       }
 
       m_active_channel = (m_active_channel +1) % NUM_OUTPUTS;

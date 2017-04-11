@@ -72,8 +72,10 @@ void serial::process()
 
     switch(c) {
       case '\r':
+        break;
+
       case '\n':
-        if (!pos) { break; }                // reject empty buffers
+        //if (!pos) { break; }                // reject empty buffers
         pos = 0;                            // reset the buffer pointer
         cmd::process(buffer);               // process the data
         memset(&buffer, 0, sizeof(buffer)); // clears the buffer

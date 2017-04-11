@@ -50,19 +50,15 @@
   #define output_pin(N) (pgm_read_byte(heater_ouput_pins + (N)))
 #endif
 
-#ifndef ntc_ready
-  #define ntc_ready(N) (sys.status & STATUS_NTC0_READY << N)
-#endif
-
 #ifndef any_ntc_ready
   #if (NUM_OUTPUTS > 3)
-    #define any_ntc_ready() (ntc_ready(0) || ntc_ready(1) || ntc_ready(2) || ntc_ready(3))
+    #define any_ntc_ready() (ntc.is_ready(0) || ntc.is_ready(1) || ntc.is_ready(2) || ntc.is_ready(3))
   #elif (NUM_OUTPUTS > 2)
-    #define any_ntc_ready() (ntc_ready(0) || ntc_ready(1) || ntc_ready(2))
+    #define any_ntc_ready() (ntc.is_ready(0) || ntc.is_ready(1) || ntc.is_ready(2))
   #elif (NUM_OUTPUTS > 1)
-    #define any_ntc_ready() (ntc_ready(0) || ntc_ready(1))
+    #define any_ntc_ready() (ntc.is_ready(0) || ntc.is_ready(1))
   #elif (NUM_OUTPUTS > 0)
-    #define any_ntc_ready() (ntc_ready(0))
+    #define any_ntc_ready() (ntc.is_ready(0))
   #endif
 #endif
 

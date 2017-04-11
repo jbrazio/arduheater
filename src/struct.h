@@ -24,8 +24,9 @@
 
 struct system_t
 {
-  flag_t   state;
-  flag16_t status;
+  flag_t  state;
+  flag_t  sensor;
+  flag_t  output;
 };
 
 struct serial_buffer_t

@@ -21,8 +21,8 @@
 #define __ARDUHEATER_H__
 
  // Program version and release
-#define ARDUHEATER_VERSION "0.1a"
-#define ARDUHEATER_VERSION_BUILD "20170316"
+#define ARDUHEATER_VERSION "0.2a"
+#define ARDUHEATER_VERSION_BUILD "20170410"
 
 // Define standard libraries used by Arduheater
 #include <avr/io.h>
@@ -51,8 +51,8 @@
 #include "macros.h"
 #include "system.h"
 #include "ringbuf.h"
-#include "pid.h"
 #include "types.h"
+#include "pid.h"
 #include "enum.h"
 #include "struct.h"
 #include "utils.h"

@@ -21,7 +21,37 @@
 
 void cmd::process(const char* buffer) {
   switch (buffer[0]) {
-    case '$':
+    case 0:
+      if (buffer[1] != 0x00) {
+        result(REPLY_INVALID_SYNTAX);
+      } else { status(); }
+      break;
+
+    case '?':
+      if (buffer[2] != 0x00) {
+        result(REPLY_INVALID_SYNTAX);
+      } else { status(); }
+      break;
+
+    case '+':
+      if (buffer[2] != 0x00) {
+        result(REPLY_INVALID_SYNTAX);
+      } else { enableheater(buffer[1]); }
+      break;
+
+    case '-':
+      if (buffer[2] != 0x00) {
+        result(REPLY_INVALID_SYNTAX);
+      } else { disableheater(buffer[1]); }
+      break;
+
+    case '#':
+      if (buffer[2] != 0x00) {
+        result(REPLY_INVALID_SYNTAX);
+      } else { autotune(buffer[1]); }
+      break;
+
+     case '$':
       switch (buffer[1]) {
         case 0:
           help();
@@ -49,6 +79,12 @@ void cmd::process(const char* buffer) {
           if (buffer[3] != 0x00) {
             result(REPLY_INVALID_SYNTAX);
           } else { eeprom::defaults(); save(); }
+          break;
+
+        case 'r':
+          if (buffer[3] != 0x00) {
+            result(REPLY_INVALID_SYNTAX);
+          } else { registers(); }
           break;
 
         default:
@@ -79,30 +115,6 @@ void cmd::process(const char* buffer) {
       }
       break;
 
-    case '?':
-      if (buffer[2] != 0x00) {
-        result(REPLY_INVALID_SYNTAX);
-      } else { status(); }
-      break;
-
-    case '+':
-      if (buffer[2] != 0x00) {
-        result(REPLY_INVALID_SYNTAX);
-      } else { enableheater(buffer[1]); }
-      break;
-
-    case '-':
-      if (buffer[2] != 0x00) {
-        result(REPLY_INVALID_SYNTAX);
-      } else { disableheater(buffer[1]); }
-      break;
-
-    case '#':
-      if (buffer[2] != 0x00) {
-        result(REPLY_INVALID_SYNTAX);
-      } else { autotune(buffer[1]); }
-      break;
-
     default:
       result(REPLY_INVALID_COMMAND);
       break;
@@ -114,6 +126,7 @@ void cmd::help() {
   serial::println::PGM(PSTR("$D (load default settings)"));
   serial::println::PGM(PSTR("$I (view build info)"));
   serial::println::PGM(PSTR("$S (save settings to eeprom)"));
+  serial::println::PGM(PSTR("$R (view register status)"));
   serial::println::PGM(PSTR("$key=value (set a setting)"));
   serial::println::PGM(PSTR("? (current status)"));
   serial::println::PGM(PSTR("+x (enable output x)"));
@@ -157,7 +170,7 @@ void cmd::buildinfo() {
 void cmd::status() {
   serial::print::PGM(PSTR(":"));
 
-  if (sys.status & STATUS_AMBIENT_READY) {
+  if (sys.sensor & AMBIENT_SENSOR_READY) {
     const float t = amb.t() + amb.config.t_offset;
     const float h = amb.rh() + amb.config.rh_offset;
     const float d = utils::dew(t, h) + amb.config.dew_offset;
@@ -171,27 +184,43 @@ void cmd::status() {
     serial::println::PGM(PSTR("C]"));
   } else { serial::println::PGM(PSTR("amb[sensor error]")); }
 
-  for (size_t i = 0; i < NUM_OUTPUTS; i++) {
-    if (sys.status & (STATUS_NTC0_READY << i)) {
+  for (size_t channel = 0; channel < NUM_OUTPUTS; channel++) {
+    if (ntc.is_ready(channel)) {
       serial::print::PGM(PSTR(":out"));
-      serial::print::uint8(i);
+      serial::print::uint8(channel);
       serial::print::PGM(PSTR("[t:"));
-      serial::print::float32(ntc.t(i), 2);
-      serial::print::PGM(PSTR("C pwr:"));
-      serial::print::PGM((sys.status & (STATUS_OUT0_ENABLED << i)) ? PSTR("on") : PSTR("off"));
+      serial::print::float32(ntc.t(channel), 2);
+      serial::print::PGM(PSTR("C raw:"));
+      serial::print::int16(ntc.raw(channel));
+      serial::print::PGM(PSTR(" pwr:"));
+      serial::print::PGM((sys.output & (OUTPUT0_ENABLED << channel))
+        ? PSTR("on") : PSTR("off"));
       serial::print::PGM(PSTR(" set:"));
-      serial::print::float32(out[i].alg.setpoint(), 2);
+      serial::print::float32(out[channel].alg.setpoint(), 2);
       serial::print::PGM(PSTR("C pwm:"));
-      serial::print::uint8(out[i].alg.output());
+      serial::print::uint8((sys.output & (OUTPUT0_ENABLED << channel))
+        ? out[channel].alg.output() : 0);
       serial::print::PGM(PSTR(" Kp:"));
-      serial::print::float32(out[i].alg.Kp(), 2);
-      serial::print::PGM(PSTR("C Ki:"));
-      serial::print::float32(out[i].alg.Ki(), 2);
-      serial::print::PGM(PSTR("C Kd:"));
-      serial::print::float32(out[i].alg.Kd(), 2);
+      serial::print::float32(out[channel].alg.Kp(), 2);
+      serial::print::PGM(PSTR(" Ki:"));
+      serial::print::float32(out[channel].alg.Ki(), 2);
+      serial::print::PGM(PSTR(" Kd:"));
+      serial::print::float32(out[channel].alg.Kd(), 2);
       serial::println::PGM(PSTR("]"));
     }
   }
+}
+
+void cmd::registers() {
+  serial::print::PGM(PSTR(":"));
+
+  serial::print::PGM(PSTR("system[state:"));
+  serial::print::base2::uint8((const uint8_t) sys.state);
+  serial::print::PGM(PSTR(", status:"));
+  serial::print::base2::uint8((const uint8_t) sys.sensor);
+  serial::print::PGM(PSTR(", output:"));
+  serial::print::base2::uint8((const uint8_t) sys.output);
+  serial::println::PGM(PSTR("]"));
 }
 
 void cmd::result(const uint8_t& code) {
@@ -216,11 +245,11 @@ void cmd::result(const uint8_t& code) {
       break;
 
     case REPLY_OUTPUT_ACTIVE:
-      serial::println::PGM(PSTR("output is alraedy on"));
+      serial::println::PGM(PSTR("output is already enabled"));
       break;
 
     case REPLY_OUTPUT_INACTIVE:
-      serial::println::PGM(PSTR("output is already off"));
+      serial::println::PGM(PSTR("output is already disabled"));
       break;
 
     case REPLY_OUTPUT_OUTBOUNDS:
@@ -232,62 +261,66 @@ void cmd::result(const uint8_t& code) {
 void cmd::enableheater(const char& c) {
   const uint8_t id = (c >= 0x20 && c <= 0x39) ? c - '0' : c;
 
-  if (id > NUM_OUTPUTS) {
+  if (id >= NUM_OUTPUTS) {
     result(REPLY_OUTPUT_OUTBOUNDS);
     return;
   }
 
-  if (ntc_ready(id)) {
+  if (ntc.is_ready(id)) {
     // only allow enable commands to be sent to outputs
     // where the ntc is reporting correct data
-    if (sys.status & (STATUS_OUT0_ENABLED << id)) {
+    if (sys.output & (OUTPUT0_ENABLED << id)) {
       // if the output is already active warn the user
       // and exit the command
       result(REPLY_OUTPUT_ACTIVE);
+
     } else {
-      sys.status |= (STATUS_OUT0_ENABLED << id);
+      sys.output |= (OUTPUT0_ENABLED << id);
       out[id].alg.start();
 
       // only reply OK if this function is called from serial
       if (c >= 0x20 && c <= 0x39) result(REPLY_OK);
     }
+
   } else { result(REPLY_NTC_NOT_READY); }
 }
 
 void cmd::disableheater(const char& c) {
   const uint8_t id = (c >= 0x20 && c <= 0x39) ? c - '0' : c;
 
-  if (id > NUM_OUTPUTS) {
+  if (id >= NUM_OUTPUTS) {
     result(REPLY_OUTPUT_OUTBOUNDS);
     return;
   }
 
-  if (ntc_ready(id)) {
+  if (ntc.is_ready(id)) {
     // only allow enable commands to be sent to outputs
     // where the ntc is reporting correct data
-    if (sys.status & (STATUS_OUT0_ENABLED << id)) {
-      sys.status &= ~(STATUS_OUT0_ENABLED << id);
+    if (sys.output & (OUTPUT0_ENABLED << id)) {
+      sys.output &= ~(OUTPUT0_ENABLED << id);
       out[id].alg.stop();
 
       // only reply OK if this function is called from serial
       if (c >= 0x20 && c <= 0x39) result(REPLY_OK);
+
     } else {
       // if the output is already inactive warn the user
       // and exit the command
       result(REPLY_OUTPUT_INACTIVE);
     }
+
   } else { result(REPLY_NTC_NOT_READY); }
 }
 
 void cmd::autotune(const char& c) {
   const uint8_t id = c - '0';
 
-    if (id > NUM_OUTPUTS) {
+    if (id >= NUM_OUTPUTS) {
       result(REPLY_OUTPUT_OUTBOUNDS);
       return;
     }
 
-    if (ntc_ready(id)) {
+    if (ntc.is_ready(id)) {
       out[id].alg.autotune();
 
     } else { result(REPLY_NTC_NOT_READY); }
@@ -462,6 +495,7 @@ void cmd::settings() {
   print_setting_float32(3,  amb.config.dew_offset,   ambient dew offset);
 
   #if (NUM_OUTPUTS > 0)
+    serial::print::chr::eol();
     print_setting_uint8  (4,  out[0].config.autostart, heater #0 autostart (bool));
     print_setting_float32(5,  out[0].config.offset,    heater #0 temperature offset);
     print_setting_uint8  (6,  out[0].config.min,       heater #0 PID min value);
@@ -472,6 +506,7 @@ void cmd::settings() {
   #endif
 
   #if (NUM_OUTPUTS > 1)
+    serial::print::chr::eol();
     print_setting_uint8  (11, out[1].config.autostart, heater #1 autostart (bool));
     print_setting_float32(12, out[1].config.offset,    heater #1 temperature offset);
     print_setting_uint8  (13, out[1].config.min,       heater #1 PID min value);
@@ -482,6 +517,7 @@ void cmd::settings() {
   #endif
 
   #if (NUM_OUTPUTS > 2)
+    serial::print::chr::eol();
     print_setting_uint8  (18, out[2].config.autostart, heater #2 autostart (bool));
     print_setting_float32(19, out[2].config.offset,    heater #2 temperature offset);
     print_setting_uint8  (20, out[2].config.min,       heater #2 PID min value);
@@ -492,6 +528,7 @@ void cmd::settings() {
   #endif
 
   #if (NUM_OUTPUTS > 3)
+    serial::print::chr::eol();
     print_setting_uint8  (25, out[3].config.autostart, heater #3 autostart (bool));
     print_setting_float32(26, out[3].config.offset,    heater #3 temperature offset);
     print_setting_uint8  (27, out[3].config.min,       heater #3 PID min value);

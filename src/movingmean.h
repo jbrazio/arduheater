@@ -17,8 +17,8 @@
  *
  */
 
-#ifndef __SMOOTHING_MM_H__
-#define __SMOOTHING_MM_H__
+#ifndef __SMOOTHING_Mv_H__
+#define __SMOOTHING_Mv_H__
 
 #include "arduheater.h"
 
@@ -28,42 +28,42 @@ public:
   movingmean() { reset(); }
 
 private:
-  T       m_values[N];
-  T       m_sum_of_values;
-  uint8_t m_index;
-  uint8_t m_count;
+  volatile T       v_values[N];
+  volatile T       v_suv_of_values;
+  volatile uint8_t v_index;
+  volatile uint8_t v_count;
 
 private:
   inline void reset() {
-    m_count = m_index = m_sum_of_values = 0;
-    for (size_t i = 0; i < N; i++) { m_values[i] = 0; }
+    v_count = v_index = v_suv_of_values = 0;
+    for (size_t i = 0; i < N; i++) { v_values[i] = 0; }
   }
 
 public:
-  inline bool full() {
-    return (m_count == N);
+  inline bool full() const {
+    return (v_count == N);
   }
 
-  inline T operator()() {
-    if (m_count == 0) { return 0; }
-    return m_sum_of_values / m_count;
+  inline T operator()() const {
+    if (v_count == 0) { return 0; }
+    return v_suv_of_values / v_count;
   }
 
-  inline movingmean& operator=(const T &lhs) {
+  inline movingmean& operator=(const T& lhs) {
     reset();
-    m_count = m_index = 1;
-    m_values[0]       = lhs;
-    m_sum_of_values   = lhs;
+    v_count = v_index = 1;
+    v_values[0]       = lhs;
+    v_suv_of_values   = lhs;
     return (*this);
   }
 
-  inline movingmean& operator+=(const T &lhs) {
-    m_sum_of_values    -= m_values[m_index];
-    m_values[m_index++] = lhs;
-    m_sum_of_values    += lhs;
+  inline movingmean& operator+=(const T& lhs) {
+    v_suv_of_values    -= v_values[v_index];
+    v_values[v_index++] = lhs;
+    v_suv_of_values    += lhs;
 
-    if (m_index >= N) { m_index = 0; }
-    else if (m_count <  N) { ++m_count; }
+    if (v_index >= N) { v_index = 0; }
+    else if (v_count <  N) { ++v_count; }
 
     return (*this);
   }

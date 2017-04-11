@@ -153,36 +153,34 @@ void pid::autotune() {
   }
 }
 
-void pid::irq(const bool& reset) {
+void pid::irq() {
   if (! m_running || m_tunning) { return; }
+
   // calculate sampletime
-  const  millis_t now = millis();
-  static millis_t before = now;
-  const  float  m_dt = (now - before) / 1000.0F;
-  before = now;
+  const millis_t now = millis();
+  const float  m_dt = (now - m_last_irq) / 1000.0F;
 
-  static float s_last_input = 0;                // input value from last cycle
-  const  float error = m_setpoint - m_input;    // calculate current error
-  float dInput = m_input - s_last_input;        // calculate input derivative
+  const float error = m_setpoint - m_input; // calculate current error
+  m_dInput = m_input - m_last_input;        // calculate input derivative
 
-  static float s_error = 0;         // integration of error from 0 to present
-  s_error += m_Ki * (error * m_dt); // adding the Ki term at this point will
+  m_iError += m_Ki * (error * m_dt); // integration of error from 0 to present
+                                    // adding the Ki term at this point will
                                     // allow a smooth curve when tuning while
                                     // running.
 
-  if (reset) { s_error = m_output; dInput = 0; }  // reboot the algorithm
-
-  if (s_error > m_max) { s_error = m_max; }       // cap the I term between
-  else if (s_error < m_min) { s_error = m_min; }  // min and max values
+  if (m_iError > m_max) { m_iError = m_max; }       // cap the I term between
+  else if (m_iError < m_min) { m_iError = m_min; }  // min and max values
 
   // evaluate the PID algorithm
-  float u = (m_Kp * error) + s_error - (m_Kd * (dInput / m_dt));
+  float u = (m_Kp * error) + m_iError - (m_Kd * (m_dInput / m_dt));
 
   if (u > m_max) { u = m_max; }       // cap the output between
   else if (u < m_min) { u = m_min; }  // min and max values
 
   m_output = u;
-  s_last_input = m_input;
+
+  m_last_input = m_input; // input value from last cycle
+  m_last_irq = now;       // keep a time record
 }
 
 void pid::limit(const float& min, const float& max) {
@@ -194,6 +192,14 @@ void pid::limit(const float& min, const float& max) {
 void pid::output(const float& lhs) {
   m_output = lhs;
   m_output = constrain(m_output, m_min, m_max);
+}
+
+void pid::reset() {
+  m_iError = m_output;
+  m_last_input = 0;
+
+  if (m_iError > m_max) { m_iError = m_max; }       // cap the I term between
+  else if (m_iError < m_min) { m_iError = m_min; }  // min and max values
 }
 
 void pid::tune(const float& Np, const float& Ni, const float& Nd) {

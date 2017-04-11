@@ -29,6 +29,7 @@ namespace cmd {
   extern void enableheater(const char& c);
   extern void help();
   extern void process(const char* buffer);
+  extern void registers();
   extern void result(const uint8_t& code);
   extern void save();
   extern void set(const uint8_t& key, const float& val);

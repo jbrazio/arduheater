@@ -56,9 +56,6 @@ int main(void)
   // enable interrupt on complete reception of a byte
   UCSR0B |= bit(RXCIE0);
 
-  // set serial status as ready
-  sys.status |= STATUS_SERIAL_READY;
-
 
   // --------------------------------------------------------------------------
   // Sensor init --------------------------------------------------------------
@@ -151,7 +148,7 @@ int main(void)
     } else { utils::delay(1); }
   }
 
-  while (!(sys.status & STATUS_AMBIENT_READY)) {
+  while (!(sys.sensor & AMBIENT_SENSOR_READY)) {
     millis_t now = utils::millis();
     static millis_t next = now + 10000L;
     if (now > next) {
@@ -180,7 +177,7 @@ int main(void)
 
 
   // --------------------------------------------------------------------------
-  // Wathcdog -----------------------------------------------------------------
+  // Watchdog -----------------------------------------------------------------
   // --------------------------------------------------------------------------
   //wdt_enable(WDTO_4S);
 
