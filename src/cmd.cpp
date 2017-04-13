@@ -259,57 +259,55 @@ void cmd::result(const uint8_t& code) {
 }
 
 void cmd::enableheater(const char& c) {
-  const uint8_t id = (c >= 0x20 && c <= 0x39) ? c - '0' : c;
+  const bool cmdline = (c >= 0x20 && c <= 0x39);
+  const uint8_t channel = (uint8_t) (cmdline) ? c - '0' : c;
 
-  if (id >= NUM_OUTPUTS) {
+  // check for out of bounds
+  if (channel >= NUM_OUTPUTS) {
     result(REPLY_OUTPUT_OUTBOUNDS);
     return;
   }
 
-  if (ntc.is_ready(id)) {
-    // only allow enable commands to be sent to outputs
-    // where the ntc is reporting correct data
-    if (sys.output & (OUTPUT0_ENABLED << id)) {
-      // if the output is already active warn the user
-      // and exit the command
-      result(REPLY_OUTPUT_ACTIVE);
+  // check for inactive channels
+  if (!ntc.is_ready(channel)) {
+    result(REPLY_NTC_NOT_READY);
+    return;
+  }
 
-    } else {
-      sys.output |= (OUTPUT0_ENABLED << id);
-      out[id].alg.start();
+  // check for duplicate actions
+  if (sys.output & (OUTPUT0_ENABLED << channel)) {
+    result(REPLY_OUTPUT_ACTIVE);
+    return;
+  }
 
-      // only reply OK if this function is called from serial
-      if (c >= 0x20 && c <= 0x39) result(REPLY_OK);
-    }
-
-  } else { result(REPLY_NTC_NOT_READY); }
+  sys.output |= (OUTPUT0_ENABLED << channel);
+  if (cmdline) result(REPLY_OK);
 }
 
 void cmd::disableheater(const char& c) {
-  const uint8_t id = (c >= 0x20 && c <= 0x39) ? c - '0' : c;
+  const bool cmdline = (c >= 0x20 && c <= 0x39);
+  const uint8_t channel = (uint8_t) (cmdline) ? c - '0' : c;
 
-  if (id >= NUM_OUTPUTS) {
+  // check for out of bounds
+  if (channel >= NUM_OUTPUTS) {
     result(REPLY_OUTPUT_OUTBOUNDS);
     return;
   }
 
-  if (ntc.is_ready(id)) {
-    // only allow enable commands to be sent to outputs
-    // where the ntc is reporting correct data
-    if (sys.output & (OUTPUT0_ENABLED << id)) {
-      sys.output &= ~(OUTPUT0_ENABLED << id);
-      out[id].alg.stop();
+  // check for inactive channels
+  if (!ntc.is_ready(channel)) {
+    result(REPLY_NTC_NOT_READY);
+    return;
+  }
 
-      // only reply OK if this function is called from serial
-      if (c >= 0x20 && c <= 0x39) result(REPLY_OK);
+  // check for duplicate actions
+  if (!(sys.output & (OUTPUT0_ENABLED << channel))) {
+    result(REPLY_OUTPUT_INACTIVE);
+    return;
+  }
 
-    } else {
-      // if the output is already inactive warn the user
-      // and exit the command
-      result(REPLY_OUTPUT_INACTIVE);
-    }
-
-  } else { result(REPLY_NTC_NOT_READY); }
+  sys.output &= ~(OUTPUT0_ENABLED << channel);
+  if (cmdline) result(REPLY_OK);
 }
 
 void cmd::autotune(const char& c) {

@@ -69,7 +69,7 @@
 #define THERMISTOR_MIN_VAL   935  // ~(-20C)
 #define THERMISTOR_ERR_TEMP 1024
 
-#define HEATER_PINS { 11, 6, 3, 5 }
+#define HEATER_PINS { 11, 6, 5, 3 }
 #define AMBIENT_PIN 2
 
 

@@ -124,6 +124,13 @@ ISR(TIMER1_COMPA_vect)
           totalpower += out[channel].alg.output();
         }
       }
+
+      else {
+        // shtudown the output
+        out[channel].alg.stop();
+        digitalWrite(output_pin(channel), LOW);
+        sys.output &= ~(OUTPUT0_ENABLED << channel);
+      }
     }
   }
 
