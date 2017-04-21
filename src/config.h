@@ -72,5 +72,7 @@
 #define HEATER_PINS { 11, 6, 5, 3 }
 #define AMBIENT_PIN 2
 
+#define THERMISTOR_ERR_THRESHOLD 16
+
 
 #endif

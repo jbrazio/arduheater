@@ -53,7 +53,15 @@ ISR(TIMER1_COMPA_vect)
 
   uint8_t totalactive = 0;
   uint16_t totalpower = 0;
-  static uint8_t error_count = 0;
+
+  // total error count accumulates errors from all the sensors
+  static uint8_t total_err_count = 0;
+
+  // invalid data count accumulates per channel the number of invalid
+  // readings since the last successful one, when it reaches the threshold
+  // triggers increases the above accumulator by one.
+  static uint8_t invalid_data_count[NUM_OUTPUTS] = { 0, 0, 0, 0 };
+
   const float t = amb.t() + amb.config.t_offset;
   const float h = roundf(amb.rh() + amb.config.rh_offset);  // DHT22 has 2 to 5% error
   const float d = utils::dew(t, h) + amb.config.dew_offset;
@@ -80,33 +88,52 @@ ISR(TIMER1_COMPA_vect)
       serial::print::PGM(PSTR(", raw:"));
       serial::println::float32(raw, 2);
 
-      ++error_count;
+      ++total_err_count;
       continue;
     }
 
     // thermal protection
     // check if sensor is in error but the output is enabled
     if (! ready && enabled) {
-      out[channel].alg.stop();
-      digitalWrite(output_pin(channel), LOW);
-      sys.output &= ~(OUTPUT0_ENABLED << channel);
+      if (invalid_data_count[channel] >= THERMISTOR_ERR_THRESHOLD) {
+        out[channel].alg.stop();
+        digitalWrite(output_pin(channel), LOW);
+        sys.output &= ~(OUTPUT0_ENABLED << channel);
 
-      serial::print::PGM(PSTR("warn: out"));
-      serial::print::uint8(channel);
-      serial::println::PGM(PSTR(" output disabled, invalid sensor data"));
+        serial::print::PGM(PSTR("warn: out"));
+        serial::print::uint8(channel);
+        serial::println::PGM(PSTR(" output disabled, invalid data threshold"));
 
-      serial::print::PGM(PSTR("warn: t:"));
-      serial::print::uint8(ntc.t(channel));
-      serial::print::PGM(PSTR(", raw:"));
-      serial::println::float32(raw, 2);
+        serial::print::PGM(PSTR("warn: t:"));
+        serial::print::uint8(ntc.t(channel));
+        serial::print::PGM(PSTR(", raw:"));
+        serial::println::float32(raw, 2);
 
-      ++error_count;
-      continue;
+        invalid_data_count[channel] = 0;
+        ++total_err_count;
+        continue;
+      }
+
+      else {
+        serial::print::PGM(PSTR("warn: out"));
+        serial::print::uint8(channel);
+        serial::print::PGM(PSTR(" invalid sensor data received ("));
+        serial::print::uint8(invalid_data_count[channel] +1);
+        serial::print::PGM(PSTR("/"));
+        serial::print::uint8(THERMISTOR_ERR_THRESHOLD);
+        serial::println::PGM(PSTR(")"));
+
+        ++invalid_data_count[channel];
+        continue;
+      }
     }
 
     if (ready) {
+      // clears the invalid accumulator
+      invalid_data_count[channel] = 0;
+
       // update the setpoint
-      const float s = d + out[channel].config.offset;
+      const float s = roundf(d + out[channel].config.offset);
       out[channel].alg.setpoint(s);
 
       if (enabled) {
@@ -134,7 +161,7 @@ ISR(TIMER1_COMPA_vect)
     }
   }
 
-  if (error_count >= 10) {
+  if (total_err_count >= 10) {
     serial::println::PGM(PSTR("err: thermal protection, too many errors"));
     disable_all_outputs();
     halt();

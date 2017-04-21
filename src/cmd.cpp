@@ -311,15 +311,18 @@ void cmd::disableheater(const char& c) {
 }
 
 void cmd::autotune(const char& c) {
-  const uint8_t id = c - '0';
+  const bool cmdline = (c >= 0x20 && c <= 0x39);
+  const uint8_t channel = (uint8_t) (cmdline) ? c - '0' : c;
 
-    if (id >= NUM_OUTPUTS) {
+    if (channel >= NUM_OUTPUTS) {
       result(REPLY_OUTPUT_OUTBOUNDS);
       return;
     }
 
-    if (ntc.is_ready(id)) {
-      out[id].alg.autotune();
+    if (ntc.is_ready(channel)) {
+      enableheater(channel);
+      out[channel].alg.autotune();
+      disableheater(channel);
 
     } else { result(REPLY_NTC_NOT_READY); }
 }
