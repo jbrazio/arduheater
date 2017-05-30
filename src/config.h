@@ -40,7 +40,7 @@
 // Defines the char which will represent a null buffer value, do not change this.
 #define SERIAL_NO_DATA        0xff
 
-
+// Defines the max length of a received command string.
 #define COMMAND_BUFFER_SIZE   16
 
 
@@ -56,6 +56,15 @@
 // Pins 11 and 3: controlled by timer2
 #define NUM_OUTPUTS 4
 
+// The list of PIN to be used as heater outputs
+// Channel:           #0  #1  #2  #3
+#define HEATER_PINS { 11,  6,  5,  3 }
+
+// ----------------------------------------------------------------------------
+// AMBIENT SENSOR configuration -----------------------------------------------
+// ----------------------------------------------------------------------------
+#define AMBIENT_PIN 2
+
 
 // ----------------------------------------------------------------------------
 // THERMISTOR configuration ---------------------------------------------------
@@ -69,10 +78,8 @@
 #define THERMISTOR_MIN_VAL   935  // ~(-20C)
 #define THERMISTOR_ERR_TEMP 1024
 
-#define HEATER_PINS { 11, 6, 5, 3 }
-#define AMBIENT_PIN 2
-
+// Defines how many invalid readings we can receive from a thermistor
+// before disabling the associated output channel.
 #define THERMISTOR_ERR_THRESHOLD 16
-
 
 #endif
