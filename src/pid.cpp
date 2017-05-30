@@ -24,6 +24,9 @@
 #include "arduheater.h"
 
 void pid::autotune() {
+  // WARNING ! This method is not working properly,
+  // do not trust the K values it returns. 
+
   serial::println::PGM(PSTR("PID autotune start"));
 
   m_tunning = true;
@@ -182,10 +185,10 @@ void pid::irq() {
   const float error = m_setpoint - m_input; // calculate current error
   m_dInput = m_input - m_last_input;        // calculate input derivative
 
-  m_iError += m_Ki * (error * m_dt); // integration of error from 0 to present
-                                    // adding the Ki term at this point will
-                                    // allow a smooth curve when tuning while
-                                    // running.
+  m_iError += m_Ki * (error * m_dt);  // integration of error from 0 to present
+                                      // adding the Ki term at this point will
+                                      // allow a smooth curve when tuning while
+                                      // running.
 
   if (m_iError > m_max) { m_iError = m_max; }       // cap the I term between
   else if (m_iError < m_min) { m_iError = m_min; }  // min and max values

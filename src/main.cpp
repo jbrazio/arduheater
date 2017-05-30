@@ -188,18 +188,6 @@ int main(void)
   for(;;) {
     wdt_reset();
     serial::process();
-    /*
-    millis_t now = millis();
-    static millis_t next = 0;
-
-    if (now > next) {
-      next = now + 500L;
-      serial::print::float32(ntc.t(0), 2);
-      serial::print::chr::space();
-      serial::print::float32(ntc.raw(0), 2);
-      serial::print::chr::eol();
-    }
-    */
   }
 
   // We should not reach this

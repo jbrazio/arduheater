@@ -19,9 +19,9 @@
 
 #include "arduheater.h"
 
-// WARNING: max 12750ms as input
 uint8_t utils::msectotick(const uint16_t& ms)
 {
+  // WARNING: max 12750ms as input
   return (ms / HEARTBEAT);
 }
 
@@ -38,7 +38,8 @@ float utils::steinhart(const uint16_t& raw)
   return ret;
 }
 
-float utils::dew(const float& t, const float& rh) {
+float utils::dew(const float& t, const float& rh)
+{
   // Uncomment the following line to enable the NOAA dew function
   // otherwise a simpler calculating algorithm will be used.
   //#define NOAA_DEW_FUNCTION

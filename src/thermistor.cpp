@@ -19,8 +19,6 @@
 
 #include "arduheater.h"
 
-// TODO: Build a thermal protection system
-
 thermistor::thermistor()
   : sensor(THERMISTOR_WARMUP_TIME, THERMISTOR_SLEEP_TIME, THERMISTOR_REFRESH_TIME)
 {
