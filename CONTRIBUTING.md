@@ -29,6 +29,6 @@ Here’s how we suggest you go about proposing a change to this project:
 Using the web-based interface to make changes is fine too, and will help you by automatically
 forking the project and prompting to send a pull request too.
 
-[fork]: https://github.com/jbrazio/Ardufocus#fork-destination-box
-[branch]: https://github.com/jbrazio/Ardufocus/branches
-[pr]: https://github.com/jbrazio/Ardufocus/pulls
+[fork]: https://github.com/jbrazio/arduheater#fork-destination-box
+[branch]: https://github.com/jbrazio/arduheater/branches
+[pr]: https://github.com/jbrazio/arduheater/pulls
