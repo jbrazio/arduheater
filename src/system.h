@@ -26,7 +26,7 @@
  * Timer1 heartbeat in milliseconds
  * Note: Changing the value here is not enough, timer1 must be updated also.
  */
-#define HEARTBEAT 50
+#define HEARTBEAT 2
 
 
 // Arduheater state machine bit map -------------------------------------------

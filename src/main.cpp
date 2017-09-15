@@ -80,8 +80,8 @@ int main(void)
   // --------------------------------------------------------------------------
   // Timer1 ISR init routine --------------------------------------------------
   // --------------------------------------------------------------------------
-  // set output compare register A to 20Hz
-  OCR1A = 0xC35;
+  // set output compare register A to 500Hz
+  OCR1A = 0x7D;
 
   // set waveform generation mode to CTC
   TCCR1B |= bit(WGM12);

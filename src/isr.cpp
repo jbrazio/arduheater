@@ -67,6 +67,8 @@ ISR(TIMER1_COMPA_vect)
   const float d = utils::dew(t, h) + amb.config.dew_offset;
 
   for (size_t channel = 0; channel < NUM_OUTPUTS; channel++) {
+    if (! ntc.is_fresh(channel)) { continue; }
+
     const float     in = ntc.t(channel);
     const float    raw = ntc.raw(channel);
     const bool   ready = ntc.is_ready(channel);

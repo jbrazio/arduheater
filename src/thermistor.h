@@ -34,18 +34,31 @@ public:
   thermistor();
 
 protected:
-  movingmean<int16_t, 10> m_cache[NUM_OUTPUTS];
   uint8_t m_active_channel;
+  bool m_fresh[NUM_OUTPUTS];
+  //movingmean<int16_t, 10> m_cache[NUM_OUTPUTS];
+  lpf<int16_t, 750> m_cache[NUM_OUTPUTS];
 
 public:
   inline float t(const uint8_t& channel) {
     if (channel > NUM_OUTPUTS) return utils::steinhart(THERMISTOR_ERR_TEMP);
-    else return utils::steinhart(m_cache[channel]());
+    else {
+      m_fresh[channel] = false;
+      return utils::steinhart(m_cache[channel]());
+    }
   }
 
   inline float raw(const uint8_t& channel) {
     if (channel > NUM_OUTPUTS) return THERMISTOR_ERR_TEMP;
-    else return m_cache[channel]();
+    else {
+      m_fresh[channel] = false;
+      return m_cache[channel]();
+    }
+  }
+
+  inline bool is_fresh(const uint8_t& channel) {
+    if (channel > NUM_OUTPUTS) return false;
+    return m_fresh[channel];
   }
 
   inline bool is_ready(const uint8_t& channel) {

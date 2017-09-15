@@ -17,8 +17,8 @@
  *
  */
 
-#ifndef __SMOOTHING_Mv_H__
-#define __SMOOTHING_Mv_H__
+#ifndef __SMOOTHING_MM_H__
+#define __SMOOTHING_MM_H__
 
 #include "arduheater.h"
 
@@ -44,9 +44,17 @@ public:
     return (v_count == N);
   }
 
-  inline T operator()() const {
+  inline T average() const {
     if (v_count == 0) { return 0; }
     return v_sum_of_values / v_count;
+  }
+
+  inline T integral() const {
+    return v_sum_of_values;
+  }
+
+  inline T operator()() const {
+    return average();
   }
 
   inline movingmean& operator=(const T& lhs) {

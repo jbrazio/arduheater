@@ -1,6 +1,6 @@
 /**
- * Arduheater - Heat controller for astronomy usage
- * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
+ * lpf.h - Moving mean smoothing algorithm
+ * Copyright (C) 2016 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,32 +17,41 @@
  *
  */
 
-#ifndef __DHT22_H__
-#define __DHT22_H__
+#ifndef __SMOOTHING_LPF_H__
+#define __SMOOTHING_LPF_H__
 
 #include "arduheater.h"
 
-#define DHT22_WARMUP_TIME   3000L
-#define DHT22_SLEEP_TIME    2000L
-#define DHT22_REFRESH_TIME  1000L
-
-class dht22: public sensor
+template <typename T, uint16_t N> struct lpf
 {
-public:
-  dht22();
-
-protected:
-  lpf<float, 25> m_cache[2];
-
-public:
-  ambient_t config;
+private:
+  bool m_init;
+  volatile T m_smooth_data;
+  const float k_beta = (N / 1000.0F);
 
 public:
-  inline float t()  { return m_cache[0](); }
-  inline float rh() { return m_cache[1](); }
+  inline T operator()() const {
+    return m_smooth_data;
+  }
 
-public:
-  bool hwupdate();
+  inline lpf& operator=(const T& lhs) {
+    m_smooth_data = lhs;
+    m_init = true;
+    return (*this);
+  }
+
+  inline lpf& operator+=(const T& lhs) {
+    if (! m_init) {
+      m_smooth_data = lhs;
+      m_init = true;
+    }
+
+    else {
+      m_smooth_data = m_smooth_data - (k_beta * (m_smooth_data - lhs));
+    }
+
+    return (*this);
+  }
 };
 
 #endif

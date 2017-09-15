@@ -32,25 +32,30 @@ public:
   pid() {
     stop();
     limit(0, 255);
-    m_running = m_tunning = false;
-    m_input = m_output = m_setpoint;
-    m_last_irq = m_last_input = m_iError, m_dInput = 0;
+
+    m_running    = false,
+    m_tunning    = false;
+
+    m_iError     = 0,
+    m_input      = 0,
+    m_last_input = 0,
+    m_output     = 0,
+    m_setpoint   = 0;
   }
 
 protected:
-  float m_min, m_max;
-  float m_Kp, m_Ki, m_Kd;
-  bool  m_running, m_tunning;
-  float m_input, m_output, m_setpoint;
+  int16_t m_min, m_max;
+  float   m_Kp, m_Ki, m_Kd;
+  bool    m_running, m_tunning;
+  float   m_input, m_output, m_setpoint;
 
 private:
-  millis_t m_last_irq;
-  float m_last_input, m_iError, m_dInput;
+  float m_last_input, m_iError;
 
 public:
   void autotune();
   void irq();
-  void limit(const float& min, const float& max);
+  void limit(const int16_t& min, const int16_t& max);
   void output(const float& lhs);
   void reset();
   void tune(const float& Np, const float& Ni, const float& Nd);

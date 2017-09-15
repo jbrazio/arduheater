@@ -59,7 +59,7 @@
 #include "serial.h"
 #include "strings.h"
 #include "print.h"
-#include "movingmean.h"
+#include "lpf.h"
 #include "adc.h"
 #include "sensor.h"
 #include "thermistor.h"

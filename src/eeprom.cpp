@@ -81,7 +81,7 @@ void eeprom::defaults() {
 
   // set output defaults
   for (size_t i = 0; i < NUM_OUTPUTS; i++ ) {
-    out[i].config = { false, 0, 0, 255, 15, 0, 0 };
+    out[i].config = { false, 0, 0, 255, 40.0F, 0.20F, 1.0F };
   }
 
   // set ambient sensor defaults

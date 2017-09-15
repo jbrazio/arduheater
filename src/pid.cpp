@@ -17,15 +17,15 @@
  *
  */
 
-// This PID lib is heavly based on the Arduino's PID library by Brett and his
-// excelent tutorial published at http://brettbeauregard.com, thus some code
-// is (c) 2004 Brett Beauregard <br3ttb@gmail.com>
-
 #include "arduheater.h"
 
 void pid::autotune() {
   // WARNING ! This method is not working properly,
-  // do not trust the K values it returns. 
+  // do not trust the K values it returns.
+  //
+  // This PID autotune is heavly based on the Arduino's PID library by Brett and
+  // his excelent tutorial published at http://brettbeauregard.com, thus some code
+  // is (c) 2004 Brett Beauregard <br3ttb@gmail.com>
 
   serial::println::PGM(PSTR("PID autotune start"));
 
@@ -178,37 +178,59 @@ void pid::autotune() {
 void pid::irq() {
   if (! m_running || m_tunning) { return; }
 
-  // calculate sampletime
-  const millis_t now = millis();
-  const float  m_dt = (now - m_last_irq) / 1000.0F;
+  const float error = m_setpoint - m_input;         // calculate current error
 
-  const float error = m_setpoint - m_input; // calculate current error
-  m_dInput = m_input - m_last_input;        // calculate input derivative
-
-  m_iError += m_Ki * (error * m_dt);  // integration of error from 0 to present
-                                      // adding the Ki term at this point will
-                                      // allow a smooth curve when tuning while
-                                      // running.
-
-  if (m_iError > m_max) { m_iError = m_max; }       // cap the I term between
+  m_iError += error;                                // integrate the error
+  if (m_iError > m_max) { m_iError = m_max; }       // cap the integral between
   else if (m_iError < m_min) { m_iError = m_min; }  // min and max values
 
-  // evaluate the PID algorithm
-  float u = (m_Kp * error) + m_iError - (m_Kd * (m_dInput / m_dt));
+  const float dError = m_input - m_last_input;      // calculate input derivative
+  m_last_input = m_input;                           // save the input value
+
+  // PID calculation
+  float u = (m_Kp * error) + (m_Ki * m_iError) + (m_Kd * dError);
+
+  #ifdef DEBUG
+    serial::print::PGM(PSTR("setpoint: "));
+    serial::print::float32(m_setpoint, 2);
+
+    serial::print::PGM(PSTR(", input: "));
+    serial::print::float32(m_input, 4);
+
+    serial::print::PGM(PSTR(", error: "));
+    serial::print::float32(error, 4);
+
+    serial::print::PGM(PSTR(", iError: "));
+    serial::print::float32(m_iError, 4);
+
+    serial::print::PGM(PSTR(", last_input: "));
+    serial::print::float32(m_last_input, 4);
+
+    serial::print::PGM(PSTR(", dError: "));
+    serial::print::float32(dError, 4);
+
+    serial::print::PGM(PSTR(", P: "));
+    serial::print::float32((m_Kp * error), 2);
+
+    serial::print::PGM(PSTR(", I: "));
+    serial::print::float32((m_Ki * m_iError), 2);
+
+    serial::print::PGM(PSTR(", D: "));
+    serial::print::float32((m_Kd * dError), 2);
+
+    serial::print::PGM(PSTR(", u: "));
+    serial::println::float32(u, 4);
+  #endif
 
   if (u > m_max) { u = m_max; }       // cap the output between
   else if (u < m_min) { u = m_min; }  // min and max values
 
   m_output = u;
-
-  m_last_input = m_input; // input value from last cycle
-  m_last_irq = now;       // keep a time record
 }
 
-void pid::limit(const float& min, const float& max) {
+void pid::limit(const int16_t& min, const int16_t& max) {
   if (min > max) { return; }
-  m_min = min;
-  m_max = max;
+  else { m_min = min, m_max = max; }
 }
 
 void pid::output(const float& lhs) {
@@ -217,11 +239,8 @@ void pid::output(const float& lhs) {
 }
 
 void pid::reset() {
-  m_iError = m_output;
+  m_iError = 0;
   m_last_input = 0;
-
-  if (m_iError > m_max) { m_iError = m_max; }       // cap the I term between
-  else if (m_iError < m_min) { m_iError = m_min; }  // min and max values
 }
 
 void pid::tune(const float& Np, const float& Ni, const float& Nd) {

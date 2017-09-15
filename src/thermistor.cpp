@@ -54,6 +54,7 @@ bool thermistor::hwbusy()
 
       } else {
         m_cache[m_active_channel] += (uint16_t) adc::runtime.value;
+        m_fresh[m_active_channel] = true;
 
         if (! is_ready(m_active_channel)) {
           mark_as_ready(m_active_channel);
