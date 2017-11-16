@@ -1,5 +1,5 @@
 /**
- * Arduheater - Heat controller for astronomy usage
+ * Arduheater - An intelligent dew buster for astronomy
  * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,91 +17,157 @@
  *
  */
 
-#include "arduheater.h"
+#include "serial.h"
 
-// RX/TX buffer structure
-serial_buffer_t serial::buffer;
+/**
+ * @brief Static class member initialization
+ */
+Serial::buffer_t Serial::s_buffer;
 
-bool serial::available()
+/**
+ * @brief USART RX interrupt handler
+ */
+ISR(USART_RX_vect)
 {
-  return (! serial::buffer.rx.empty());
+  // read a byte from the incoming stream
+  char c = UDR0;
+
+  // check for parity error
+  if (bit_is_clear(UCSR0A, UPE0)) {
+    Serial::s_buffer.rx.enqueue(c);
+  } /* else { discard byte } */
 }
 
-uint8_t serial::read()
+/**
+ * @brief USART TX interrupt handler
+ */
+ISR(USART_UDRE_vect)
 {
-  return (buffer.rx.empty()) ? SERIAL_NO_DATA : buffer.rx.dequeue();
+  // turn off Data Register Empty Interrupt
+  // to stop tx-streaming if this concludes the transfer
+  if (Serial::s_buffer.tx.empty()) { UCSR0B &= ~bit(UDRIE0); }
+
+  else {
+    // send a byte from the buffer
+    UDR0 = Serial::s_buffer.tx.dequeue();
+    UCSR0A |= bit(TXC0);
+  }
 }
 
-void serial::write(const uint8_t& c)
+/**
+ * @brief Checks if the RX queue has data
+ * @return Boolean value representing the state of the RX queue
+ */
+bool Serial::available()
 {
-  // wait until there is space in the buffer
-  while (!buffer.tx.enqueue(c)) {
-    // at this point interrupts are disabled so we need to
-    // manually poll the data register empty flag
-    if (bit_is_clear(SREG, SREG_I)) {
-      if (bit_is_set(UCSR0A, UDRE0)) {
-        // send a byte from the buffer
-        UDR0    = buffer.tx.dequeue();
-        UCSR0A |= bit(TXC0);
+  return (! Serial::s_buffer.rx.empty());
+}
 
-        // turn off Data Register Empty Interrupt
-        // to stop tx-streaming if this concludes the transfer
-        if (buffer.tx.empty()) { UCSR0B &= ~bit(UDRIE0); }
+/**
+ * @brief Read a char from the RX queue
+ * @return A byte (char) from the queue
+ */
+char Serial::read()
+{
+  CRITICAL_SECTION_START
+    const char c = (Serial::s_buffer.rx.empty()) ? 0XFF : Serial::s_buffer.rx.dequeue();
+  CRITICAL_SECTION_END
+
+  return c;
+}
+
+/**
+ * @brief Flushes the TX queue
+ */
+void Serial::flush()
+{
+  CRITICAL_SECTION_START
+    while (bit_is_set(UCSR0B, UDRIE0) || bit_is_clear(UCSR0A, TXC0))
+    {
+      if (bit_is_clear(SREG, SREG_I) && bit_is_set(UCSR0B, UDRIE0)) {
+        if (bit_is_set(UCSR0A, UDRE0)) {
+          // send a byte from the buffer
+          UDR0 = Serial::s_buffer.tx.dequeue();
+          UCSR0A |= bit(TXC0);
+
+          // turn off Data Register Empty Interrupt
+          // to stop tx-streaming if this concludes the transfer
+          if (Serial::s_buffer.tx.empty()) { UCSR0B &= ~bit(UDRIE0); }
+        }
       }
     }
+  CRITICAL_SECTION_END
+}
+
+/**
+ * @brief Parses the incoming byte stream, should only be used by the ISR
+ */
+void Serial::process(callbackfunc_t callback)
+{
+
+  static size_t pos = 0;
+  static char   cmd[16];
+
+  while(available())
+  {
+    char c = read();
+
+    switch(c) {
+      case '\r': // ignore windows line ending
+        break;
+
+      case '\n': // process the data on the buffer sent by an human
+      case '#': // process the data on the buffer
+        Serial::write('0' + pos);
+        callback(cmd);
+
+      case ':': // clears the data on the buffer
+        memset(&cmd, 0, sizeof(cmd));
+        pos = 0;
+        break;
+
+      default: // adds data to the buffer
+        cmd[pos++] = c;
+        pos %= sizeof(cmd);
+        break;
+    }
   }
+}
+
+/**
+ * @brief Initializes the USART
+ */
+void Serial::setup()
+{
+  CRITICAL_SECTION_START
+    // Defines the speed at which the serial line will operate.
+    // The default settings are: 8-bit, no parity, 1 stop bit.
+    const uint16_t UBRR0_value = ((F_CPU / (4L * 57600)) - 1) /2;
+    UCSR0A |= bit(U2X0);  // baud doubler on for high baud rates
+
+    // set baudrate
+    UBRR0H = UBRR0_value >> 8;
+    UBRR0L = UBRR0_value;
+
+    // enable rx and tx
+    UCSR0B |= bit(RXEN0);
+    UCSR0B |= bit(TXEN0);
+
+    // enable interrupt on complete reception of a byte
+    UCSR0B |= bit(RXCIE0);
+  CRITICAL_SECTION_END
+}
+
+/**
+ * @brief Adds a byte to the TX queue when free space is available
+ * @details Take note this method can block program flow when the queue is full
+ */
+void Serial::write(const char& c)
+{
+  // wait until there is space in the buffer
+  while (!Serial::s_buffer.tx.enqueue(c)) Serial::flush();
 
   // Enable Data Register Empty Interrupt
   // to make sure tx-streaming is running
   UCSR0B |= bit(UDRIE0);
-}
-
-
-void serial::banner()
-{
-  serial::println::PGM(PSTR("Arduheater " ARDUHEATER_VERSION " ['$' for help]"));
-}
-
-void serial::process()
-{
-  static size_t pos = 0;
-  static char   buffer[COMMAND_BUFFER_SIZE];
-
-  while(serial::available()) {
-    char c = serial::read();
-
-    switch(c) {
-      case '\r':
-        break;
-
-      case '\n':
-        //if (!pos) { break; }              // reject empty buffers
-        pos = 0;                            // reset the buffer pointer
-        cmd::process(buffer);               // process the data
-        memset(&buffer, 0, sizeof(buffer)); // clears the buffer
-        break;
-
-      default:
-        if ((c >= 65) && (c <= 90)) { c = c + 32; } // convert to lowercase
-        buffer[pos] = c;                            // store char in buffer
-        pos = (pos + 1) % COMMAND_BUFFER_SIZE;      // increase buffer pointer
-        break;
-    }
-  }
-}
-
-void serial::flush() {
-  while (bit_is_set(UCSR0B, UDRIE0) || bit_is_clear(UCSR0A, TXC0)) {
-    if (bit_is_clear(SREG, SREG_I) && bit_is_set(UCSR0B, UDRIE0)) {
-      if (bit_is_set(UCSR0A, UDRE0)) {
-        // send a byte from the buffer
-        UDR0 = serial::buffer.tx.dequeue();
-        UCSR0A |= bit(TXC0);
-
-        // turn off Data Register Empty Interrupt
-        // to stop tx-streaming if this concludes the transfer
-        if (serial::buffer.tx.empty()) { UCSR0B &= ~bit(UDRIE0); }
-      }
-    }
-  }
 }

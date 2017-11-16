@@ -1,5 +1,5 @@
 /**
- * Arduheater - Heat controller for astronomy usage
+ * Arduheater - An intelligent dew buster for astronomy
  * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,8 +20,6 @@
 #ifndef __SYSTEM_H__
 #define __SYSTEM_H__
 
-#include "arduheater.h"
-
 /*
  * Timer1 heartbeat in milliseconds
  * Note: Changing the value here is not enough, timer1 must be updated also.
@@ -31,8 +29,8 @@
 
 // Arduheater state machine bit map -------------------------------------------
 // See system_t structure got more information
-#define RUNNING               bit(0)  // bitmask 00000001
-#define ADC_READING_DONE      bit(1)  // bitmask 00000010
+#define RUNNING               bit(0) // bitmask 00000001
+#define ADC_READING_DONE      bit(1) // bitmask 00000010
 
 #define NTC0_SENSOR_READY     bit(0) // bitmask 00000001
 #define NTC1_SENSOR_READY     bit(1) // bitmask 00000010
@@ -50,15 +48,5 @@
 #define SENSOR_NEEDS_WARMUP   bit(0)  // bitmask 00000001
 #define SENSOR_NEEDS_SLEEP    bit(1)  // bitmask 00000010
 #define SENSOR_NEEDS_REFRESH  bit(2)  // bitmask 00000100
-
-
-// Serial status --------------------------------------------------------------
-#define REPLY_INVALID_COMMAND   1
-#define REPLY_INVALID_SYNTAX    2
-#define REPLY_NTC_NOT_READY     3
-#define REPLY_OK                4
-#define REPLY_OUTPUT_ACTIVE     5
-#define REPLY_OUTPUT_INACTIVE   6
-#define REPLY_OUTPUT_OUTBOUNDS  7
 
 #endif

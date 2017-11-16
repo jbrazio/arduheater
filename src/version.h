@@ -1,5 +1,5 @@
 /**
- * Arduheater - Heat controller for astronomy usage
+ * Arduheater - An intelligent dew buster for astronomy
  * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,10 +17,12 @@
  *
  */
 
-#ifndef __TYPES_H__
-#define __TYPES_H__
+#ifndef __VERSION_H__
+#define __VERSION_H__
 
-typedef uint8_t  flag_t;
-typedef uint32_t millis_t;
+ // Program version and release
+#define ARDUHEATER_VERSION        "0.3a"
+#define ARDUHEATER_VERSION_BUILD  "20170410"
+#define ARDUHEATER_URL            "https://github.com/jbrazio/arduheater"
 
 #endif

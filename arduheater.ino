@@ -1,5 +1,5 @@
 /**
- * Arduheater - Heat controller for astronomy usage
+ * Arduheater - An intelligent dew buster for astronomy
  * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,14 +17,21 @@
  *
  */
 
-#ifndef __ADC_H__
-#define __ADC_H__
-
-namespace adc
-{
-  extern volatile adc_t runtime;
-  extern void selchan(const uint8_t& channel);
-  extern void update();
-};
-
-#endif
+/**
+ * Pst !
+ *
+ * This file is just a placeholder so the Arduino IDE likes us, all
+ * the juicy source code is located under the src/ folder, go have a
+ * look.
+ *
+ * If you have issues running this firmware or you'd like to suggest an
+ * improvement for it, go to our Github project page and submit a new
+ * ticket at <https://github.com/jbrazio/arduheater/issues>.
+ *
+ * We do enjoy some community love <3 <3 <3, share some with us by
+ * forking from <https://github.com/jbrazio/arduheater/fork/> and submit
+ * a new Push Request.
+ *
+ * -- the team
+ *
+ */

@@ -1,5 +1,5 @@
 /**
- * Arduheater - Heat controller for astronomy usage
+ * Arduheater - An intelligent dew buster for astronomy
  * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,48 +20,39 @@
 #include "arduheater.h"
 
 // Global control structures
-dht22 amb;
+/*dht22 amb;
 thermistor ntc;
 out_t out[NUM_OUTPUTS];
 volatile system_t sys;
+*/
 
 int main(void)
 {
   // --------------------------------------------------------------------------
-  // Enable global interrupts -------------------------------------------------
+  // Miscellaneous ------------------------------------------------------------
   // --------------------------------------------------------------------------
-  sei();
+  //DDRB |= 0x30; // Enable D12 and D13 as output
+  DDRB |= 0x30; // D13, D12, D11
+  DDRD |= 0x68; // D6, D5, D3
+
+
+  // --------------------------------------------------------------------------
+  // Disable global interrupts ------------------------------------------------
+  // --------------------------------------------------------------------------
+  cli();
 
 
   // --------------------------------------------------------------------------
   // Serial port init routine -------------------------------------------------
   // --------------------------------------------------------------------------
-
-  #if SERIAL_BAUDRATE < 57600
-    const uint16_t UBRR0_value = ((F_CPU / (8L * SERIAL_BAUDRATE)) - 1) /2;
-    UCSR0A &= ~bit(U2X0); // baud doubler off
-  #else
-    const uint16_t UBRR0_value = ((F_CPU / (4L * SERIAL_BAUDRATE)) - 1) /2;
-    UCSR0A |= bit(U2X0);  // baud doubler on for high baud rates
-  #endif
-
-  // set baudrate
-  UBRR0H = UBRR0_value >> 8;
-  UBRR0L = UBRR0_value;
-
-  // enable rx and tx
-  UCSR0B |= bit(RXEN0);
-  UCSR0B |= bit(TXEN0);
-
-  // enable interrupt on complete reception of a byte
-  UCSR0B |= bit(RXCIE0);
+  Serial::setup();
 
 
   // --------------------------------------------------------------------------
   // Sensor init --------------------------------------------------------------
   // --------------------------------------------------------------------------
-  ntc.init();
-  amb.init();
+  //ntc.init();
+  //amb.init();
 
 
   // --------------------------------------------------------------------------
@@ -74,14 +65,14 @@ int main(void)
   TCCR0B |= bit(CS01) | bit(CS00);
 
   // set overflow interrupt enable
-  TIMSK0 |= bit(TOIE0);
+  //TIMSK0 |= bit(TOIE0);
 
 
   // --------------------------------------------------------------------------
   // Timer1 ISR init routine --------------------------------------------------
   // --------------------------------------------------------------------------
-  // set output compare register A to 500Hz
-  OCR1A = 0x7D;
+  // set output compare register A to 200Hz
+  OCR1A = 0x138;
 
   // set waveform generation mode to CTC
   TCCR1B |= bit(WGM12);
@@ -106,44 +97,38 @@ int main(void)
   // --------------------------------------------------------------------------
   // ADC init routine ---------------------------------------------------------
   // --------------------------------------------------------------------------
-  // set ADC prescaler select to 128
-  ADCSRA |= bit(ADPS2) | bit(ADPS1) | bit(ADPS0);
+  Analog::setup();
 
-  // set ADC Enable
-  ADCSRA |= bit(ADEN);
 
-  // set ADC multiplexer selection to internal 1.1V
-  ADMUX  |= bit(REFS1) | bit(REFS0);
+  // --------------------------------------------------------------------------
+  // Enable global interrupts -------------------------------------------------
+  // --------------------------------------------------------------------------
+  sei();
 
-  #if (NUM_OUTPUTS > 3)
-    // set digital input disable register to A4-A5
-    DIDR0 |= bit(ADC5D) | bit(ADC4D);
-  #elif (NUM_OUTPUTS > 2)
-    // set digital input disable register to A3-A5
-    DIDR0 |= bit(ADC5D) | bit(ADC4D) | bit(ADC3D);
-  #elif (NUM_OUTPUTS > 1)
-    // set digital input disable register to A2-A5
-    DIDR0 |= bit(ADC5D) | bit(ADC4D) | bit(ADC3D) | bit(ADC2D);
-  #elif (NUM_OUTPUTS > 0)
-    // set digital input disable register to A1-A5
-    DIDR0 |= bit(ADC5D) | bit(ADC4D) | bit(ADC3D) | bit(ADC2D) | bit(ADC1D);
-  #endif
+
+  // --------------------------------------------------------------------------
+  // Banner -------------------------------------------------------------------
+  // --------------------------------------------------------------------------
+  Consoleln::PGM(PSTR("Arduheater " ARDUHEATER_VERSION " ['$' for help]"));
+  Consoleln::PGM(PSTR("Visit " ARDUHEATER_URL " for updates."));
+  Console::eol();
 
 
   // --------------------------------------------------------------------------
   // Load settings ------------------------------------------------------------
   // --------------------------------------------------------------------------
-  eeprom::load();
+  //eeprom::load();
 
 
   // --------------------------------------------------------------------------
   // Startup check ------------------------------------------------------------
   // --------------------------------------------------------------------------
+  /*
   while (!any_ntc_ready()) {
     millis_t now = utils::millis();
     static millis_t next = now + 5000L;
     if (now > next) {
-      serial::println::PGM(PSTR("warn: no outputs available"));
+      Consoleln::PGM(PSTR("warn: no outputs available"));
       break;
     } else { utils::delay(1); }
   }
@@ -152,28 +137,30 @@ int main(void)
     millis_t now = utils::millis();
     static millis_t next = now + 10000L;
     if (now > next) {
-      serial::println::PGM(PSTR("err: ambient sensor error"));
+      Consoleln::PGM(PSTR("err: ambient sensor error"));
       halt();
     } else { utils::delay(1); }
   }
 
   // set the status as running
   sys.state |= RUNNING;
-  serial::banner();
+  */
 
 
   // --------------------------------------------------------------------------
   // Output init --------------------------------------------------------------
   // --------------------------------------------------------------------------
-  DDRB |= 0x20; // Enable D13 as output
+
+  /*
   for (size_t i = 0; i < NUM_OUTPUTS; i++ ) {
     pinMode(output_pin(i), OUTPUT); // Enable PWM outputs
     if (out[i].config.autostart) {
-      serial::print::PGM(PSTR("warn: auto started out"));
-      serial::println::uint8(i);
+      Console::PGM(PSTR("warn: auto started out"));
+      Consoleln::number(i);
       cmd::enableheater(i);
     }
   }
+  */
 
 
   // --------------------------------------------------------------------------
@@ -186,8 +173,62 @@ int main(void)
   // Loop routine -------------------------------------------------------------
   // --------------------------------------------------------------------------
   for(;;) {
-    wdt_reset();
-    serial::process();
+    //wdt_reset();
+    //PORTB ^= 1 << 5;
+    Serial::process(&protocol::process);
+    //PORTB ^= 1 << 5;
+
+    static uint16_t counter = 0;
+
+    if(++counter == 0) {
+      for(size_t i = 0; i < 4; i++) {
+        const uint16_t raw = Output::channel(i).sensor.raw();
+        const float t = Output::channel(i).sensor.temp();
+
+        if(raw == 1023) continue;
+
+        Console::PGM(PSTR("chan: "));
+        Console::number(i +1);
+        Console::PGM(PSTR(", val: "));
+        Console::number(raw);
+        Console::PGM(PSTR(" ("));
+        Console::number(t);
+        Console::PGM(PSTR("C)"));
+        //Console::eol();
+
+        Heater::runtime_t dump = Output::channel(i).heater.dump_runtime();
+
+        Console::PGM(PSTR(", target: "));
+        Console::number(dump.target);
+
+        Console::PGM(PSTR(", Perr: "));
+        Console::number(dump.Perr);
+
+        Console::PGM(PSTR(", Ierr: "));
+        Console::number(dump.Ierr);
+
+        Console::PGM(PSTR(", Derr: "));
+        Console::number(dump.Derr);
+
+        Console::PGM(PSTR(", P: "));
+        Console::number(dump.P);
+
+        Console::PGM(PSTR(", I: "));
+        Console::number(dump.I);
+
+        Console::PGM(PSTR(", D: "));
+        Console::number(dump.D);
+
+        Console::PGM(PSTR(", u: "));
+        Console::number(dump.u);
+
+        Console::PGM(PSTR(", pwm: "));
+        Console::number(constrain(dump.u, 0, 255));
+
+        Console::eol();
+      }
+      Console::eol();
+    }
   }
 
   // We should not reach this

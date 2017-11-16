@@ -1,5 +1,5 @@
 /**
- * Arduheater - Heat controller for astronomy usage
+ * Arduheater - An intelligent dew buster for astronomy
  * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,18 +17,33 @@
  *
  */
 
-#ifndef __STRINGS_H__
-#define __STRINGS_H__
+#ifndef __SERIAL_PROTOCOL_H__
+#define __SERIAL_PROTOCOL_H__
 
-#include "arduheater.h"
+#include <stdint.h>
+#include <stdlib.h>
 
-// Special characters
-const char string_colon   [] PROGMEM = { 0x3a, 0x00 };
-const char string_comma   [] PROGMEM = { 0x2c, 0x00 };
-const char string_eol     [] PROGMEM = { 0x0a, 0x00 };
-const char string_minus   [] PROGMEM = { 0x2d, 0x00 };
-const char string_percent [] PROGMEM = { 0x25, 0x00 };
-const char string_space   [] PROGMEM = { 0x20, 0x00 };
-const char string_zero    [] PROGMEM = { 0x30, 0x00 };
+#include <avr/pgmspace.h>
+
+#include "version.h"
+#include "console.h"
+
+#include "analog.h"
+#include "output.h"
+
+namespace protocol {
+  void autotune(const char&);
+  void buildinfo();
+  void disableheater(const char&);
+  void enableheater(const char&);
+  void help();
+  void process(const char*);
+  void registers();
+  void result(const uint8_t&);
+  void save();
+  void set(const uint8_t&, const float&);
+  void settings();
+  void status();
+};
 
 #endif

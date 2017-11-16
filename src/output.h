@@ -17,41 +17,46 @@
  *
  */
 
-#ifndef __SENSOR_H__
-#define __SENSOR_H__
+#ifndef __OUTPUT_H__
+#define __OUTPUT_H__
 
 #include <stdint.h>
 #include <stdlib.h>
-#include <math.h>
 
-#include "type.h"
-#include "macro.h"
-#include "config.h"
+#include <avr/pgmspace.h>
+
+#include "heater.h"
+#include "thermistor.h"
 
 /**
- * @brief Sensor structure
- * @details Top level sensor structure block.
+ * @brief TODO
+ * @details
  *
  */
-class Thermistor
+class Output
 {
-  protected:
-    /**
-     * @brief Sensor config structure
-     * @details This structure stores all the configuration parameters for a thermistor.
-     *
-     */
-    struct config_t {
-      float    nominaltemp  = DEFAULT_NTC_NT;
-      uint16_t bcoefficient = DEFAULT_NTC_BC,
-               nominalval   = DEFAULT_NTC_NV,
-               resistor     = DEFAULT_NTC_SR;
-    } m_config;
+  /**
+   * Disable the creation of an instance of this object.
+   * This class should be used as a static class.
+   */
+  private:
+     Output() {;}
+    ~Output() {;}
 
   protected:
-    bool m_state     = false,
-         m_connected = false;
-    uint16_t m_value = 1023;
+    /**
+     * @brief Output channel structure
+     * @details Top level output channel structure block.
+     *
+     */
+    static struct channel_t {
+      Heater heater;
+      Thermistor sensor;
+
+      inline void enable() { heater.start(); }
+      inline void disable() { heater.stop(); }
+      inline void setpoint(const float &value) { heater.set_target(value); }
+    } s_channel[4];
 
   public:
     /**
@@ -59,14 +64,7 @@ class Thermistor
      * @details [long description]
      *
      */
-    inline uint16_t raw() { return m_value; }
-
-    /**
-     * @brief [brief description]
-     * @details [long description]
-     *
-     */
-    inline void set_value(const uint16_t &value) { m_value = value; }
+    inline static channel_t& channel(const uint8_t& n) { return s_channel[n]; }
 
   public:
     /**
@@ -74,14 +72,16 @@ class Thermistor
      * @details [long description]
      *
      */
-    float temp();
+    static void update_sensor(const uint8_t&, const uint16_t&);
 
     /**
      * @brief [brief description]
      * @details [long description]
      *
      */
-    uint16_t invtemp(const float&);
+    static void update_heater(const uint8_t&, const int16_t&);
+
 };
 
 #endif
+

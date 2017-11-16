@@ -17,46 +17,60 @@
  *
  */
 
-#ifndef __SERIAL_H__
-#define __SERIAL_H__
+#ifndef __ADC_H__
+#define __ADC_H__
 
 #include <stdint.h>
 #include <stdlib.h>
-#include <string.h>
 
-#include "config.h"
+#include <avr/interrupt.h>
+
 #include "macro.h"
-#include "ringbuf.h"
+#include "console.h"
 
-class Serial
+class Analog
 {
   /**
    * Disable the creation of an instance of this object.
    * This class should be used as a static class.
    */
   private:
-     Serial() {;}
-    ~Serial() {;}
+     Analog() {;}
+    ~Analog() {;}
 
-  protected:
-    typedef void (*callbackfunc_t)(const char*);
+  public:
+    /**
+     * @brief TODO
+     * @details
+     *
+     */
+    typedef void (*callback_t)(const uint8_t&, const uint16_t&);
+    static callback_t s_callback;
 
   public:
     // Being a bit lazy here, this buffer should be private to the class
     // and have a set of wrappers around it.. adding it to the TODO list.
     static struct buffer_t
     {
-      Ringbuf<char, 16u> rx;
-      Ringbuf<char, 64u> tx;
+      uint8_t  n;
+      uint8_t  chan;
+      uint16_t raw[128];
     } s_buffer;
 
   public:
-    static bool available();
-    static char read();
-    static void flush();
-    static void process(callbackfunc_t);
+    /**
+     * @brief TODO
+     * @details
+     *
+     */
+    static void read(const uint8_t&, const callback_t);
+
+    /**
+     * @brief TODO
+     * @details
+     *
+     */
     static void setup();
-    static void write(const char&);
 };
 
 #endif

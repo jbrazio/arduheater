@@ -1,5 +1,5 @@
 /**
- * Arduheater - Heat controller for astronomy usage
+ * Arduheater - An intelligent dew buster for astronomy
  * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,65 +20,56 @@
 #ifndef __ARDUHEATER_H__
 #define __ARDUHEATER_H__
 
- // Program version and release
-#define ARDUHEATER_VERSION "0.2a"
-#define ARDUHEATER_VERSION_BUILD "20170410"
+#include <stdint.h>
 
-// Define standard libraries used by Arduheater
-#include <avr/io.h>
-#include <avr/pgmspace.h>
 #include <avr/interrupt.h>
+#include <avr/pgmspace.h>
 #include <avr/wdt.h>
-//#include <util/delay.h>
-#include <math.h>
-//#include <inttypes.h>
-#include <string.h>
-#include <stdlib.h>
-//#include <stdint.h>
-//#include <stdbool.h>
 
-#ifdef ARDUINO
-  #include <Arduino.h>
-#endif
+#include "version.h"
+#include "console.h"
+#include "analog.h"
+#include "protocol.h"
 
-// Cleanup some Arduino stuff
-#undef SERIAL_RX_BUFFER_SIZE
-#undef SERIAL_TX_BUFFER_SIZE
+#include "output.h"
 
-// Define the Arduheater system include files.
-// NOTE: Do not alter organization.
-#include "config.h"
-#include "macros.h"
-#include "system.h"
-#include "ringbuf.h"
-#include "types.h"
-#include "pid.h"
-#include "enum.h"
-#include "struct.h"
-#include "utils.h"
-#include "serial.h"
-#include "strings.h"
-#include "print.h"
-#include "lpf.h"
-#include "adc.h"
-#include "sensor.h"
-#include "thermistor.h"
-#include "dht22.h"
-#include "cmd.h"
-#include "eeprom.h"
+/*
+#define digitalPinToPort(P) ( pgm_read_byte( digital_pin_to_port_PGM + (P) ) )
+#define digitalPinToBitMask(P) ( pgm_read_byte( digital_pin_to_bit_mask_PGM + (P) ) )
 
-// System global control structures
-extern dht22 amb;
-extern thermistor ntc;
-extern out_t out[NUM_OUTPUTS];
-extern volatile system_t sys;
+#define portModeRegister(P) ( (volatile uint8_t *)( pgm_read_word( port_to_mode_PGM + (P))) )
+#define portOutputRegister(P) ( (volatile uint8_t *)( pgm_read_word( port_to_output_PGM + (P))) )
 
-#ifndef ARDUINO
-  volatile uint32_t timer0_overflow_count = 0;
-  volatile uint32_t timer0_millis = 0;
-  static   uint32_t timer0_fract = 0;
-#endif
+inline void pinMode(uint8_t pin, uint8_t mode)
+{
+  uint8_t bit = digitalPinToBitMask(pin);
+  uint8_t port = digitalPinToPort(pin);
+  volatile uint8_t *reg, *out;
 
-const uint8_t heater_ouput_pins[] PROGMEM = HEATER_PINS;
+  if (port == 0) return;
 
+  // JWS: can I let the optimizer do this?
+  reg = portModeRegister(port);
+  out = portOutputRegister(port);
+
+  if (mode == 0x0) {
+    uint8_t oldSREG = SREG;
+                cli();
+    *reg &= ~bit;
+    *out &= ~bit;
+    SREG = oldSREG;
+  } else if (mode == 0x2) {
+    uint8_t oldSREG = SREG;
+                cli();
+    *reg &= ~bit;
+    *out |= bit;
+    SREG = oldSREG;
+  } else {
+    uint8_t oldSREG = SREG;
+                cli();
+    *reg |= bit;
+    SREG = oldSREG;
+  }
+}
+*/
 #endif

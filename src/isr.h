@@ -1,5 +1,5 @@
 /**
- * Arduheater - Heat controller for astronomy usage
+ * Arduheater - An intelligent dew buster for astronomy
  * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,58 +17,16 @@
  *
  */
 
-#ifndef __STRUCT_H__
-#define __STRUCT_H__
+#ifndef __ISR_H__
+#define __ISR_H__
 
-#include "arduheater.h"
+#include <stdint.h>
+#include <stdlib.h>
 
-struct system_t
-{
-  flag_t  state;
-  flag_t  sensor;
-  flag_t  output;
-};
+#include <avr/interrupt.h>
 
-struct serial_buffer_t
-{
-  ringbuf<uint8_t, SERIAL_RX_BUFFER_SIZE> rx;
-  ringbuf<uint8_t, SERIAL_TX_BUFFER_SIZE> tx;
-};
-
-struct adc_t
-{
-  uint8_t channel;
-  int16_t value;
-};
-
-struct ticker_t
-{
-  uint8_t period;
-  uint8_t ticks;
-};
-
-struct ambient_t
-{
-  float t_offset;
-  float rh_offset;
-  float dew_offset;
-};
-
-struct heater_t
-{
-  bool    autostart;
-  float   offset;
-  uint8_t min;
-  uint8_t max;
-  float   Kp;
-  float   Ki;
-  float   Kd;
-};
-
-struct out_t
-{
-  heater_t  config;
-  pid       alg;
-};
+#include "analog.h"
+#include "config.h"
+#include "output.h"
 
 #endif

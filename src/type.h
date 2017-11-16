@@ -17,20 +17,13 @@
  *
  */
 
-#ifndef __ENUM_H__
-#define __ENUM_H__
+#ifndef __TYPE_H__
+#define __TYPE_H__
 
-#include "arduheater.h"
+#include <stdint.h>
 
-enum sensor_state_t
-{
-  SENSOR_UNKNOWN,
-  SENSOR_WARMUP,
-  SENSOR_READY,
-  SENSOR_BUSY,
-  SENSOR_SLEEP,
-  SENSOR_TIMEOUT,
-  SENSOR_ERROR,
-};
+typedef uint8_t pin_t;
+typedef uint8_t flag_t;
+typedef uint32_t millis_t;
 
 #endif

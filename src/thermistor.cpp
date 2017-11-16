@@ -1,5 +1,5 @@
 /**
- * Arduheater - Heat controller for astronomy usage
+ * Arduheater - An intelligent dew buster for astronomy
  * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,60 +17,36 @@
  *
  */
 
-#include "arduheater.h"
+#include "thermistor.h"
 
-thermistor::thermistor()
-  : sensor(THERMISTOR_WARMUP_TIME, THERMISTOR_SLEEP_TIME, THERMISTOR_REFRESH_TIME)
+/**
+ * @brief TODO
+ * @details
+ *
+ */
+float Thermistor::temp()
 {
-  m_active_channel = 0;
+  // steinhart
+  float temp = constrain(m_value, 1, 1022);
+  temp  = m_config.resistor / (1023.0F / temp - 1); // convert raw to ohms
+  temp /= m_config.nominalval;                      // (R/Ro)
+  temp  = log(temp);                                // ln(R/Ro)
+  temp /= m_config.bcoefficient;                    // 1/B * ln(R/Ro)
+  temp += 1.0F / (m_config.nominaltemp + 273.15F);  // + (1/To)
+  temp  = 1.0F / temp;                              // invert
+  temp -= 273.15F;                                  // convert to K to C
+  return (roundf(temp * 10) / 10);                  // round to one decimal
 }
 
-bool thermistor::hwupdate()
+uint16_t Thermistor::invtemp(const float& temp)
 {
-  m_state = SENSOR_BUSY;                          // mark the hw as busy
-  adc::selchan((const uint8_t) m_active_channel); // select the adc m_active_channel
-  adc::update();                                  // trigger an adc update
-  return false;                                   // waiting for the adc to get a reading
-}
-
-bool thermistor::hwbusy()
-{
-  if (m_state == SENSOR_BUSY) {
-    if (sys.state & ADC_READING_DONE) {
-      if (adc::runtime.value > THERMISTOR_MIN_VAL || adc::runtime.value < THERMISTOR_MAX_VAL) {
-        m_cache[m_active_channel] = THERMISTOR_ERR_TEMP;
-
-
-        if (is_ready(m_active_channel)) {
-          mark_as_not_ready(m_active_channel);
-
-          // only print disconnect messages if system is running
-          if (sys.state & RUNNING) {
-            serial::print::PGM(PSTR("warn: out"));
-            serial::print::uint8(m_active_channel);
-            serial::println::PGM(PSTR(" sensor disconnected"));
-          }
-        }
-
-      } else {
-        m_cache[m_active_channel] += (uint16_t) adc::runtime.value;
-        m_fresh[m_active_channel] = true;
-
-        if (! is_ready(m_active_channel)) {
-          mark_as_ready(m_active_channel);
-
-          // only print connect messages if system is running
-          if (sys.state & RUNNING) {
-            serial::print::PGM(PSTR("warn: out"));
-            serial::print::uint8(m_active_channel);
-            serial::println::PGM(PSTR(" sensor connected"));
-          }
-        }
-      }
-
-      m_active_channel = (m_active_channel +1) % NUM_OUTPUTS;
-      return true; // the hw update is complete
-    }
-  }
-  return false; // the hw update is not complete
+  float value = temp;
+  value += 273.15F;
+  value  = 1.0F / value;
+  value -= 1.0F / (m_config.nominaltemp + 273.15F);
+  value *= m_config.bcoefficient;
+  value  = exp(value);
+  value *= m_config.nominalval;
+  value  = (1023.0F * value) / (value + m_config.resistor);
+  return (uint16_t) value;
 }
