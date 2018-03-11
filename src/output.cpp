@@ -1,6 +1,6 @@
 /**
  * Arduheater - An intelligent dew buster for astronomy
- * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
+ * Copyright (C) 2016-2018 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,6 @@
  */
 
 #include "output.h"
-#include <Arduino.h>
 
 /**
  * @brief Global variable initialization
@@ -30,28 +29,16 @@ Output::channel_t Output::s_channel[4];
  * @details [long description]
  *
  */
-void Output::update_sensor(const uint8_t &chan, const uint16_t &raw_value)
+void Output::update_ambient_callback(const float &dp)
 {
-  //
-  // TODO: Update thermistor state: connected/disconnected
-  // TODO: Disable outputs on error
-  //
-  if(raw_value < 51 || raw_value > 971)
-  {
-    s_channel[chan].sensor.set_value(THERMISTOR_ERR_TEMP);
-    s_channel[chan].heater.set_connected(false);
-    s_channel[chan].heater.stop();
+  for(size_t i = 0; i < 4; i++) {
+    // Ignore output if it is disconnected
+    // TODO: Check if the compiler is smart enough to optimize the following
+    //       calls, otherwise update this to use direct var access.
+    if (! Output::channel(0).is_connected()) continue;
+    //Output::channel(0).setpoint(dp);
+    Output::channel(0).setpoint(25);
   }
-
-  else {
-    s_channel[chan].sensor.set_value(raw_value);
-    s_channel[chan].heater.set_connected(true);
-
-    const float t = s_channel[chan].sensor.temp();
-    s_channel[chan].heater.eval_pid(t);
-  }
-
-  analogWrite(get_heater_pin(chan), s_channel[chan].heater.get_value());
 }
 
 /**
@@ -59,7 +46,46 @@ void Output::update_sensor(const uint8_t &chan, const uint16_t &raw_value)
  * @details [long description]
  *
  */
-void Output::update_heater(const uint8_t &chan, const int16_t &setpoint)
+void Output::update_sensor_callback(const uint8_t &chan, const uint16_t &raw_value)
 {
-  s_channel[chan].heater.set_target(setpoint);
+  //
+  // TODO: Update thermistor state: connected/disconnected
+  // TODO: Disable outputs on error
+  //
+  if(raw_value < HEATER_MIN_VAL || raw_value > HEATER_MAX_VAL)
+  {
+    if(s_channel[chan].sensor.is_connected()) {
+      s_channel[chan].sensor.set_connected(false);
+      s_channel[chan].heater.set_connected(false);
+
+      Log::PGM(PSTR("INFO: Output #"));
+      Log::number(chan +1);
+      Log::PGM(PSTR(" disconnected."));
+      Log::eol();
+    }
+
+    s_channel[chan].sensor.set_value(HEATER_ERR_VAL);
+    s_channel[chan].heater.stop();
+  }
+
+  else {
+    if(! s_channel[chan].sensor.is_connected()) {
+      s_channel[chan].sensor.set_connected(true);
+      s_channel[chan].heater.set_connected(true);
+
+      // TODO: Autostart heater if option active
+
+      Log::PGM(PSTR("INFO: Output #"));
+      Log::number(chan +1);
+      Log::PGM(PSTR(" connected."));
+      Log::eol();
+    }
+
+    s_channel[chan].sensor.set_value(raw_value);
+
+    const float t = s_channel[chan].sensor.temp();
+    s_channel[chan].heater.eval_pid(t);
+  }
+
+  IO::write(get_heater_pin(chan), s_channel[chan].heater.get_value());
 }

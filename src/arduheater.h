@@ -1,6 +1,6 @@
 /**
  * Arduheater - An intelligent dew buster for astronomy
- * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
+ * Copyright (C) 2016-2018 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,55 +21,20 @@
 #define __ARDUHEATER_H__
 
 #include <stdint.h>
-
-#include <avr/interrupt.h>
-#include <avr/pgmspace.h>
-#include <avr/wdt.h>
+#include <stdlib.h>
 
 #include "version.h"
-#include "console.h"
+#include "config.h"
+
+//#include <math.h>
+//#include <avr/wdt.h>
+//#include <avr/pgmspace.h>
+//#include <avr/interrupt.h>
+
 #include "analog.h"
+#include "io.h"
+#include "log.h"
+#include "output.h"
 #include "protocol.h"
 
-#include "output.h"
-
-/*
-#define digitalPinToPort(P) ( pgm_read_byte( digital_pin_to_port_PGM + (P) ) )
-#define digitalPinToBitMask(P) ( pgm_read_byte( digital_pin_to_bit_mask_PGM + (P) ) )
-
-#define portModeRegister(P) ( (volatile uint8_t *)( pgm_read_word( port_to_mode_PGM + (P))) )
-#define portOutputRegister(P) ( (volatile uint8_t *)( pgm_read_word( port_to_output_PGM + (P))) )
-
-inline void pinMode(uint8_t pin, uint8_t mode)
-{
-  uint8_t bit = digitalPinToBitMask(pin);
-  uint8_t port = digitalPinToPort(pin);
-  volatile uint8_t *reg, *out;
-
-  if (port == 0) return;
-
-  // JWS: can I let the optimizer do this?
-  reg = portModeRegister(port);
-  out = portOutputRegister(port);
-
-  if (mode == 0x0) {
-    uint8_t oldSREG = SREG;
-                cli();
-    *reg &= ~bit;
-    *out &= ~bit;
-    SREG = oldSREG;
-  } else if (mode == 0x2) {
-    uint8_t oldSREG = SREG;
-                cli();
-    *reg &= ~bit;
-    *out |= bit;
-    SREG = oldSREG;
-  } else {
-    uint8_t oldSREG = SREG;
-                cli();
-    *reg |= bit;
-    SREG = oldSREG;
-  }
-}
-*/
 #endif

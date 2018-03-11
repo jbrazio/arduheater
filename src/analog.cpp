@@ -1,6 +1,6 @@
 /**
  * Arduheater - An intelligent dew buster for astronomy
- * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
+ * Copyright (C) 2016-2018 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,13 +26,13 @@ Analog::buffer_t Analog::s_buffer = { 0, 255, {} };
 Analog::callback_t Analog::s_callback = NULL;
 
 /**
- * @brief TODO
- * @details TODO
+ * @brief [brief description]
+ * @details [long description]
  *
  */
 ISR(ADC_vect)
 {
-  PORTB ^= 1 << 5;
+  SCOPE_DEBUG_OUTPUT(0);
 
   // store the raw value from the ADC
   Analog::s_buffer.raw[Analog::s_buffer.n++] = ADCW;
@@ -60,12 +60,12 @@ ISR(ADC_vect)
 
   else { ADCSRA |= bit(ADSC) | bit(ADIE); }
 
-  PORTB ^= 1 << 5;
+  SCOPE_DEBUG_OUTPUT(0);
 }
 
 /**
- * @brief TODO
- * @details TODO
+ * @brief [brief description]
+ * @details [long description]
  *
  */
 void Analog::read(const uint8_t& channel, const callback_t func)
@@ -91,8 +91,8 @@ void Analog::read(const uint8_t& channel, const callback_t func)
 }
 
 /**
- * @brief TODO
- * @details TODO
+ * @brief [brief description]
+ * @details [long description]
  *
  */
 void Analog::setup()

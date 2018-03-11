@@ -17,8 +17,8 @@
  *
  */
 
-#ifndef __OUTPUT_H__
-#define __OUTPUT_H__
+#ifndef __ENVIRONMENT_H__
+#define __ENVIRONMENT_H__
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -26,65 +26,49 @@
 #include "version.h"
 #include "config.h"
 
-#include <avr/pgmspace.h>
+#include "dht22.h"
 
-#include "heater.h"
-#include "io.h"
-#include "thermistor.h"
-
-/**
- * @brief TODO
- * @details
- *
- */
-class Output
-{
-  /**
-   * Disable the creation of an instance of this object.
-   * This class should be used as a static class.
-   */
-  private:
-     Output() {;}
-    ~Output() {;}
-
-  protected:
-    /**
-     * @brief Output channel structure
-     * @details Top level output channel structure block.
-     *
-     */
-    static struct channel_t {
-      Heater heater;
-      Thermistor sensor;
-
-      inline void enable() { heater.start(); }
-      inline void disable() { heater.stop(); }
-      inline void setpoint(const float &value) { heater.set_target(value); }
-      inline bool is_connected() { return (heater.is_connected() && sensor.is_connected()) ? true : false; }
-    } s_channel[4];
-
+class Environment: public AMBIENT_SENSOR_TYPE {
   public:
     /**
      * @brief [brief description]
      * @details [long description]
      *
      */
-    inline static channel_t& channel(const uint8_t& n) { return s_channel[n]; }
+    static inline bool is_ready()
+    {
+      return (s_runtime.temperature == AMBIENT_SENSOR_ERROR_VALUE) ? false : true;
+    }
 
     /**
      * @brief [brief description]
      * @details [long description]
      *
      */
-    static void update_ambient_callback(const float&);
+    static inline float get_temperature()
+    {
+      return s_runtime.temperature;
+    };
 
     /**
      * @brief [brief description]
      * @details [long description]
      *
      */
-    static void update_sensor_callback(const uint8_t&, const uint16_t&);
+    static inline float get_humidity()
+    {
+      return s_runtime.humidity;
+    };
+
+    /**
+     * @brief [brief description]
+     * @details [long description]
+     *
+     */
+    static inline float get_dew_point()
+    {
+      return calculate_dew(s_runtime.temperature, s_runtime.humidity);
+    };
 };
 
 #endif
-

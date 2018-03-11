@@ -1,6 +1,6 @@
 /**
  * Arduheater - An intelligent dew buster for astronomy
- * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
+ * Copyright (C) 2016-2018 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,46 +20,56 @@
 #ifndef __MACRO_H__
 #define __MACRO_H__
 
+#include <stdint.h>
+#include <stdlib.h>
+
+#include "version.h"
+#include "config.h"
+
 #include <avr/interrupt.h>
+#include <avr/pgmspace.h>
 #include <avr/sfr_defs.h>
+
+#undef bit
+#define bit(b) (1UL << (b))
+
+#undef cbi
+#define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
+
+#undef sbi
+#define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
+
+#undef min
+#define min(a,b) ((a)<(b)?(a):(b))
+
+#undef max
+#define max(a,b) ((a)>(b)?(a):(b))
+
+#undef abs
+#define abs(x) ((x)>0?(x):-(x))
+
+#undef constrain
+#define constrain(n, low, high) ((n)<(low)?(low):((n)>(high)?(high):(n)))
+
+#undef map
+#define map(x, in_min, in_max, out_min, out_max) ((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min)
+
+#undef asizeof
+#define asizeof(a) (sizeof(a) / sizeof(*a))
 
 #ifndef CRITICAL_SECTION_START
   #define CRITICAL_SECTION_START  const uint8_t __SREG___ = SREG; cli();
   #define CRITICAL_SECTION_END    SREG = __SREG___;
 #endif
 
-#ifndef bit
-  #define bit(b) (1UL << (b))
-#endif
+#define SCOPE_DEBUG_OUTPUT(a)
+#define ENABLE_SCOPE_DEBUG(a)
 
-#ifndef cbi
-  #define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
-#endif
-
-#ifndef sbi
-  #define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
-#endif
-
-#ifndef min
-  #define min(a,b) ((a)<(b)?(a):(b))
-#endif
-
-#ifndef max
-  #define max(a,b) ((a)>(b)?(a):(b))
-#endif
-
-/*
-#ifndef abs
-  #define abs(x) ((x)>0?(x):-(x))
-#endif
-*/
-
-#ifndef constrain
-  #define constrain(n, low, high) ((n)<(low)?(low):((n)>(high)?(high):(n)))
-#endif
-
-#ifndef asizeof
-  #define asizeof(a) (sizeof(a) / sizeof(*a))
+#ifdef SCOPE_DEBUG
+  #undef SCOPE_DEBUG_OUTPUT
+  #undef ENABLE_SCOPE_DEBUG
+  #define SCOPE_DEBUG_OUTPUT(a) PORTB ^= bit(a)
+  #define ENABLE_SCOPE_DEBUG(a) IO::set_as_output(a)
 #endif
 
 #define get_heater_pin(a) pgm_read_byte(&(heater_pins[a]))

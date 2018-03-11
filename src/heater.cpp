@@ -1,6 +1,6 @@
 /**
  * Arduheater - An intelligent dew buster for astronomy
- * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
+ * Copyright (C) 2016-2018 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,36 +28,37 @@ void Heater::eval_pid(const float &value)
   const int16_t actual = value * 10;
 
   // calculate proportional error
-  const int16_t Perr = target - actual;
+  //const int16_t Perr = map((target - actual), 0, 5, 0, 255);
+  const int16_t Perr = (target - actual);
 
   // calculate integral error
   const int32_t Itmp = (int32_t) m_runtime.Ierr + Perr;
   const int16_t Ierr = constrain(Itmp, (INT16_MIN +1), (INT16_MAX -1));
 
   // calculate derivative error
-  const int16_t Derr = actual - m_runtime.lastval;
+  const int16_t Derr = Perr - m_runtime.Perr;
 
   // calculate the PID
-  const int16_t P = (m_config.Kp * Perr) /10;
-  const int16_t I = (m_config.Ki * Ierr) /10;
-  const int16_t D = (m_config.Kd * Derr) /10;
+  const int16_t P = (m_config.Kp * Perr) *10 /100;
+  const int16_t I = (m_config.Ki * Ierr) *10 /100;
+  const int16_t D = (m_config.Kd * Derr) *10 /100;
 
   // calculate the output
-  const int16_t u = P + I + D;
+  const int16_t u = P + I - D;
 
   // restrict the output
-  m_value = (m_connected) ? constrain(u, 0, 255) : 0;
+  m_value = (m_connected) ? constrain(u, m_config.min, m_config.max) : 0;
 
   // update runtime
   m_runtime.Ierr = Ierr;
-  m_runtime.lastval = actual;
+  m_runtime.Derr = Derr;
 
   // only if debug active ?
   m_runtime.target = target;
 
   m_runtime.Perr = Perr;
   m_runtime.Ierr = Ierr;
-  m_runtime.Derr = Derr;
+
 
   m_runtime.P = P;
   m_runtime.I = I;

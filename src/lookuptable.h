@@ -1,6 +1,7 @@
 /**
- * Arduheater - An intelligent dew buster for astronomy
- * Copyright (C) 2016-2018 João Brázio [joao@brazio.org]
+ * Ardufocus - Moonlite compatible focuser
+ * Copyright (C) 2017-2018 João Brázio [joao@brazio.org]
+ *
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,8 +18,8 @@
  *
  */
 
-#ifndef __ISR_H__
-#define __ISR_H__
+#ifndef __LOOKUPTABLE_H__
+#define __LOOKUPTABLE_H__
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -26,10 +27,23 @@
 #include "version.h"
 #include "config.h"
 
-#include <avr/interrupt.h>
+namespace lookup
+{
+  const uint8_t full_step_table_sz = 4;
+  const uint8_t full_step_table[full_step_table_sz] PROGMEM = {
+    B0001, B0010, B0100, B1000
+  };
 
-#include "analog.h"
-#include "environment.h"
-#include "output.h"
+  const uint8_t half_step_table_sz = 8;
+  const uint8_t half_step_table[half_step_table_sz] PROGMEM = {
+    B1001, B0001, B0010, B0011, B0010, B00110, B1100, B1000
+  };
+
+  const uint8_t  step_freq_table_sz = 8;
+  const uint16_t step_freq_table[step_freq_table_sz] PROGMEM = {
+    0x7D, 0xFA, 0x1F4, 0x3E0, 0x7A1, 0xF42, 0x1E84, 0x3D09
+  // 500,  250,   125,    63,    32,    16       8       4Hz
+  };
+}
 
 #endif

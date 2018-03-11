@@ -1,6 +1,6 @@
 /**
  * Arduheater - An intelligent dew buster for astronomy
- * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
+ * Copyright (C) 2016-2018 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,9 +31,9 @@ int main(void)
   // --------------------------------------------------------------------------
   // Miscellaneous ------------------------------------------------------------
   // --------------------------------------------------------------------------
-  //DDRB |= 0x30; // Enable D12 and D13 as output
-  DDRB |= 0x30; // D13, D12, D11
-  DDRD |= 0x68; // D6, D5, D3
+  ENABLE_SCOPE_DEBUG(13); // Timer 1 CTC
+  ENABLE_SCOPE_DEBUG(12); // INT0 ISR
+  ENABLE_SCOPE_DEBUG(8);  // ADC
 
 
   // --------------------------------------------------------------------------
@@ -49,13 +49,6 @@ int main(void)
 
 
   // --------------------------------------------------------------------------
-  // Sensor init --------------------------------------------------------------
-  // --------------------------------------------------------------------------
-  //ntc.init();
-  //amb.init();
-
-
-  // --------------------------------------------------------------------------
   // Timer0 ISR init routine --------------------------------------------------
   // --------------------------------------------------------------------------
   // set waveform generation mode to Fast PWM
@@ -64,8 +57,8 @@ int main(void)
   // set clock select to 64 (from prescaler)
   TCCR0B |= bit(CS01) | bit(CS00);
 
-  // set overflow interrupt enable
-  //TIMSK0 |= bit(TOIE0);
+  // enable timer0 overflow interrupt
+  TIMSK0 |= bit(TOIE0);
 
 
   // --------------------------------------------------------------------------
@@ -107,60 +100,49 @@ int main(void)
 
 
   // --------------------------------------------------------------------------
+  // Startup check ------------------------------------------------------------
+  // --------------------------------------------------------------------------
+  while (! Environment::is_ready()) {
+    // Delay 16 000 cycle: 1ms at 16.0 MHz
+    asm volatile (
+      "    ldi  r18, 21"  "\n"
+      "    ldi  r19, 199" "\n"
+      "1:  dec  r19"      "\n"
+      "    brne 1b"       "\n"
+      "    dec  r18"      "\n"
+      "    brne 1b"       "\n"
+    );
+  }
+  LogLn::PGM(PSTR("INFO: Ambient sensor ready."));
+  Log::eol();
+
+
+  // --------------------------------------------------------------------------
   // Banner -------------------------------------------------------------------
   // --------------------------------------------------------------------------
-  Consoleln::PGM(PSTR("Arduheater " ARDUHEATER_VERSION " ['$' for help]"));
-  Consoleln::PGM(PSTR("Visit " ARDUHEATER_URL " for updates."));
-  Console::eol();
+  LogLn::PGM(PSTR("Arduheater " ARDUHEATER_VERSION " ['$' for help]"));
+  LogLn::PGM(PSTR("Visit " ARDUHEATER_URL " for updates."));
+  Log::eol();
 
 
   // --------------------------------------------------------------------------
   // Load settings ------------------------------------------------------------
   // --------------------------------------------------------------------------
   //eeprom::load();
-
-
-  // --------------------------------------------------------------------------
-  // Startup check ------------------------------------------------------------
-  // --------------------------------------------------------------------------
-  /*
-  while (!any_ntc_ready()) {
-    millis_t now = utils::millis();
-    static millis_t next = now + 5000L;
-    if (now > next) {
-      Consoleln::PGM(PSTR("warn: no outputs available"));
-      break;
-    } else { utils::delay(1); }
-  }
-
-  while (!(sys.sensor & AMBIENT_SENSOR_READY)) {
-    millis_t now = utils::millis();
-    static millis_t next = now + 10000L;
-    if (now > next) {
-      Consoleln::PGM(PSTR("err: ambient sensor error"));
-      halt();
-    } else { utils::delay(1); }
-  }
-
-  // set the status as running
-  sys.state |= RUNNING;
-  */
-
+  //
 
   // --------------------------------------------------------------------------
   // Output init --------------------------------------------------------------
   // --------------------------------------------------------------------------
+  for (size_t i = 0; i < 4; i++ ) {
+    IO::set_as_output(get_heater_pin(i));
 
-  /*
-  for (size_t i = 0; i < NUM_OUTPUTS; i++ ) {
-    pinMode(output_pin(i), OUTPUT); // Enable PWM outputs
-    if (out[i].config.autostart) {
-      Console::PGM(PSTR("warn: auto started out"));
-      Consoleln::number(i);
+    /*if (out[i].config.autostart) {
+      Log::PGM(PSTR("warn: auto started out"));
+      LogLn::number(i);
       cmd::enableheater(i);
-    }
+    }*/
   }
-  */
 
 
   // --------------------------------------------------------------------------
@@ -174,61 +156,67 @@ int main(void)
   // --------------------------------------------------------------------------
   for(;;) {
     //wdt_reset();
-    //PORTB ^= 1 << 5;
     Serial::process(&protocol::process);
-    //PORTB ^= 1 << 5;
 
-    static uint16_t counter = 0;
+    #ifdef DEBUG
+      uint32_t now = micros();
+      static uint32_t before = now;
 
-    if(++counter == 0) {
-      for(size_t i = 0; i < 4; i++) {
-        const uint16_t raw = Output::channel(i).sensor.raw();
-        const float t = Output::channel(i).sensor.temp();
+      if(now - before > 1e6) {
+        before = now;
 
-        if(raw == 1023) continue;
+          Log::PGM(PSTR("#"));
+          Log::number(Environment::get_temperature());
+          Log::PGM(PSTR(","));
+          Log::number(Environment::get_humidity());
+          Log::PGM(PSTR(","));
+          Log::number(Environment::get_dew_point());
 
-        Console::PGM(PSTR("chan: "));
-        Console::number(i +1);
-        Console::PGM(PSTR(", val: "));
-        Console::number(raw);
-        Console::PGM(PSTR(" ("));
-        Console::number(t);
-        Console::PGM(PSTR("C)"));
-        //Console::eol();
+        for(size_t i = 0; i < 4; i++) {
+          // Ignore output if it is disconnected
+          //if (raw == 1023) continue;
+          if (! Output::channel(i).is_connected()) continue;
 
-        Heater::runtime_t dump = Output::channel(i).heater.dump_runtime();
+          const uint16_t raw = Output::channel(i).sensor.raw();
+          const float t = Output::channel(i).sensor.temp();
 
-        Console::PGM(PSTR(", target: "));
-        Console::number(dump.target);
+          // Format
+          // <Channel>,<ADC raw value>,<Sensor temp>,<Target temp>
 
-        Console::PGM(PSTR(", Perr: "));
-        Console::number(dump.Perr);
+          Log::PGM(PSTR(":"));
+          //Log::number(i +1);
+          //Log::PGM(PSTR(","));
+          Log::number(raw);
+          Log::PGM(PSTR(","));
+          Log::number(t);
 
-        Console::PGM(PSTR(", Ierr: "));
-        Console::number(dump.Ierr);
+          Heater::runtime_t dump = Output::channel(i).heater.dump_runtime();
 
-        Console::PGM(PSTR(", Derr: "));
-        Console::number(dump.Derr);
+          Log::PGM(PSTR(","));
+          Log::number(dump.target);
+          Log::PGM(PSTR(","));
+          Log::number((float)dump.target/10);
+          Log::PGM(PSTR(","));
+          Log::number(dump.Perr);
+          Log::PGM(PSTR(","));
+          Log::number(dump.Ierr);
+          Log::PGM(PSTR(","));
+          Log::number(dump.Derr);
+          Log::PGM(PSTR(","));
+          Log::number(dump.P);
+          Log::PGM(PSTR(","));
+          Log::number(dump.I);
+          Log::PGM(PSTR(","));
+          Log::number(dump.D);
+          Log::PGM(PSTR(","));
+          Log::number(dump.u);
+          Log::PGM(PSTR(","));
+          Log::number(Output::channel(i).heater.get_value());
+        }
 
-        Console::PGM(PSTR(", P: "));
-        Console::number(dump.P);
-
-        Console::PGM(PSTR(", I: "));
-        Console::number(dump.I);
-
-        Console::PGM(PSTR(", D: "));
-        Console::number(dump.D);
-
-        Console::PGM(PSTR(", u: "));
-        Console::number(dump.u);
-
-        Console::PGM(PSTR(", pwm: "));
-        Console::number(constrain(dump.u, 0, 255));
-
-        Console::eol();
+        Log::eol();
       }
-      Console::eol();
-    }
+    #endif
   }
 
   // We should not reach this

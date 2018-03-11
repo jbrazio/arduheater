@@ -17,19 +17,34 @@
  *
  */
 
-#ifndef __ISR_H__
-#define __ISR_H__
+#ifndef __UTILITY_H__
+#define __UTILITY_H__
 
 #include <stdint.h>
 #include <stdlib.h>
-
-#include "version.h"
-#include "config.h"
+#include <math.h>
 
 #include <avr/interrupt.h>
 
-#include "analog.h"
-#include "environment.h"
-#include "output.h"
+#include "macro.h"
+
+extern volatile uint32_t timer0_overflow_count;
+
+/**
+ * @brief Number of elapsed microseconds since boot
+ * @details
+ *
+ */
+inline uint32_t micros() {
+  CRITICAL_SECTION_START
+  uint8_t  a = TCNT0;
+  uint32_t b = timer0_overflow_count;
+  if ((TIFR0 & bit(TOV0)) && (a < 255)) ++b;
+  CRITICAL_SECTION_END
+
+  return ((b << 8) + a) << 2;
+}
+
+float calculate_dew(const float&, const float&);
 
 #endif

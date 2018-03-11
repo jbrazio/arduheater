@@ -1,6 +1,6 @@
 /**
  * Arduheater - An intelligent dew buster for astronomy
- * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
+ * Copyright (C) 2016-2018 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -118,7 +118,6 @@ void Serial::process(callbackfunc_t callback)
 
       case '\n': // process the data on the buffer sent by an human
       case '#': // process the data on the buffer
-        Serial::write('0' + pos);
         callback(cmd);
 
       case ':': // clears the data on the buffer

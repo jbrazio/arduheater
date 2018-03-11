@@ -1,6 +1,6 @@
 /**
  * Arduheater - An intelligent dew buster for astronomy
- * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
+ * Copyright (C) 2016-2018 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,9 +23,11 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "type.h"
+#include "version.h"
 #include "config.h"
+
 #include "macro.h"
+#include "type.h"
 
 /**
  * @brief Heater structure
@@ -34,22 +36,56 @@
  */
 class Heater
 {
-  protected:
+  public:
     /**
      * @brief Heater config structure
      * @details This structure stores all the configuration parameters for a heater.
      *
      */
-    struct config_t {
-      bool    autostart = false;
-      float   offset    = 0,
-              setpoint  = 0;
-      uint8_t min       = 0,
-              max       = 255;
-      float   Kp        = DEFAULT_Kp,
-              Ki        = DEFAULT_Ki,
-              Kd        = DEFAULT_Kd;
-    } m_config;
+    typedef struct {
+      bool    autostart;
+      float   offset,
+              setpoint;
+      uint8_t min,
+              max;
+      float   Kp,
+              Ki,
+              Kd;
+    } config_t;
+
+    /**
+     * @brief [brief description]
+     * @details [long description]
+     *
+     */
+    typedef struct {
+      int32_t Ierr;
+      int16_t Derr;
+
+      // only if debug active ?
+      float target;
+
+      int16_t Perr;
+
+      int16_t P,
+              D,
+              I;
+
+      int16_t u;
+    } runtime_t;
+
+  protected:
+    config_t m_config = {
+      false, 0, 0, 0, 255, DEFAULT_Kp, DEFAULT_Ki, DEFAULT_Kd
+    };
+
+    runtime_t m_runtime = {
+      0, 0, 0, 0, 0, 0, 0, 0
+    };
+
+    bool m_automatic = false, //enum mode i.e. automatic, manual ?
+         m_connected = false;
+    uint8_t m_value  = 0; // pwm
 
   public:
     /**
@@ -57,29 +93,10 @@ class Heater
      * @details [long description]
      *
      */
-    struct runtime_t {
-      int16_t Ierr    = 0,
-              lastval = 0;
+    inline bool is_connected() {
+        return m_connected;
+    }
 
-      // only if debug active ?
-      float target = 0;
-
-      int16_t Perr = 0,
-              Derr = 0;
-
-      int16_t P = 0,
-              D = 0,
-              I = 0;
-
-      int16_t u = 0;
-    } m_runtime;
-
-  protected:
-    bool m_automatic = false, //enum mode i.e. automatic, manual ?
-         m_connected = false;
-    uint8_t m_value  = 0; // pwm
-
-  public:
     /**
      * @brief [brief description]
      * @details [long description]
@@ -92,7 +109,7 @@ class Heater
      * @details [long description]
      *
      */
-    inline uint8_t get_value() { return constrain(m_value, m_config.min, m_config.max); }
+    inline uint8_t get_value() { return m_value; }
 
     /**
      * @brief [brief description]
@@ -124,11 +141,12 @@ class Heater
       m_automatic       = false;
       m_value           = 0;
       m_runtime.Ierr    = 0;
-      m_runtime.lastval = 0;
+      m_runtime.Derr    = 0;
 
+      // only if debug active ?
       m_runtime.target  = 0;
       m_runtime.Perr    = 0;
-      m_runtime.Derr    = 0;
+
       m_runtime.P       = 0;
       m_runtime.D       = 0;
       m_runtime.I       = 0;

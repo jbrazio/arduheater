@@ -1,6 +1,6 @@
 /**
  * Arduheater - An intelligent dew buster for astronomy
- * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
+ * Copyright (C) 2016-2018 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,11 +22,14 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+
+#include "version.h"
+#include "config.h"
+
 #include <math.h>
 
-#include "type.h"
 #include "macro.h"
-#include "config.h"
+#include "type.h"
 
 /**
  * @brief Sensor structure
@@ -35,25 +38,53 @@
  */
 class Thermistor
 {
-  protected:
+  public:
     /**
      * @brief Sensor config structure
      * @details This structure stores all the configuration parameters for a thermistor.
      *
      */
-    struct config_t {
-      float    nominaltemp  = DEFAULT_NTC_NT;
-      uint16_t bcoefficient = DEFAULT_NTC_BC,
-               nominalval   = DEFAULT_NTC_NV,
-               resistor     = DEFAULT_NTC_SR;
-    } m_config;
+    typedef struct {
+      float    nominaltemp;
+      uint16_t bcoefficient,
+               nominalval,
+               resistor;
+    } config_t;
 
-  protected:
+  protected: // Attributes
+    config_t m_config = {
+        DEFAULT_NTC_NT, DEFAULT_NTC_BC, DEFAULT_NTC_NV, DEFAULT_NTC_SR
+    };
+
     bool m_state     = false,
          m_connected = false;
     uint16_t m_value = 1023;
 
-  public:
+  public: // Configuration
+    /**
+     * @brief [brief description]
+     * @details [long description]
+     *
+     */
+    inline config_t& config() { return m_config; }
+
+  public: // Methods
+    /**
+     * @brief [brief description]
+     * @details [long description]
+     *
+     */
+    inline bool is_connected() {
+        return m_connected;
+    }
+
+    /**
+     * @brief [brief description]
+     * @details [long description]
+     *
+     */
+    float temp();
+
     /**
      * @brief [brief description]
      * @details [long description]
@@ -66,15 +97,14 @@ class Thermistor
      * @details [long description]
      *
      */
-    inline void set_value(const uint16_t &value) { m_value = value; }
+    inline void set_connected(const bool &value) { m_connected = value; }
 
-  public:
     /**
      * @brief [brief description]
      * @details [long description]
      *
      */
-    float temp();
+    inline void set_value(const uint16_t &value) { m_value = value; }
 
     /**
      * @brief [brief description]

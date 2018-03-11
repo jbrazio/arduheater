@@ -1,6 +1,6 @@
 /**
  * Arduheater - An intelligent dew buster for astronomy
- * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
+ * Copyright (C) 2016-2018 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,29 +20,61 @@
 #include "isr.h"
 
 /**
- * @brief Timer1 interrupt handler
+ * @brief Local variable initialization
+ */
+volatile uint32_t timer0_overflow_count = 0;
+
+
+/**
+ * @brief Timer0 Overflow handler
  * @details
+ *
+ */
+ISR(TIMER0_OVF_vect)
+{
+  ++timer0_overflow_count;
+}
+
+/**
+ * @brief Timer1 Compare Match handler
+ * @details At 200Hz ISR each block of four analog and one ambient readings will take 30ms to
+ * complete. The overall expected update frequency is 33 blocks per second.
  *
  */
 ISR(TIMER1_COMPA_vect)
 {
-  static uint8_t state = 255;
+  SCOPE_DEBUG_OUTPUT(5);
 
-  ++state %= 4;
+  static uint8_t state = 255;
+  ++state %= 6;
+
   switch (state)
   {
     case 0:
     case 1:
     case 2:
-    case 3:
-      Analog::read(get_sensor_pin(state), &Output::update_sensor);
+    case 3: // read thermistor
+      Analog::read(get_sensor_pin(state), &Output::update_sensor_callback);
       break;
 
-    case 4:
-      // read ambient
+    case 4: // read ambient
+      Environment::read(&Output::update_ambient_callback);
       break;
 
     default:
       ;
   }
+
+  SCOPE_DEBUG_OUTPUT(5);
+}
+
+/**
+ * @brief External Interrupt Request Vector
+ * @details PORT D, PD2, INT0
+ */
+ISR (INT0_vect)
+{
+  SCOPE_DEBUG_OUTPUT(4);
+  Environment::isr();
+  SCOPE_DEBUG_OUTPUT(4);
 }

@@ -1,6 +1,6 @@
 /**
  * Arduheater - An intelligent dew buster for astronomy
- * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
+ * Copyright (C) 2016-2018 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,30 +22,26 @@
 void protocol::process(const char *cmd) {
   switch (cmd[0]) {
     case 0:
-      Consoleln::PGM(PSTR("Arduheater " ARDUHEATER_VERSION " ['$' for help]"));
-      break;
-
-    case '0':
-      Output::channel(0).setpoint(32.5);
-      Output::channel(0).enable();
-      //PORTB ^= 1 << 3;
+      LogLn::PGM(PSTR("Arduheater " ARDUHEATER_VERSION " ['$' for help]"));
       break;
 
     case '1':
-      Output::channel(0).disable();
-      //PORTD ^= 1 << 6;
+      Output::channel(0).enable();
       break;
 
     case '2':
-      //PORTD ^= 1 << 5;
+      Output::channel(0).disable();
       break;
 
     case '3':
-      //PORTD ^= 1 << 3;
+      //Environment::debug();
+      break;
+
+    case '4':
       break;
 
     default:
-      Consoleln::PGM(PSTR("err: Invalid command"));
+      LogLn::PGM(PSTR("ERR: Invalid command"));
       break;
   }
 }
@@ -85,7 +81,7 @@ MACHINE PROTOCOL
 |-------------------|-----------------|-------------------------------------------|-------------------|
 | : G A T O #       | : A T O X X #   | Get Ambient Temperature Offset            |                   |
 | : G A H O #       | : A H O X X #   | Get Ambient relative Humidity Offset      |                   |
-| : G A D O #       | : A D O X X #   | Get Ambiente Dew point Offset             |                   |
+| : G A D O #       | : A D O X X #   | Get Ambient  Dew point Offset             |                   |
 |-------------------|-----------------|-------------------------------------------|-------------------|
 | : S A T O X X #   | : A T O X X #   | Set Ambient Temperature Offset            |                   |
 | : S A H O X X #   | : A H O X X #   | Set Ambient relative Humidity Offset      |                   |
@@ -106,18 +102,19 @@ MACHINE PROTOCOL
 | : G O X K I #     | : O X K I X X # | Get the Ki value of Output X              |                   |
 | : G O X K D #     | : O X K D X X # | Get the Kd value of Output X              |                   |
 |-------------------|-----------------|-------------------------------------------|-------------------|
-| : S O X A X X #   | : O X A X X #   | Get the Autostart value of Output X       | "00" off, "FF" on |
-| : S O X T O X X # | : O X T O X X # | Get the Temperature Offset of Output X    |                   |
-| : S O X S O X X # | : O X S O X X # | Get the Setpoint Offset of Output X       |                   |
-| : S O X P + X X # | : O X P + X X # | Get the Minimum PWM value of Output X     |                   |
-| : S O X P - X X # | : O X P - X X # | Get the Maximum PWM value of Output X     |                   |
-| : S O X K P X X # | : O X K P X X # | Get the Kp value of Output X              |                   |
-| : S O X K I X X # | : O X K I X X # | Get the Ki value of Output X              |                   |
-| : S O X K D X X # | : O X K D X X # | Get the Kd value of Output X              |                   |
+| : S O X A X X #   | : O X A X X #   | Set the Autostart value of Output X       | "00" off, "FF" on |
+| : S O X T O X X # | : O X T O X X # | Set the Temperature Offset of Output X    |                   |
+| : S O X S O X X # | : O X S O X X # | Set the Setpoint Offset of Output X       |                   |
+| : S O X P + X X # | : O X P + X X # | Set the Minimum PWM value of Output X     |                   |
+| : S O X P - X X # | : O X P - X X # | Set the Maximum PWM value of Output X     |                   |
+| : S O X K P X X # | : O X K P X X # | Set the Kp value of Output X              |                   |
+| : S O X K I X X # | : O X K I X X # | Set the Ki value of Output X              |                   |
+| : S O X K D X X # | : O X K D X X # | Set the Kd value of Output X              |                   |
  ------------------- ----------------- ------------------------------------------- ------------------ |
 
 
 start_char ':'
 end_char '#'
+separator_char ','
 
 */

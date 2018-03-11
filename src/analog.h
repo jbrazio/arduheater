@@ -1,6 +1,6 @@
 /**
  * Arduheater - An intelligent dew buster for astronomy
- * Copyright (C) 2016-2017 João Brázio [joao@brazio.org]
+ * Copyright (C) 2016-2018 João Brázio [joao@brazio.org]
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,10 +23,11 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include <avr/interrupt.h>
+#include "version.h"
+#include "config.h"
 
+#include "log.h"
 #include "macro.h"
-#include "console.h"
 
 class Analog
 {
@@ -59,15 +60,15 @@ class Analog
 
   public:
     /**
-     * @brief TODO
-     * @details
+     * @brief [brief description]
+     * @details [long description]
      *
      */
     static void read(const uint8_t&, const callback_t);
 
     /**
-     * @brief TODO
-     * @details
+     * @brief [brief description]
+     * @details [long description]
      *
      */
     static void setup();
