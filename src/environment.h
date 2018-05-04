@@ -30,11 +30,11 @@
 
 class Environment: public AMBIENT_SENSOR_TYPE {
   public:
-		inline bool is_connected()  { return (m_connected);           }
-		inline bool is_ready() 	    { return (m_ready);               }
-		inline float temperature()	{ return (m_runtime.temp * 0.1F); }
-		inline float humidity() 		{ return (m_runtime.rh   * 0.1F); }
-		inline float dew_point() 	  { return (m_runtime.dew  * 0.1F); }
+    inline bool is_connected()  { return (m_connected);           }
+    inline bool is_ready()      { return (m_ready);               }
+    inline float temperature()  { return (m_runtime.temp * 0.1F); }
+    inline float humidity()     { return (m_runtime.rh   * 0.1F); }
+    inline float dew_point()    { return (m_runtime.dew  * 0.1F); }
 };
 
 extern Environment ambient;
