@@ -19,21 +19,13 @@
 
 #include "arduheater.h"
 
-// Global control structures
-/*dht22 amb;
-thermistor ntc;
-out_t out[NUM_OUTPUTS];
-volatile system_t sys;
-*/
-
 int main(void)
 {
   // --------------------------------------------------------------------------
   // Miscellaneous ------------------------------------------------------------
   // --------------------------------------------------------------------------
-  ENABLE_SCOPE_DEBUG(13); // Timer 1 CTC
-  ENABLE_SCOPE_DEBUG(12); // INT0 ISR
-  ENABLE_SCOPE_DEBUG(8);  // ADC
+  ENABLE_SCOPE_DEBUG(12); // PB4
+  ENABLE_SCOPE_DEBUG(13); // PB5
 
 
   // --------------------------------------------------------------------------
@@ -51,40 +43,44 @@ int main(void)
   // --------------------------------------------------------------------------
   // Timer0 ISR init routine --------------------------------------------------
   // --------------------------------------------------------------------------
-  // set waveform generation mode to Fast PWM
-  TCCR0A |= bit(WGM01) | bit(WGM00);
+  TCCR0A = 0; TCCR0B = 0;
 
-  // set clock select to 64 (from prescaler)
-  TCCR0B |= bit(CS01) | bit(CS00);
+  // set waveform generation mode to PWM, Phase Correct, 8-bit (D5, D6)
+  TCCR0A |= bit(WGM00);
 
-  // enable timer0 overflow interrupt
-  TIMSK0 |= bit(TOIE0);
+  // set clock select to clk/1024 (~30Hz)
+  TCCR0B |= bit(CS02) | bit(CS00);
 
 
   // --------------------------------------------------------------------------
   // Timer1 ISR init routine --------------------------------------------------
   // --------------------------------------------------------------------------
-  // set output compare register A to 200Hz
-  OCR1A = 0x138;
+  TCCR1B = 0; TCCR1B = 0; TIMSK1 = 0;
 
-  // set waveform generation mode to CTC
+  // set waveform generation mode to CTC, top OCR1A (D9, D10)
   TCCR1B |= bit(WGM12);
 
-  // set clock select to 256 (from prescaler)
-  TCCR1B |= bit(CS12);
+  // set clock select to clk/8
+  TCCR1B |= bit(CS11) | bit(CS10);
 
-  // set output compare A match interrupt enable
-  TIMSK1 |= bit(OCIE1A);
+  // output Compare A Match Interrupt Enable
+  TIMSK1 |= bit(OCIE1B) | bit(OCIE1A);
+
+  // sets the Output Compare Register values
+  OCR1A = 0xFF;  // (1KHz)
+  OCR1B = 0x80; // (200Hz)
 
 
   // --------------------------------------------------------------------------
   // Timer2 ISR init routine --------------------------------------------------
   // --------------------------------------------------------------------------
-  // set waveform generation mode to PWM Phase Correct
+  TCCR2A = 0; TCCR2B = 0;
+
+  // set waveform generation mode to PWM, Phase Correct, 8-bit (D3, D11)
   TCCR2A |= bit(WGM20);
 
-  // set clock select to 64 (from prescaler)
-  TCCR2B |= bit(CS22);
+  // set clock select to clk/1024 (~30Hz)
+  TCCR2B |= bit(CS22) | bit(CS21) | bit(CS20);
 
 
   // --------------------------------------------------------------------------
@@ -102,7 +98,8 @@ int main(void)
   // --------------------------------------------------------------------------
   // Startup check ------------------------------------------------------------
   // --------------------------------------------------------------------------
-  while (! Environment::is_ready()) {
+  LogLn::PGM(PSTR("I Checking for ambient sensor."));
+  while (! ambient.is_ready()) {
     // Delay 16 000 cycle: 1ms at 16.0 MHz
     asm volatile (
       "    ldi  r18, 21"  "\n"
@@ -113,7 +110,7 @@ int main(void)
       "    brne 1b"       "\n"
     );
   }
-  LogLn::PGM(PSTR("INFO: Ambient sensor ready."));
+  LogLn::PGM(PSTR("I Ambient sensor ready."));
   Log::eol();
 
 
@@ -138,7 +135,7 @@ int main(void)
     IO::set_as_output(get_heater_pin(i));
 
     /*if (out[i].config.autostart) {
-      Log::PGM(PSTR("warn: auto started out"));
+      Log::PGM(PSTR("W Auto started heater #"));
       LogLn::number(i);
       cmd::enableheater(i);
     }*/
@@ -157,66 +154,6 @@ int main(void)
   for(;;) {
     //wdt_reset();
     Serial::process(&protocol::process);
-
-    #ifdef DEBUG
-      uint32_t now = micros();
-      static uint32_t before = now;
-
-      if(now - before > 1e6) {
-        before = now;
-
-          Log::PGM(PSTR("#"));
-          Log::number(Environment::get_temperature());
-          Log::PGM(PSTR(","));
-          Log::number(Environment::get_humidity());
-          Log::PGM(PSTR(","));
-          Log::number(Environment::get_dew_point());
-
-        for(size_t i = 0; i < 4; i++) {
-          // Ignore output if it is disconnected
-          //if (raw == 1023) continue;
-          if (! Output::channel(i).is_connected()) continue;
-
-          const uint16_t raw = Output::channel(i).sensor.raw();
-          const float t = Output::channel(i).sensor.temp();
-
-          // Format
-          // <Channel>,<ADC raw value>,<Sensor temp>,<Target temp>
-
-          Log::PGM(PSTR(":"));
-          //Log::number(i +1);
-          //Log::PGM(PSTR(","));
-          Log::number(raw);
-          Log::PGM(PSTR(","));
-          Log::number(t);
-
-          Heater::runtime_t dump = Output::channel(i).heater.dump_runtime();
-
-          Log::PGM(PSTR(","));
-          Log::number(dump.target);
-          Log::PGM(PSTR(","));
-          Log::number((float)dump.target/10);
-          Log::PGM(PSTR(","));
-          Log::number(dump.Perr);
-          Log::PGM(PSTR(","));
-          Log::number(dump.Ierr);
-          Log::PGM(PSTR(","));
-          Log::number(dump.Derr);
-          Log::PGM(PSTR(","));
-          Log::number(dump.P);
-          Log::PGM(PSTR(","));
-          Log::number(dump.I);
-          Log::PGM(PSTR(","));
-          Log::number(dump.D);
-          Log::PGM(PSTR(","));
-          Log::number(dump.u);
-          Log::PGM(PSTR(","));
-          Log::number(Output::channel(i).heater.get_value());
-        }
-
-        Log::eol();
-      }
-    #endif
   }
 
   // We should not reach this

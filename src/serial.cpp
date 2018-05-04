@@ -106,7 +106,7 @@ void Serial::process(callbackfunc_t callback)
 {
 
   static size_t pos = 0;
-  static char   cmd[16];
+  static char   cmd[32];
 
   while(available())
   {
@@ -117,15 +117,15 @@ void Serial::process(callbackfunc_t callback)
         break;
 
       case '\n': // process the data on the buffer sent by an human
-      case '#': // process the data on the buffer
+      case '#':  // process the data on the buffer
         callback(cmd);
 
-      case ':': // clears the data on the buffer
+      case ':':  // clears the data on the buffer
         memset(&cmd, 0, sizeof(cmd));
         pos = 0;
         break;
 
-      default: // adds data to the buffer
+      default:   // adds data to the buffer
         cmd[pos++] = c;
         pos %= sizeof(cmd);
         break;

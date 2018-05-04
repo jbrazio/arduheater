@@ -34,7 +34,7 @@
 #include "analog.h"
 #include "io.h"
 #include "log.h"
-#include "output.h"
+#include "environment.h"
 #include "protocol.h"
 
 #endif

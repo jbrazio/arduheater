@@ -23,15 +23,14 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include <avr/pgmspace.h>
+
 #include "version.h"
 #include "config.h"
 
-#include <avr/pgmspace.h>
-
 #include "macro.h"
 
-#ifdef __AVR_ATmega328P__
-
+#if defined (__AVR_ATmega328P__) || defined (__AVR_ATmega168__) || defined (__AVR_ATmega168P__)
   enum hal_timer_t
   {
     NOTIMER = 0,
@@ -84,9 +83,6 @@
     /* 18 */ { (uint16_t) &DDRC, (uint16_t) &PORTC, (uint16_t) &PINC,  NOTIMER,  bit(4) },
     /* 19 */ { (uint16_t) &DDRC, (uint16_t) &PORTC, (uint16_t) &PINC,  NOTIMER,  bit(5) },
   };
-
-#else
-  #error AVR ATmega328P not found, aborting
 #endif
 
 #endif

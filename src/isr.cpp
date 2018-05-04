@@ -22,50 +22,71 @@
 /**
  * @brief Local variable initialization
  */
-volatile uint32_t timer0_overflow_count = 0;
-
+volatile uint32_t timer1_compa_count = 0;
 
 /**
- * @brief Timer0 Overflow handler
+ * @brief Timer1 Compare Match A handler
  * @details
- *
- */
-ISR(TIMER0_OVF_vect)
-{
-  ++timer0_overflow_count;
-}
-
-/**
- * @brief Timer1 Compare Match handler
- * @details At 200Hz ISR each block of four analog and one ambient readings will take 30ms to
- * complete. The overall expected update frequency is 33 blocks per second.
  *
  */
 ISR(TIMER1_COMPA_vect)
 {
-  SCOPE_DEBUG_OUTPUT(5);
+  ++timer1_compa_count;
+}
 
-  static uint8_t state = 255;
-  ++state %= 6;
+/**
+ * @brief Timer1 Compare Match B handler
+ * @details An 100Hz ISR gives 100 blocks per second, each block has a specific
+ * execution window of 10ms, a full update uses 4 blocks thus the overall expected
+ * refresh rate is 25 times per second.
+ *
+ */
+ISR(TIMER1_COMPB_vect)
+{
+  // To use timer1 OCF1A and OCF1B we have to some calculations in order to only
+  // trigger OCF1B at the 200Hz frequency: Timer1 runs in CTC mode top 0xFF
+  // (OCR1A) at 1/64 clock speed, this means each increment on OCR1A is equal to
+  // 4 us, an "overflow" i.e. OCR1A == 0xFF is equal to 1024 us thus OCF1A is
+  // running at ~1KHz frequency. We want OCF1B to run at ~100Hz, take the frequency
+  // of OCF1B (1024Hz) and divide it by 100Hz to get the magic number bellow (10).
+  static uint8_t timer1_compb_vect_counter = 255;
+  if(++timer1_compb_vect_counter < 128) { return; }
+  timer1_compb_vect_counter = 0;
 
-  switch (state)
+  // This is the main state machine which drives all the recurring tasks on the
+  // program such as trigger thermistor readings, refresh heater output, evaluate
+  // PID etc.
+  static uint8_t state_machine_step = 255;
+  ++state_machine_step %= 5;
+
+//SCOPE_DEBUG_OUTPUT(5);
+  switch (state_machine_step)
   {
+    // Thermistor update trigger
     case 0:
     case 1:
     case 2:
-    case 3: // read thermistor
-      Analog::read(get_sensor_pin(state), &Output::update_sensor_callback);
+    case 3:
+      Analog::read(get_sensor_pin(state_machine_step), output_callback);
       break;
 
+    // Ambient sensor update trigger
     case 4: // read ambient
-      Environment::read(&Output::update_ambient_callback);
+      ambient.read(environment_calback);
       break;
 
     default:
       ;
   }
 
-  SCOPE_DEBUG_OUTPUT(5);
+  // The process to update each output power is independent from any of the previous
+  // callbacks allowing us to respond to disable() without additional processing.
+  for(size_t i = 0; i < asizeof(output); i++) {
+    const uint8_t channel = output[i].channel();
+    const uint8_t power   = (output[i].is_enabled()) ? output[i].output_value() : 0;
+    IO::write(get_heater_pin(channel), (output[i].is_ready()) ? power : 0);
+  }
+//SCOPE_DEBUG_OUTPUT(5);
 }
 
 /**
@@ -74,7 +95,7 @@ ISR(TIMER1_COMPA_vect)
  */
 ISR (INT0_vect)
 {
-  SCOPE_DEBUG_OUTPUT(4);
-  Environment::isr();
-  SCOPE_DEBUG_OUTPUT(4);
+  SCOPE_DEBUG_OUTPUT(5);
+  ambient.isr();
+  SCOPE_DEBUG_OUTPUT(5);
 }

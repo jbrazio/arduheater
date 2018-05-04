@@ -20,101 +20,169 @@
 #include "protocol.h"
 
 void protocol::process(const char *cmd) {
+  char buffer[64];
+  Output::runtime_t dump;
+
   switch (cmd[0]) {
     case 0:
       LogLn::PGM(PSTR("Arduheater " ARDUHEATER_VERSION " ['$' for help]"));
       break;
 
-    case '1':
-      Output::channel(0).enable();
+    case '$':
+      LogLn::PGM(PSTR("Currently there is no support for a human on the serial line."));
       break;
 
-    case '2':
-      Output::channel(0).disable();
+    case '+':
+      if((uint8_t)(cmd[1] - '0') > 3) { return; }
+      output[cmd[1] - '0'].enable();
       break;
 
-    case '3':
-      //Environment::debug();
+    case '-':
+      if((uint8_t)(cmd[1] - '0') > 3) { return; }
+      output[cmd[1] - '0'].disable();
       break;
 
-    case '4':
+    case '?': // Output status --------------------------------------------------------------------
+      sprintf_P(buffer, PSTR(":?%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i#"),
+        output[0].is_connected(),
+        output[1].is_connected(),
+        output[2].is_connected(),
+        output[3].is_connected(),
+
+        output[0].is_ready(),
+        output[1].is_ready(),
+        output[2].is_ready(),
+        output[3].is_ready(),
+
+        output[0].is_enabled(),
+        output[1].is_enabled(),
+        output[2].is_enabled(),
+        output[3].is_enabled()
+      ); Log::string(buffer);
+
       break;
 
-    default:
-      LogLn::PGM(PSTR("ERR: Invalid command"));
+    case 'A': // Ambient --------------------------------------------------------------------------
+      sprintf_P(buffer, PSTR(":A%i,%i,%i#"),
+        (int16_t)(ambient.temperature() * 10),
+        (int16_t)(ambient.humidity()    * 10),
+        (int16_t)(ambient.dew_point()   * 10)
+      ); Log::string(buffer);
+      break;
+
+    case 'B': // Output data ----------------------------------------------------------------------
+      if((uint8_t)(cmd[1] - '0') > 3) { return; }
+
+      sprintf_P(buffer, PSTR(":B%i,%i,%i,%i#"), (uint8_t)(cmd[1] - '0'),
+        (int16_t)(output[(uint8_t)(cmd[1] - '0')].temperature() * 10),
+        (int16_t)(output[(uint8_t)(cmd[1] - '0')].setpoint()    * 10),
+        (uint8_t)(output[(uint8_t)(cmd[1] - '0')].output_value())
+      ); Log::string(buffer);
+      break;
+
+    case 'C': // PID data -------------------------------------------------------------------------
+      if((uint8_t)(cmd[1] - '0') > 3) { return; }
+      dump = output[(uint8_t)(cmd[1] - '0')].export_runtime();
+
+      sprintf_P(buffer, PSTR(":C%i,%i,%i,%i,%i#"), (uint8_t)(cmd[1] - '0'),
+        (int16_t)(dump.Pterm * 10),
+        (int16_t)(dump.Iterm * 10),
+        (int16_t)(dump.Dterm * 10),
+        (int16_t)(dump.u)
+      ); Log::string(buffer);
+      break;
+
+    case 'D': // Output config --------------------------------------------------------------------
+              // TODO
+              // this section needs to be better structured
+              //
+      if((uint8_t)(cmd[1] - '0') > 3) { return; }
+
+      if(strlen(cmd) < 3) {
+        sprintf_P(buffer, PSTR(":D%i,%i,%i,%i,%i,%i,%i,%i,%i#"), (uint8_t)(cmd[1] - '0'),
+          (uint8_t)(output[(uint8_t)(cmd[1] - '0')].min_output()),
+          (uint8_t)(output[(uint8_t)(cmd[1] - '0')].max_output()),
+          (uint8_t)(output[(uint8_t)(cmd[1] - '0')].is_autostart()),
+          (int16_t)(output[(int16_t)(cmd[1] - '0')].temp_offset()     * 10),
+          (int16_t)(output[(int16_t)(cmd[1] - '0')].setpoint_offset() * 10),
+          (int16_t)(output[(int16_t)(cmd[1] - '0')].kp() * 10),
+          (int16_t)(output[(int16_t)(cmd[1] - '0')].ki() * 10),
+          (int16_t)(output[(int16_t)(cmd[1] - '0')].kd() * 10)
+        ); Log::string(buffer);
+      }
+
+      else {
+        memset(&buffer, 0, sizeof(buffer));
+        int16_t args[9] = { 0 };
+        int i = 0, n = 0;
+
+        while (*cmd)
+        {
+          char c = *cmd++;
+
+          switch(c)
+          {
+            case ',':
+              args[n++] = atol2(buffer);
+              memset(&buffer, 0, sizeof(buffer));
+              i = 0;
+              break;
+
+            default:
+              if(is_digit(c)) { buffer[i++] = c; }
+          }
+        }
+
+        // last one is missed due to the string not
+        // having the last ',' separator.
+        args[n] = atol2(buffer);
+
+        Output::config_t new_config = {
+          (uint8_t)args[1], (uint8_t)args[2], (bool)args[3], (float)(args[4] * 0.1F),
+          (float)(args[5] * 0.1F), (float)(args[6] * 0.1F), (float)(args[7] * 0.1F), (float)(args[8] * 0.1F)
+        };
+/*
+        //LogLn::number(args[0]);
+        LogLn::number(new_config.min);
+        LogLn::number(new_config.max);
+        LogLn::number(new_config.autostart);
+        LogLn::number(new_config.temp_offset);
+        LogLn::number(new_config.setpoint_offset);
+        LogLn::number(new_config.Kp);
+        LogLn::number(new_config.Ki);
+        LogLn::number(new_config.Kd);
+        Log::eol();
+*/
+        output[args[0]].import_config(new_config);
+      }
+      break;
+
+    case 'F': // Sensor config --------------------------------------------------------------------
+      if((uint8_t)(cmd[1] - '0') > 3) { return; }
+
+      sprintf_P(buffer, PSTR(":D%i,%i,%i,%i,%i#"), (uint8_t)(cmd[1] - '0'),
+        (int16_t)(output[(uint8_t)(cmd[1] - '0')].nominal_temp()   * 10),
+        (int16_t)(output[(uint8_t)(cmd[1] - '0')].resistor_value() * 10),
+        (int16_t)(output[(uint8_t)(cmd[1] - '0')].bcoefficient_value()),
+        (int16_t)(output[(uint8_t)(cmd[1] - '0')].nominal_value())
+      ); Log::string(buffer);
+      break;
+
+    case 'V': // Version --------------------------------------------------------------------------
+      sprintf_P(buffer, PSTR(":V%S#"),
+        PSTR(ARDUHEATER_VERSION)
+      ); Log::string(buffer);
+      break;
+
+
+    case 'I': // Reserved -------------------------------------------------------------------------
+    case 'E':
+    case 'W':
+      // These are reserved keywords for the status messages.
+      break;
+
+    default: // Default ---------------------------------------------------------------------------
+      LogLn::PGM(PSTR("E Invalid command, type '$' for help."));
       break;
   }
 }
-
-
-/*
-
-HUMAN PROTOCOL
-
-start_char '$'
-end_char '\n'
-
-"$i (view build info)"
-"$s (view register status)"
-
-"$v (view settings)"
-"$r (read settings from eeprom)"
-"$w (write settings to eeprom)"
-"$d (reset to factory defaults)"
-
-"$key=value (set a setting)"
-
-"$x+ (enable output x)"
-"$x- (disable output x)"
-
-
-MACHINE PROTOCOL
-
- ------------------- -----------------
-| COMMAND           | REPLY           |
-|-------------------|-----------------|---------------------------------------------------------------
-| 1 2 3 4 5 6 7 8 9 | 1 2 3 4 5 6 7 8 | DESCIPRTION                               |                   |
-|-------------------|-----------------|-------------------------------------------|-------------------|
-| : G A T #         | : A T X X #     | Get Ambient Temperature                   |                   |
-| : G A H #         | : A H X X #     | Get Ambient relative Humidity             |                   |
-| : G A D #         | : A D X X #     | Get Ambient Dew point                     |                   |
-|-------------------|-----------------|-------------------------------------------|-------------------|
-| : G A T O #       | : A T O X X #   | Get Ambient Temperature Offset            |                   |
-| : G A H O #       | : A H O X X #   | Get Ambient relative Humidity Offset      |                   |
-| : G A D O #       | : A D O X X #   | Get Ambient  Dew point Offset             |                   |
-|-------------------|-----------------|-------------------------------------------|-------------------|
-| : S A T O X X #   | : A T O X X #   | Set Ambient Temperature Offset            |                   |
-| : S A H O X X #   | : A H O X X #   | Set Ambient relative Humidity Offset      |                   |
-| : S A D O X X #   | : A D O X X #   | Set Ambient Dew point Offset              |                   |
-|-------------------|-----------------|-------------------------------------------|-------------------|
-| : G O X T #       | : O X T X X #   | Get the Temperature of Output X           |                   |
-| : G O X R T #     | : O X R T X X # | Get the Raw Temperature Value of Output X |                   |
-| : G O X S #       | : O X S X X #   | Get the power Status of Output X          | "00" off, "FF" on |
-| : G O X P #       | : O X P X X #   | Get the PWM value of Output X             |                   |
-| : G O X S P #     | : O X S P X X # | Get the Set Point of Output X             |                   |
-|-------------------|-----------------|-------------------------------------------|-------------------|
-| : G O X A #       | : O X A X X #   | Get the Autostart value of Output X       | "00" off, "FF" on |
-| : G O X T O #     | : O X T O X X # | Get the Temperature Offset of Output X    |                   |
-| : G O X S O #     | : O X S O X X # | Get the Setpoint Offset of Output X       |                   |
-| : G O X P + #     | : O X P + X X # | Get the Minimum PWM value of Output X     |                   |
-| : G O X P - #     | : O X P - X X # | Get the Maximum PWM value of Output X     |                   |
-| : G O X K P #     | : O X K P X X # | Get the Kp value of Output X              |                   |
-| : G O X K I #     | : O X K I X X # | Get the Ki value of Output X              |                   |
-| : G O X K D #     | : O X K D X X # | Get the Kd value of Output X              |                   |
-|-------------------|-----------------|-------------------------------------------|-------------------|
-| : S O X A X X #   | : O X A X X #   | Set the Autostart value of Output X       | "00" off, "FF" on |
-| : S O X T O X X # | : O X T O X X # | Set the Temperature Offset of Output X    |                   |
-| : S O X S O X X # | : O X S O X X # | Set the Setpoint Offset of Output X       |                   |
-| : S O X P + X X # | : O X P + X X # | Set the Minimum PWM value of Output X     |                   |
-| : S O X P - X X # | : O X P - X X # | Set the Maximum PWM value of Output X     |                   |
-| : S O X K P X X # | : O X K P X X # | Set the Kp value of Output X              |                   |
-| : S O X K I X X # | : O X K I X X # | Set the Ki value of Output X              |                   |
-| : S O X K D X X # | : O X K D X X # | Set the Kd value of Output X              |                   |
- ------------------- ----------------- ------------------------------------------- ------------------ |
-
-
-start_char ':'
-end_char '#'
-separator_char ','
-
-*/

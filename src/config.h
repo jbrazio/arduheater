@@ -20,18 +20,11 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
-#include <stdint.h>
-#include <stdlib.h>
-
-#include <avr/pgmspace.h>
-
-#include "type.h"
-
 // ----------------------------------------------------------------------------
 // Activate debug -------------------------------------------------------------
 // ----------------------------------------------------------------------------
 #define DEBUG
-//#define SCOPE_DEBUG
+#define SCOPE_DEBUG
 
 
 // ----------------------------------------------------------------------------
@@ -75,8 +68,7 @@
 //          to open a support ticket[1] first.
 //
 // [1]: https://github.com/jbrazio/arduheater/issues
-#define AMBIENT_SENSOR_ERROR_VALUE   255  // Default value when sensor has no reading
-#define AMBIENT_SENSOR_ERROR_THRESHOLD 5  // Tolerable number of consecutive errors
+#define AMBIENT_SENSOR_ERROR_THRESHOLD 10  // Tolerable number of consecutive errors
 
 
 // ----------------------------------------------------------------------------
@@ -90,6 +82,15 @@
 #define DEFAULT_NTC_NV 10000L // Nominal value
 #define DEFAULT_NTC_SR 10000L // Series resistor value
 
+// You shouldn't need to change the following values, if for some reason you
+// really need to please report back[1] to the project team.
+//
+// [1]: https://github.com/jbrazio/arduheater/issues
+#define NTC_MIN_RAW_VALUE     51 // min value to be considered a valid reading ()
+#define NTC_MAX_RAW_VALUE    950 // max value to be considered a valid reading (-23C)
+#define NTC_ERR_RAW_THRESHOLD 20 // used for min/max edge calculation
+#define NTC_MAX_ERRORS        10 // tolerable number of consecutive errors
+
 
 // EXPERIMENTAL FEATURE
 // Please report back[1] to the project team if you experience issues with the
@@ -100,22 +101,14 @@
 
 
 // ----------------------------------------------------------------------------
-// HEATER configuration --------------------------------------------------------
-// ----------------------------------------------------------------------------
-#define HEATER_MIN_VAL 51
-#define HEATER_MAX_VAL 971
-#define HEATER_ERR_VAL 1023
-
-
-// ----------------------------------------------------------------------------
 // PID configuration ----------------------------------------------------------
 // ----------------------------------------------------------------------------
 // The following directives control the default PID values for each component
 // of the algorithm, chansing them here requires you to reset to the EEPROM
 // to defaults by using the serial command "XXXX".
-#define DEFAULT_Kp  20.00F
-#define DEFAULT_Ki  0.00F
-#define DEFAULT_Kd  0.00F
+#define DEFAULT_Kp  10.0F
+#define DEFAULT_Ki  00.3F
+#define DEFAULT_Kd  00.0F
 
 
 // ----------------------------------------------------------------------------

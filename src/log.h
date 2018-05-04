@@ -30,6 +30,9 @@
 
 #include "serial.h"
 
+// Start of Header
+#define SOH 0x01
+
 // Special characters
 const char string_colon   [] PROGMEM = { 0x3a, 0x00 };
 const char string_comma   [] PROGMEM = { 0x2c, 0x00 };
@@ -58,13 +61,13 @@ class Log
     static void zero()  { Log::PGM(string_zero); }
 
   public:
-    static inline void string(const char* s)
+    inline static void string(const char* s)
     {
       while (*s)
         Serial::write(*s++);
     }
 
-    static inline void PGM(const char* s)
+    inline static void PGM(const char* s)
     {
       char c;
       while ((c = pgm_read_byte(s++)))
@@ -223,8 +226,8 @@ class LogLn
     ~LogLn() {;}
 
   public:
-    static inline void string(const char* s) { Log::string(s); Log::eol(); }
-    static inline void PGM(const char* s)    { Log::PGM(s); Log::eol();    }
+    inline static void string(const char* s) { Log::string(s); Log::eol(); }
+    inline static void PGM(const char* s)    { Log::PGM(s); Log::eol();    }
 
   public:
     static void number(const uint8_t& n)  { Log::number(n); Log::eol(); }

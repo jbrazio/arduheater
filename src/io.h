@@ -44,7 +44,7 @@ class IO
     ~IO() {;}
 
   public:
-    static inline void set_as_input(const uint8_t &pin) {
+    inline static void set_as_input(const uint8_t &pin) {
       const uint8_t     mask = pgm_read_word(&pin_map[pin][PM_MASK]);
       volatile uint8_t *mode = (volatile uint8_t *)(pgm_read_word(&pin_map[pin][PM_DIR]));
       volatile uint8_t *port = (volatile uint8_t *)(pgm_read_word(&pin_map[pin][PM_OUTPUT]));
@@ -55,7 +55,7 @@ class IO
       CRITICAL_SECTION_END
     }
 
-    static inline void set_as_output(const uint8_t &pin) {
+    inline static void set_as_output(const uint8_t &pin) {
       const uint8_t     mask = pgm_read_word(&pin_map[pin][PM_MASK]);
       volatile uint8_t *mode = (volatile uint8_t *)(pgm_read_word(&pin_map[pin][PM_DIR]));
 
@@ -64,7 +64,7 @@ class IO
       CRITICAL_SECTION_END
     }
 
-    static inline void write(const uint8_t &pin, const uint8_t &value) {
+    inline static void write(const uint8_t &pin, const uint8_t &value) {
       const uint8_t timer = pgm_read_byte(&pin_map[pin][PM_TIMER]);
 
       // Deals with digital signals i.e. LOW and HIGH
@@ -106,7 +106,7 @@ class IO
       }
     }
 
-    static inline uint8_t read(const uint8_t &pin) {
+    inline static uint8_t read(const uint8_t &pin) {
         const uint8_t     mask  = pgm_read_word(&pin_map[pin][PM_MASK]);
         const uint8_t     timer = pgm_read_byte(&pin_map[pin][PM_TIMER]);
         volatile uint8_t *port  = (volatile uint8_t *)(pgm_read_word(&pin_map[pin][PM_INPUT]));

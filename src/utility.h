@@ -28,7 +28,12 @@
 
 #include "macro.h"
 
-extern volatile uint32_t timer0_overflow_count;
+/**
+ * @brief [brief description]
+ * @details [long description]
+ *
+ */
+extern volatile uint32_t timer1_compa_count;
 
 /**
  * @brief Number of elapsed microseconds since boot
@@ -37,14 +42,40 @@ extern volatile uint32_t timer0_overflow_count;
  */
 inline uint32_t micros() {
   CRITICAL_SECTION_START
-  uint8_t  a = TCNT0;
-  uint32_t b = timer0_overflow_count;
-  if ((TIFR0 & bit(TOV0)) && (a < 255)) ++b;
+  uint8_t  a = TCNT1L;
+  uint32_t b = timer1_compa_count;
+  if ((TIFR1 & bit(OCF1A)) && (a & 0xFF)) ++b;
   CRITICAL_SECTION_END
 
   return ((b << 8) + a) << 2;
 }
 
+/**
+ * @brief [brief description]
+ * @details [long description]
+ *
+ */
 float calculate_dew(const float&, const float&);
+
+/**
+ * @brief [brief description]
+ * @details [long description]
+ *
+ */
+inline bool is_digit(char c) { return (c >= '0' && c <= '9'); }
+
+/**
+ * @brief [brief description]
+ * @details [long description]
+ *
+ */
+inline int16_t atol2(const char *str)
+{
+  long ret = 0;
+  while (is_digit(*str)) {
+    ret = 10 * ret + *str++ - '0';
+  }
+  return ret;
+}
 
 #endif

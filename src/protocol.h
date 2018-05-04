@@ -26,24 +26,16 @@
 #include "version.h"
 #include "config.h"
 
-#include "analog.h"
-#include "environment.h"
+#include <stdio.h>
+
 #include "log.h"
+#include "analog.h"
 #include "output.h"
+#include "utility.h"
+#include "environment.h"
 
 namespace protocol {
-  void autotune(const char&);
-  void buildinfo();
-  void disableheater(const char&);
-  void enableheater(const char&);
-  void help();
   void process(const char*);
-  void registers();
-  void result(const uint8_t&);
-  void save();
-  void set(const uint8_t&, const float&);
-  void settings();
-  void status();
 };
 
 #endif

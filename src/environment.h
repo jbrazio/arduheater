@@ -30,45 +30,13 @@
 
 class Environment: public AMBIENT_SENSOR_TYPE {
   public:
-    /**
-     * @brief [brief description]
-     * @details [long description]
-     *
-     */
-    static inline bool is_ready()
-    {
-      return (s_runtime.temperature == AMBIENT_SENSOR_ERROR_VALUE) ? false : true;
-    }
-
-    /**
-     * @brief [brief description]
-     * @details [long description]
-     *
-     */
-    static inline float get_temperature()
-    {
-      return s_runtime.temperature;
-    };
-
-    /**
-     * @brief [brief description]
-     * @details [long description]
-     *
-     */
-    static inline float get_humidity()
-    {
-      return s_runtime.humidity;
-    };
-
-    /**
-     * @brief [brief description]
-     * @details [long description]
-     *
-     */
-    static inline float get_dew_point()
-    {
-      return calculate_dew(s_runtime.temperature, s_runtime.humidity);
-    };
+		inline bool is_connected()  { return (m_connected);           }
+		inline bool is_ready() 	    { return (m_ready);               }
+		inline float temperature()	{ return (m_runtime.temp * 0.1F); }
+		inline float humidity() 		{ return (m_runtime.rh   * 0.1F); }
+		inline float dew_point() 	  { return (m_runtime.dew  * 0.1F); }
 };
+
+extern Environment ambient;
 
 #endif

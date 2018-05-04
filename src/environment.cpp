@@ -17,30 +17,9 @@
  *
  */
 
-#ifndef __SYSTEM_H__
-#define __SYSTEM_H__
+#include "environment.h"
 
-#include <stdint.h>
-#include <stdlib.h>
-
-#include "version.h"
-#include "config.h"
-
-//#include <math.h>
-
-#include "heater.h"
-#include "thermistor.h"
-
-#define EEPROM_VERSION  0x01
-#define EEPROM_OFFSET   0x10
-
-// Memory map
-const uint16_t eeprom_map[] PROGMEM =
-{
-  sizeof(uint16_t),
-  sizeof(Thermistor::config_t),
-  //sizeof(Heater::config_t),
-  sizeof(uint32_t)
-};
-
-#endif
+/**
+ * @brief Preinstantiate objects
+ */
+Environment ambient = Environment();

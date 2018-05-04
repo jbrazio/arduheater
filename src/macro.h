@@ -69,7 +69,7 @@
   #undef SCOPE_DEBUG_OUTPUT
   #undef ENABLE_SCOPE_DEBUG
   #define SCOPE_DEBUG_OUTPUT(a) PORTB ^= bit(a)
-  #define ENABLE_SCOPE_DEBUG(a) IO::set_as_output(a)
+  #define ENABLE_SCOPE_DEBUG(a) IO::set_as_output(a); IO::write(a, LOW);
 #endif
 
 #define get_heater_pin(a) pgm_read_byte(&(heater_pins[a]))

@@ -20,72 +20,150 @@
 #include "output.h"
 
 /**
- * @brief Global variable initialization
+ * @brief Preinstantiate objects
  */
-Output::channel_t Output::s_channel[4];
+Output output[4] = {
+  Output(0), Output(1), Output(2), Output(3)
+};
 
-/**
- * @brief [brief description]
- * @details [long description]
- *
- */
-void Output::update_ambient_callback(const float &dp)
+void Output::callback(const uint8_t& channel, const uint16_t& value)
 {
-  for(size_t i = 0; i < 4; i++) {
-    // Ignore output if it is disconnected
-    // TODO: Check if the compiler is smart enough to optimize the following
-    //       calls, otherwise update this to use direct var access.
-    if (! Output::channel(0).is_connected()) continue;
-    //Output::channel(0).setpoint(dp);
-    Output::channel(0).setpoint(25);
+  // string buffer for the serial messages bellow
+  char buffer[33];
+
+  if(m_channel != channel) {
+    sprintf_P(buffer, PSTR("I Wrong channel (%i) instance (%i)."), channel +1, m_channel);
+    LogLn::string(buffer);
+    return;
   }
-}
 
-/**
- * @brief [brief description]
- * @details [long description]
- *
- */
-void Output::update_sensor_callback(const uint8_t &chan, const uint16_t &raw_value)
-{
-  //
-  // TODO: Update thermistor state: connected/disconnected
-  // TODO: Disable outputs on error
-  //
-  if(raw_value < HEATER_MIN_VAL || raw_value > HEATER_MAX_VAL)
-  {
-    if(s_channel[chan].sensor.is_connected()) {
-      s_channel[chan].sensor.set_connected(false);
-      s_channel[chan].heater.set_connected(false);
+  // store the averaged raw adc value
+  set_sensor_value(value);
 
-      Log::PGM(PSTR("INFO: Output #"));
-      Log::number(chan +1);
-      Log::PGM(PSTR(" disconnected."));
-      Log::eol();
+  // calculate the edges
+  const static uint16_t min_edge = (0    + NTC_ERR_RAW_THRESHOLD);
+  const static uint16_t max_edge = (1023 - NTC_ERR_RAW_THRESHOLD);
+
+  // When no sensor is connected to the ADC channel the resistor on the voltage
+  // divider will act as a pull-up resistor thus the ADC value will be 1023.
+  if(value < min_edge || value > max_edge) {
+    if(is_connected()) {
+      sprintf_P(buffer, PSTR("I Thermistor-%i disconnected."), channel +1);
+      LogLn::string(buffer);
     }
 
-    s_channel[chan].sensor.set_value(HEATER_ERR_VAL);
-    s_channel[chan].heater.stop();
+    disable();
+    connected(false);
   }
 
   else {
-    if(! s_channel[chan].sensor.is_connected()) {
-      s_channel[chan].sensor.set_connected(true);
-      s_channel[chan].heater.set_connected(true);
-
-      // TODO: Autostart heater if option active
-
-      Log::PGM(PSTR("INFO: Output #"));
-      Log::number(chan +1);
-      Log::PGM(PSTR(" connected."));
-      Log::eol();
+    // No matter if the sensor return data is valid or not, we mark it as
+    // physically connected.
+    if(!is_connected()) {
+      sprintf_P(buffer, PSTR("I Thermistor-%i connected."), channel +1);
+      LogLn::string(buffer);
     }
 
-    s_channel[chan].sensor.set_value(raw_value);
+    connected(true);
 
-    const float t = s_channel[chan].sensor.temp();
-    s_channel[chan].heater.eval_pid(t);
+    // Check if the data returned by the sensor falls under our expected range
+    // if it does not then we mark the sensor as not ready.
+    if(value < NTC_MIN_RAW_VALUE || value > NTC_MAX_RAW_VALUE) {
+      if(is_ready()) {
+        sprintf_P(buffer, PSTR("W Thermistor-%i reading error."), channel +1);
+        LogLn::string(buffer);
+      }
+
+      ready(false);
+
+      // If the heater is active we will wait NTC_MAX_ERRORS before powering off,
+      // this allows temporary self-healing errors to occur.
+      static uint8_t error_counter = 0;
+      if(error_counter > NTC_MAX_ERRORS) {
+        if(is_enabled()) {
+          sprintf_P(buffer, PSTR("E Output-%i disabled, thermistor not ready."), channel +1);
+          LogLn::string(buffer);
+        }
+
+        error_counter = 0;
+        disable();
+      } else { ++error_counter; }
+    }
+
+    else { ready(true); }
   }
+}
 
-  IO::write(get_heater_pin(chan), s_channel[chan].heater.get_value());
+void Output::eval_pid()
+{
+  if(!m_automatic) { return; }
+  if(!is_connected()) { disable(); return; }
+
+  const float actual = temperature();
+
+  const float dt = 2;
+
+  // calculate compensated setpoint (+offset)
+  const float target = setpoint();
+
+  // calculate the error
+  const float error = (target - actual);
+
+  // calculate the proportional term
+  const float Pterm = m_config.Kp * error;
+
+  // integrate the error
+  float Ierror = (error * dt) + m_runtime.Ierror;
+
+  // limit the integration error
+  Ierror = constrain(Ierror, -255, 255);
+
+  // calculate the integral term
+  const float Iterm  = m_config.Ki * Ierror;
+
+  // calculate the derivative term
+  const float Dterm = m_config.Kd * ((error - m_runtime.Lerror) / dt);
+
+  // calculate the output
+  const int16_t u = Pterm + Iterm + Dterm;
+  set_output_value(constrain(u, m_config.min, m_config.max));
+
+  // update runtime
+  m_runtime.Ierror = Ierror;
+  m_runtime.Lerror = error;
+
+  m_runtime.Pterm = Pterm;
+  m_runtime.Iterm = Iterm;
+  m_runtime.Dterm = Dterm;
+  m_runtime.u = u;
+}
+
+float Output::temperature(const bool &raw)
+{
+  if(!is_connected()) { return 0; }
+
+  // steinhart
+  float temp = constrain(m_sensor_value, 1, 1022);
+  temp  = m_config_ntc.resistor / (1023.0F / temp - 1); // convert raw to ohms
+  temp /= m_config_ntc.nominalval;                      // (R/Ro)
+  temp  = log(temp);                                    // ln(R/Ro)
+  temp /= m_config_ntc.bcoefficient;                    // 1/B * ln(R/Ro)
+  temp += 1.0F / (m_config_ntc.nominaltemp + 273.15F);  // + (1/To)
+  temp  = 1.0F / temp;                                  // invert
+  temp -= 273.15F;                                      // convert to K to C
+
+  return (raw) ? (roundf(temp * 10) / 10) : ((roundf(temp * 10) / 10) + m_config.temp_offset);
+}
+
+uint16_t Output::invtemp(const float& temp)
+{
+  float value = temp;
+  value += 273.15F;
+  value  = 1.0F / value;
+  value -= 1.0F / (m_config_ntc.nominaltemp + 273.15F);
+  value *= m_config_ntc.bcoefficient;
+  value  = exp(value);
+  value *= m_config_ntc.nominalval;
+  value  = (1023.0F * value) / (value + m_config_ntc.resistor);
+  return (uint16_t) value;
 }

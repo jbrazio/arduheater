@@ -22,8 +22,8 @@
 /**
  * @brief Static class member initialization
  */
-Analog::buffer_t Analog::s_buffer = { 0, 255, {} };
 Analog::callback_t Analog::s_callback = NULL;
+Analog::buffer_t Analog::s_buffer = { 0, 0, {} };
 
 /**
  * @brief [brief description]
@@ -32,35 +32,43 @@ Analog::callback_t Analog::s_callback = NULL;
  */
 ISR(ADC_vect)
 {
-  SCOPE_DEBUG_OUTPUT(0);
+  SCOPE_DEBUG_OUTPUT(4);
 
   // store the raw value from the ADC
-  Analog::s_buffer.raw[Analog::s_buffer.n++] = ADCW;
+  Analog::add_to_buffer((uint16_t)ADCW);
 
   // after reaching the sample count filter the results
-  if(Analog::s_buffer.n == asizeof(Analog::s_buffer.raw)) {
-    // we could shave a few uS from the ISR by using a static inline
-    // function instead of the lambda, but who cares ?
-    qsort(Analog::s_buffer.raw, asizeof(Analog::s_buffer.raw), sizeof(uint16_t),
-      [](const void* a, const void* b) {
-        return ( *(int*)a - *(int*)b );
-      }
-    );
+  if(Analog::is_buffer_full()) {
+    CRITICAL_SECTION_START
+      // we could shave a few uS from the ISR by using a inline static
+      // function instead of the lambda, but who cares ?
+      qsort(Analog::get_buffer_ptr(), Analog::buffer_size(), sizeof(uint16_t),
+        [](const void* a, const void* b) {
+          return ( *(int*)a - *(int*)b );
+        }
+      );
 
-    // uses a basic 95th percentile filter with an additional discarding
-    // of the lower 5% results.
-    uint32_t sum = 0;
-    const uint8_t start = asizeof(Analog::s_buffer.raw) * 0.05f; // lower 5%
-    const uint8_t end   = asizeof(Analog::s_buffer.raw) - start; // sort of 95th percentile
-    for(uint8_t i = start; i < end; i++) { sum += Analog::s_buffer.raw[i]; }
-    const uint16_t avg = (uint16_t) (sum / (end - start));
+      // uses a basic 95th percentile filter with an additional discarding
+      // of the lower 5% results.
+      uint32_t sum = 0;
+      const uint8_t start = Analog::buffer_size() * 0.05f; // lower 5%
+      const uint8_t end   = Analog::buffer_size() - start; // sort of 95th percentile
+      for(uint8_t i = start; i < end; i++) { sum += Analog::get_from_buffer(i); }
+      const uint16_t value = (uint16_t) (sum / (end - start));
 
-    Analog::s_callback(Analog::s_buffer.chan, avg);
+      // local cache the volatile system var
+      const uint8_t channel = Analog::get_channel();
+    CRITICAL_SECTION_END
+
+    // notify any observer of the change
+    Analog::callback(channel, value);
+
+    //SCOPE_DEBUG_OUTPUT(5);
   }
 
   else { ADCSRA |= bit(ADSC) | bit(ADIE); }
 
-  SCOPE_DEBUG_OUTPUT(0);
+  SCOPE_DEBUG_OUTPUT(4);
 }
 
 /**
@@ -68,19 +76,14 @@ ISR(ADC_vect)
  * @details [long description]
  *
  */
-void Analog::read(const uint8_t& channel, const callback_t func)
+void Analog::read(const uint8_t& channel, const callback_t callback)
 {
   if(channel > 3) { return; }
 
   CRITICAL_SECTION_START
-    // erase any data on the buffer
-    for(uint8_t i = 0; i < asizeof(Analog::s_buffer.raw); i++) {
-      Analog::s_buffer.raw[i] = 0;
-    }
-
-    Analog::s_buffer.n = 0;
-    Analog::s_callback = func;
-    Analog::s_buffer.chan = channel;
+    clear_buffer();
+    set_channel(channel);
+    set_callback(callback);
 
     // select the internal 1.1V aref and the target analog channel
     ADMUX = bit (REFS1) | bit (REFS0) | (channel & 0x07);
@@ -118,4 +121,15 @@ void Analog::setup()
     // set digital input disable register to A4-A5
     DIDR0 |= bit(ADC5D) | bit(ADC4D);
   CRITICAL_SECTION_END
+
+  // Delay 80 000 cycles
+  // 5ms at 16.0 MHz
+  asm volatile (
+      "    ldi  r18, 104" "\n"
+      "    ldi  r19, 229" "\n"
+      "1:  dec  r19"  "\n"
+      "    brne 1b" "\n"
+      "    dec  r18"  "\n"
+      "    brne 1b" "\n"
+  );
 }

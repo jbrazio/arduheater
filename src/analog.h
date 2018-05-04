@@ -26,7 +26,8 @@
 #include "version.h"
 #include "config.h"
 
-#include "log.h"
+#include <stdio.h>
+
 #include "macro.h"
 
 class Analog
@@ -41,24 +42,31 @@ class Analog
 
   public:
     /**
-     * @brief TODO
-     * @details
+     * @brief [brief description]
+     * @details [long description]
      *
      */
     typedef void (*callback_t)(const uint8_t&, const uint16_t&);
+
+  private:
+    typedef struct
+    {
+      volatile uint8_t  n;
+      volatile uint8_t  chan;
+      volatile uint16_t raw[255];
+    } buffer_t;
+
+    static buffer_t s_buffer;
     static callback_t s_callback;
 
   public:
-    // Being a bit lazy here, this buffer should be private to the class
-    // and have a set of wrappers around it.. adding it to the TODO list.
-    static struct buffer_t
-    {
-      uint8_t  n;
-      uint8_t  chan;
-      uint16_t raw[128];
-    } s_buffer;
+    /**
+     * @brief [brief description]
+     * @details [long description]
+     *
+     */
+    static void setup();
 
-  public:
     /**
      * @brief [brief description]
      * @details [long description]
@@ -71,7 +79,104 @@ class Analog
      * @details [long description]
      *
      */
-    static void setup();
+    inline static void set_callback(const callback_t callback)
+    {
+      s_callback = callback;
+    }
+
+    /**
+     * @brief [brief description]
+     * @details [long description]
+     *
+     */
+    inline static void callback(const uint8_t& channel, const uint16_t& value)
+    {
+      if(s_callback) { s_callback(channel, value); }
+    }
+
+    /**
+     * @brief [brief description]
+     * @details [long description]
+     *
+     */
+    inline static void set_channel(const uint8_t& channel)
+    {
+      s_buffer.chan = channel;
+    }
+
+    /**
+     * @brief [brief description]
+     * @details [long description]
+     *
+     */
+    inline static uint8_t get_channel()
+    {
+      return s_buffer.chan;
+    }
+
+    /**
+     * @brief [brief description]
+     * @details [long description]
+     *
+     */
+    inline static void clear_buffer()
+    {
+      s_buffer.n = 0;
+
+      for(uint8_t i = 0; i < buffer_size(); i++) {
+        s_buffer.raw[i] = 0;
+      }
+    }
+
+    /**
+     * @brief [brief description]
+     * @details [long description]
+     *
+     */
+    inline static void add_to_buffer(const uint16_t& value)
+    {
+      s_buffer.raw[s_buffer.n++] = value;
+    }
+
+    /**
+     * @brief [brief description]
+     * @details [long description]
+     *
+     */
+    inline static uint16_t get_from_buffer(const uint8_t& index)
+    {
+      return s_buffer.raw[index];
+    }
+
+    /**
+     * @brief [brief description]
+     * @details [long description]
+     *
+     */
+    inline static uint8_t buffer_size()
+    {
+      return asizeof(s_buffer.raw);
+    }
+
+    /**
+     * @brief [brief description]
+     * @details [long description]
+     *
+     */
+    inline static bool is_buffer_full()
+    {
+      return (s_buffer.n == asizeof(s_buffer.raw));
+    }
+
+    /**
+     * @brief [brief description]
+     * @details [long description]
+     *
+     */
+    inline static void* get_buffer_ptr()
+    {
+      return (void *) &s_buffer.raw;
+    }
 };
 
 #endif
