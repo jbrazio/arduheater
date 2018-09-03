@@ -24,8 +24,8 @@ int main(void)
   // --------------------------------------------------------------------------
   // Miscellaneous ------------------------------------------------------------
   // --------------------------------------------------------------------------
-  ENABLE_SCOPE_DEBUG(12); // PB4
-  ENABLE_SCOPE_DEBUG(13); // PB5
+  //ENABLE_SCOPE_DEBUG(12); // PB4
+  //ENABLE_SCOPE_DEBUG(13); // PB5
 
 
   // --------------------------------------------------------------------------
@@ -55,19 +55,19 @@ int main(void)
   // --------------------------------------------------------------------------
   // Timer1 ISR init routine --------------------------------------------------
   // --------------------------------------------------------------------------
-  TCCR1B = 0; TCCR1B = 0; TIMSK1 = 0;
+  TCCR1B = 0; TIMSK1 = 0;
 
   // set waveform generation mode to CTC, top OCR1A (D9, D10)
   TCCR1B |= bit(WGM12);
 
-  // set clock select to clk/8
+  // set clock select to clk/64
   TCCR1B |= bit(CS11) | bit(CS10);
 
   // output Compare A Match Interrupt Enable
   TIMSK1 |= bit(OCIE1B) | bit(OCIE1A);
 
   // sets the Output Compare Register values
-  OCR1A = 0xFF;  // (1KHz)
+  OCR1A = 0xFF; // (977-980Hz ~1KHz)
   OCR1B = 0x80; // (200Hz)
 
 

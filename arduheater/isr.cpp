@@ -31,7 +31,7 @@ volatile uint32_t timer1_compa_count = 0;
  */
 ISR(TIMER1_COMPA_vect)
 {
-  ++timer1_compa_count;
+  ++timer1_compa_count; // 4us increment
 }
 
 /**
@@ -48,7 +48,7 @@ ISR(TIMER1_COMPB_vect)
   // (OCR1A) at 1/64 clock speed, this means each increment on OCR1A is equal to
   // 4 us, an "overflow" i.e. OCR1A == 0xFF is equal to 1024 us thus OCF1A is
   // running at ~1KHz frequency. We want OCF1B to run at ~100Hz, take the frequency
-  // of OCF1B (1024Hz) and divide it by 100Hz to get the magic number bellow (10).
+  // of OCF1A (1024Hz) and divide it by 100Hz to get the magic number bellow (10).
   static uint8_t timer1_compb_vect_counter = 255;
   if(++timer1_compb_vect_counter < 128) { return; }
   timer1_compb_vect_counter = 0;
@@ -95,7 +95,7 @@ ISR(TIMER1_COMPB_vect)
  */
 ISR (INT0_vect)
 {
-  SCOPE_DEBUG_OUTPUT(5);
+  //SCOPE_DEBUG_OUTPUT(5);
   ambient.isr();
-  SCOPE_DEBUG_OUTPUT(5);
+  //SCOPE_DEBUG_OUTPUT(5);
 }

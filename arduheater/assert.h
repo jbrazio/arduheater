@@ -29,7 +29,7 @@
 #include <avr/pgmspace.h>
 #include "type.h"
 
-#if ! defined (__AVR_ATmega328P__) && ! defined (__AVR_ATmega168__) && ! defined (__AVR_ATmega168P__)
+#if ! defined (__AVR_ATmega328P__) && ! defined (__AVR_ATmega328PB__) && ! defined (__AVR_ATmega168__) && ! defined (__AVR_ATmega168P__)
   #error Supported platforms: Arduino UNO, NANO, PRO (AVR ATmega 328P)
 #endif
 

@@ -49,8 +49,13 @@ class Serial
     // and have a set of wrappers around it.. adding it to the TODO list.
     static struct buffer_t
     {
-      Ringbuf<char, 16u> rx;
-      Ringbuf<char, 64u> tx;
+      #if defined (__AVR_ATmega168__) || defined (__AVR_ATmega168P__)
+        Ringbuf<char, 8u> rx;
+        Ringbuf<char, 16u> tx;
+      #else
+        Ringbuf<char, 16u> rx;
+        Ringbuf<char, 64u> tx;
+      #endif
     } s_buffer;
 
   public:

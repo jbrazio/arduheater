@@ -30,7 +30,7 @@
 
 #include "macro.h"
 
-#if defined (__AVR_ATmega328P__) || defined (__AVR_ATmega168__) || defined (__AVR_ATmega168P__)
+#if defined (__AVR_ATmega328P__) || defined (__AVR_ATmega328PB__) || defined (__AVR_ATmega168__) || defined (__AVR_ATmega168P__)
   enum hal_timer_t
   {
     NOTIMER = 0,
