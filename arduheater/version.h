@@ -21,8 +21,8 @@
 #define __VERSION_H__
 
  // Program version and release
-#define ARDUHEATER_VERSION        "0.3e"
-#define ARDUHEATER_VERSION_BUILD  "20180903"
+#define ARDUHEATER_VERSION        "0.3f"
+#define ARDUHEATER_VERSION_BUILD  "20181007"
 #define ARDUHEATER_URL            "https://github.com/jbrazio/arduheater"
 
 #endif
