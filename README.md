@@ -33,24 +33,34 @@ Using off-the-shelf components such as the Arduino Nano and easily available par
 Each of the four outputs have independent controls such as offset, min and max output power and of course the three main properties of the PID controller (Kp, Ki and Kd).
 
 
-
 # Hardware
 It was built on top of a standard ATmega 328 Arduino such as UNO, Pro or Nano; currently it does not support the Mega or any other ARM based board.
 
 ## BOM
 
-- 25x Generic male pin header
-- 1x Electrolytic Capacitor 10µF 20V
-- 4x Rectifier Diode 3A
-- 5x Screw Terminal (2 pin)
-- 4x NPN Power Transistor TIP120
-- 4x 1kΩ Resistor 5%
-- 5x 10kΩ Resistor 1%
-- 1x DHT22
-- 1x Prefboard 5x7cm
-- 4x GX12 Connector (4 pin)
-- 1x Panel Fuse Holder
-- 1x Fuse 5A
+Qty | Value | Device | Size | Package
+---: | :--- | :--- | :--- | :---
+1 | Nano 328P | Arduino |  |
+5 | 100nF | Capacitor Ceramic | 3216 | SMD
+2 | 10uF | Capacitor Polarized | "Ø5x11 |  2" | THT
+1 | 4.7uF | Capacitor Polarized | "Ø4x7 |  1.5" | THT
+4 | 4P | Connector |  | GX12
+4 | 1N4004 | Diode |  | DO41
+1 | ESP32 | ESP |  |
+1 | SPX1117 | LDO |  | SOT223
+4 | IRF3205 | N-MOSFET |  | TO220
+4 | 10K | NTC |  | THT
+4 | EL817 | Optocoupler |  | DIP4
+1 | AM2320 | Probe |  | THT
+10 | 10K | Resistor | 3216 | SMD
+5 | 1K | Resistor | 3216 | SMD
+8 | 220R | Resistor | 3216 | SMD
+1 | 2K | Resistor | 3216 | SMD
+5 | 2P | Screw Terminal | 5mm | THT
+4 | M+F kit | XLR | 12mm |
+1 | Shipping | Overhead |  |
+
+Note: It is *very* important to have a inline fuse on the 12V feed line.
 
 ## 3D printed parts
 To download and print instructions for the 3D printed parts have a look at the [Thing #2614341][2614341].
@@ -58,14 +68,12 @@ To download and print instructions for the 3D printed parts have a look at the [
 [2614341]: https://www.thingiverse.com/thing:2614341
 
 
-## Schematic
-The four diodes are not connected because they are optional since we're not dealing with high inductive loads.
+## PCB and Schematic
+For the complete Eagle files have a look at the [PCB](./doc/pcb/) folder, as an alternative you may perfer to build the [Preforated Board](./doc/prefboard/) version.
 
-![Schematic](https://github.com/jbrazio/arduheater/blob/master/doc/schematic-power_schem.jpg)
+![PCB Top View](https://github.com/jbrazio/arduheater/blob/master/doc/pcb/arduheater-top.png)
 
-## Prototype board
-
-![Prototype board](https://github.com/jbrazio/arduheater/blob/master/doc/schematic-power_bb.jpg)
+![PCB Bottom View](https://github.com/jbrazio/arduheater/blob/master/doc/pcb/arduheater-bottom.png)
 
 
 # License
