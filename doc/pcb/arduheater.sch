@@ -254,15 +254,15 @@ Siemens, Hewlett-Packard, Texas Instuments, Sharp, Motorola&lt;p&gt;
 </library>
 <library name="SparkFun-Connectors">
 <description>&lt;h3&gt;SparkFun Connectors&lt;/h3&gt;
-This library contains electrically-functional connectors. 
+This library contains electrically-functional connectors.
 &lt;br&gt;
 &lt;br&gt;
-We've spent an enormous amount of time creating and checking these footprints and parts, but it is &lt;b&gt; the end user's responsibility&lt;/b&gt; to ensure correctness and suitablity for a given componet or application. 
+We've spent an enormous amount of time creating and checking these footprints and parts, but it is &lt;b&gt; the end user's responsibility&lt;/b&gt; to ensure correctness and suitablity for a given componet or application.
 &lt;br&gt;
 &lt;br&gt;If you enjoy using this library, please buy one of our products at &lt;a href=" www.sparkfun.com"&gt;SparkFun.com&lt;/a&gt;.
 &lt;br&gt;
 &lt;br&gt;
-&lt;b&gt;Licensing:&lt;/b&gt; Creative Commons ShareAlike 4.0 International - https://creativecommons.org/licenses/by-sa/4.0/ 
+&lt;b&gt;Licensing:&lt;/b&gt; Creative Commons ShareAlike 4.0 International - https://creativecommons.org/licenses/by-sa/4.0/
 &lt;br&gt;
 &lt;br&gt;
 You are welcome to use this library for commercial purposes. For attribution, we ask that when you begin to sell your device using our footprint, you email us with a link to the product being sold. We want bragging rights that we helped (in a very small part) to create your 8th world wonder. We would like the opportunity to feature your device on our homepage.</description>
@@ -454,7 +454,7 @@ You are welcome to use this library for commercial purposes. For attribution, we
 </package>
 <package name="1X02_LOCK">
 <description>&lt;h3&gt;Plated Through Hole - Locking Footprint&lt;/h3&gt;
-Holes are staggered by 0.005" from center to hold pins while soldering. 
+Holes are staggered by 0.005" from center to hold pins while soldering.
 &lt;p&gt;Specifications:
 &lt;ul&gt;&lt;li&gt;Pin count:2&lt;/li&gt;
 &lt;li&gt;Pin pitch:0.1"&lt;/li&gt;
@@ -485,7 +485,7 @@ Holes are staggered by 0.005" from center to hold pins while soldering.
 </package>
 <package name="MOLEX-1X2_LOCK">
 <description>&lt;h3&gt;Molex 2-Pin Plated Through-Hole Locking Footprint&lt;/h3&gt;
-Holes are offset from center by 0.005" to hold pins in place during soldering. 
+Holes are offset from center by 0.005" to hold pins in place during soldering.
 &lt;p&gt;Specifications:
 &lt;ul&gt;&lt;li&gt;Pin count:2&lt;/li&gt;
 &lt;li&gt;Pin pitch:0.1"&lt;/li&gt;
@@ -512,7 +512,7 @@ Holes are offset from center by 0.005" to hold pins in place during soldering.
 </package>
 <package name="1X02_LOCK_LONGPADS">
 <description>&lt;h3&gt;Plated Through Hole - Long Pads with Locking Footprint&lt;/h3&gt;
-Pins are staggered by 0.005" from center to hold pins in place while soldering. 
+Pins are staggered by 0.005" from center to hold pins in place while soldering.
 &lt;p&gt;Specifications:
 &lt;ul&gt;&lt;li&gt;Pin count:2&lt;/li&gt;
 &lt;li&gt;Pin pitch:0.1"&lt;/li&gt;
@@ -540,7 +540,7 @@ Pins are staggered by 0.005" from center to hold pins in place while soldering.
 </package>
 <package name="SCREWTERMINAL-3.5MM-2_LOCK">
 <description>&lt;h3&gt;Screw Terminal  3.5mm Pitch - 2 Pin PTH Locking&lt;/h3&gt;
-Holes are offset from center 0.005" to hold pins in place during soldering. 
+Holes are offset from center 0.005" to hold pins in place during soldering.
 &lt;p&gt;Specifications:
 &lt;ul&gt;&lt;li&gt;Pin count: 2&lt;/li&gt;
 &lt;li&gt;Pin pitch: 3.5mm/138mil&lt;/li&gt;
@@ -602,7 +602,7 @@ Holes are offset from center 0.005" to hold pins in place during soldering.
 </package>
 <package name="JST-2-PTH">
 <description>&lt;h3&gt;JST 2 Pin Right Angle Plated Through  Hole&lt;/h3&gt;
-tDocu indicate polarity for connections that match SparkFun LiPo battery terminations. 
+tDocu indicate polarity for connections that match SparkFun LiPo battery terminations.
 &lt;p&gt;Specifications:
 &lt;ul&gt;&lt;li&gt;Pin count: 2&lt;/li&gt;
 &lt;li&gt;Pin pitch:2mm&lt;/li&gt;
@@ -692,8 +692,8 @@ tDocu indicate polarity for connections that match SparkFun LiPo battery termina
 </package>
 <package name="JST-2-PTH-NS">
 <description>&lt;h3&gt;JST 2 Pin Right Angle Plated Through  Hole- No Silk&lt;/h3&gt;
-tDocu indicate polarity for connections that match SparkFun LiPo battery terminations. 
-&lt;br&gt; No silk outline of connector. 
+tDocu indicate polarity for connections that match SparkFun LiPo battery terminations.
+&lt;br&gt; No silk outline of connector.
 &lt;p&gt;Specifications:
 &lt;ul&gt;&lt;li&gt;Pin count: 2&lt;/li&gt;
 &lt;li&gt;Pin pitch:2mm&lt;/li&gt;
@@ -718,7 +718,7 @@ tDocu indicate polarity for connections that match SparkFun LiPo battery termina
 </package>
 <package name="JST-2-PTH-KIT">
 <description>&lt;h3&gt;JST 2 Pin Right Angle Plated Through  Hole - KIT&lt;/h3&gt;
-tDocu indicate polarity for connections that match SparkFun LiPo battery terminations. 
+tDocu indicate polarity for connections that match SparkFun LiPo battery terminations.
 &lt;br&gt; This package has a smaller diameter top stop mask, which doesn't cover the diameter of the pad.
 &lt;br&gt; This means only the bottom side of the pads' copper will be exposed. You'll only be able to solder to the bottom side.
 &lt;p&gt;Specifications:
@@ -2320,7 +2320,7 @@ Source: http://www.osram.convergy.de/ ... LB M676.pdf</description>
 </package3d>
 <package3d name="OSRAM-SIDELED" urn="urn:adsk.eagle:package:15812/1" type="box" library_version="2">
 <description>Super SIDELED® High-Current LED
-LG A672, LP A672 
+LG A672, LP A672
 Source: http://www.osram.convergy.de/ ... LG_LP_A672.pdf (2004.05.13)</description>
 <packageinstances>
 <packageinstance name="OSRAM-SIDELED"/>
@@ -3052,7 +3052,7 @@ Source: www.kingbright.com</description>
 Based on the previous libraries:
 &lt;ul&gt;
 &lt;li&gt;r.lbr
-&lt;li&gt;cap.lbr 
+&lt;li&gt;cap.lbr
 &lt;li&gt;cap-fe.lbr
 &lt;li&gt;captant.lbr
 &lt;li&gt;polcap.lbr
@@ -13172,7 +13172,7 @@ Metric Code Size 4564</description>
 </packageinstances>
 </package3d>
 <package3d name="HPC0201" urn="urn:adsk.eagle:package:23688/1" type="box" library_version="3">
-<description> 
+<description>
 Source: http://www.vishay.com/docs/10129/hpc0201a.pdf</description>
 <packageinstances>
 <packageinstance name="HPC0201"/>
@@ -21411,10 +21411,10 @@ with devices in libraries, schematics, and board files. Those 3D
 packages will not be understood (or retained) with this version.
 </note>
 <note version="8.4" severity="warning">
-Since Version 8.4, EAGLE supports properties for SPICE simulation. 
+Since Version 8.4, EAGLE supports properties for SPICE simulation.
 Probes in schematics and SPICE mapping objects found in parts and library devices
 will not be understood with this version. Update EAGLE to the latest version
-for full support of SPICE simulation. 
+for full support of SPICE simulation.
 </note>
 </compatibility>
 </eagle>
