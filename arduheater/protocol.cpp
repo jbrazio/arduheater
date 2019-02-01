@@ -21,6 +21,7 @@
 
 void protocol::process(const char *cmd) {
   char buffer[64];
+  Output *channel;
   Output::runtime_t dump;
 
   switch (cmd[0]) {
@@ -44,70 +45,50 @@ void protocol::process(const char *cmd) {
 
     case '?': // Output status --------------------------------------------------------------------
       sprintf_P(buffer, PSTR(":?%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i#"),
-        output[0].is_connected(),
-        output[1].is_connected(),
-        output[2].is_connected(),
-        output[3].is_connected(),
-
-        output[0].is_ready(),
-        output[1].is_ready(),
-        output[2].is_ready(),
-        output[3].is_ready(),
-
-        output[0].is_enabled(),
-        output[1].is_enabled(),
-        output[2].is_enabled(),
-        output[3].is_enabled()
+        output[0].is_connected(), output[1].is_connected(), output[2].is_connected(), output[3].is_connected(),
+        output[0].is_ready(),     output[1].is_ready(),     output[2].is_ready(),     output[3].is_ready(),
+        output[0].is_enabled(),   output[1].is_enabled(),   output[2].is_enabled(),   output[3].is_enabled()
       ); Log::string(buffer);
 
       break;
 
     case 'A': // Ambient --------------------------------------------------------------------------
       sprintf_P(buffer, PSTR(":A%i,%i,%i#"),
-        (int16_t)(ambient.temperature() * 10),
-        (int16_t)(ambient.humidity()    * 10),
-        (int16_t)(ambient.dew_point()   * 10)
+        ftol(ambient.temperature()), ftol(ambient.humidity()), ftol(ambient.dew_point())
       ); Log::string(buffer);
       break;
 
     case 'B': // Output data ----------------------------------------------------------------------
       if((uint8_t)(cmd[1] - '0') > 3) { return; }
+      channel = &output[(uint8_t)(cmd[1] - '0')];
 
       sprintf_P(buffer, PSTR(":B%i,%i,%i,%i#"), (uint8_t)(cmd[1] - '0'),
-        (int16_t)(output[(uint8_t)(cmd[1] - '0')].temperature() * 10),
-        (int16_t)(output[(uint8_t)(cmd[1] - '0')].setpoint()    * 10),
-        (uint8_t)(output[(uint8_t)(cmd[1] - '0')].output_value())
+        ftol(channel->temperature()), ftol(channel->setpoint()), channel->output_value()
       ); Log::string(buffer);
       break;
 
     case 'C': // PID data -------------------------------------------------------------------------
       if((uint8_t)(cmd[1] - '0') > 3) { return; }
-      dump = output[(uint8_t)(cmd[1] - '0')].export_runtime();
+      channel = &output[(uint8_t)(cmd[1] - '0')];
+
+      dump = channel->export_runtime();
 
       sprintf_P(buffer, PSTR(":C%i,%i,%i,%i,%i#"), (uint8_t)(cmd[1] - '0'),
-        (int16_t)(dump.Pterm * 10),
-        (int16_t)(dump.Iterm * 10),
-        (int16_t)(dump.Dterm * 10),
-        (int16_t)(dump.u)
+        // Cast away the volatile qualifier
+        ftol((float)dump.Pterm), ftol((float)dump.Iterm), ftol((float)dump.Dterm), dump.u
       ); Log::string(buffer);
       break;
 
     case 'D': // Output config --------------------------------------------------------------------
-              // TODO
-              // this section needs to be better structured
-              //
+      // TODO this section needs to be better structured
       if((uint8_t)(cmd[1] - '0') > 3) { return; }
+      channel = &output[(uint8_t)(cmd[1] - '0')];
 
       if(strlen(cmd) < 3) {
         sprintf_P(buffer, PSTR(":D%i,%i,%i,%i,%i,%i,%i,%i,%i#"), (uint8_t)(cmd[1] - '0'),
-          (uint8_t)(output[(uint8_t)(cmd[1] - '0')].min_output()),
-          (uint8_t)(output[(uint8_t)(cmd[1] - '0')].max_output()),
-          (uint8_t)(output[(uint8_t)(cmd[1] - '0')].is_autostart()),
-          (int16_t)(output[(int16_t)(cmd[1] - '0')].temp_offset()     * 10),
-          (int16_t)(output[(int16_t)(cmd[1] - '0')].setpoint_offset() * 10),
-          (int16_t)(output[(int16_t)(cmd[1] - '0')].kp() * 10),
-          (int16_t)(output[(int16_t)(cmd[1] - '0')].ki() * 10),
-          (int16_t)(output[(int16_t)(cmd[1] - '0')].kd() * 10)
+          channel->min_output(), channel->max_output(), (channel->is_autostart()) ? 1 : 0,
+          ftol(channel->temp_offset()), ftol(channel->setpoint_offset()),
+          ftol(channel->kp()), ftol(channel->ki()), ftol(channel->kd())
         ); Log::string(buffer);
       }
 
@@ -129,7 +110,8 @@ void protocol::process(const char *cmd) {
               break;
 
             default:
-              if(is_digit(c)) { buffer[i++] = c; }
+              // only allows digits and negative sign
+              if(is_digit(c) || c == '-') { buffer[i++] = c; }
           }
         }
 
@@ -138,8 +120,7 @@ void protocol::process(const char *cmd) {
         args[n] = atol2(buffer);
 
         Output::config_t new_config = {
-          (uint8_t)args[1], (uint8_t)args[2], (bool)args[3], (float)(args[4] * 0.1F),
-          (float)(args[5] * 0.1F), (float)(args[6] * 0.1F), (float)(args[7] * 0.1F), (float)(args[8] * 0.1F)
+          (uint8_t)args[1], (uint8_t)args[2], (bool)args[3], ltof(args[4]), ltof(args[5]), ltof(args[6]), ltof(args[7]), ltof(args[8])
         };
 /*
         //LogLn::number(args[0]);
@@ -159,12 +140,10 @@ void protocol::process(const char *cmd) {
 
     case 'F': // Sensor config --------------------------------------------------------------------
       if((uint8_t)(cmd[1] - '0') > 3) { return; }
+      channel = &output[(uint8_t)(cmd[1] - '0')];
 
       sprintf_P(buffer, PSTR(":D%i,%i,%i,%i,%i#"), (uint8_t)(cmd[1] - '0'),
-        (int16_t)(output[(uint8_t)(cmd[1] - '0')].nominal_temp()   * 10),
-        (int16_t)(output[(uint8_t)(cmd[1] - '0')].resistor_value() * 10),
-        (int16_t)(output[(uint8_t)(cmd[1] - '0')].bcoefficient_value()),
-        (int16_t)(output[(uint8_t)(cmd[1] - '0')].nominal_value())
+        ftol(channel->nominal_temp()), ftol(channel->resistor_value()), channel->bcoefficient_value(), channel->nominal_value()
       ); Log::string(buffer);
       break;
 

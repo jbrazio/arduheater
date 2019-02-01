@@ -71,11 +71,26 @@ inline bool is_digit(char c) { return (c >= '0' && c <= '9'); }
  */
 inline int16_t atol2(const char *str)
 {
-  long ret = 0;
-  while (is_digit(*str)) {
-    ret = 10 * ret + *str++ - '0';
+  int16_t l = 0;
+  bool negative = false;
+
+  if(*str == '-') {
+    negative = true;
+    (*str++);
   }
-  return ret;
+
+  while (is_digit(*str)) { l = (l * 10) + (*str++ - '0'); }
+  return (negative) ? l * -1 : l;
+}
+
+inline float ltof(const int16_t& l)
+{
+  return (float)l * 0.1F;
+}
+
+inline int16_t ftol(const float& f)
+{
+  return f * 10;
 }
 
 #endif

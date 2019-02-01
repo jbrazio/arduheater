@@ -40,7 +40,7 @@ class DHT22
 {
   public:
     typedef struct {
-      volatile uint16_t temp, rh, dew;
+      volatile float    temp, rh, dew;
       volatile uint8_t  error_count, current_bit;
     } runtime_t;
 
@@ -134,13 +134,18 @@ class DHT22
         m_runtime.error_count = 0;
         m_ready = true;
 
-        // store data
+        // floating point conversion
+        t *= 0.1F;
+        h *= 0.1F;
+
+        // store data as floating point
         m_runtime.temp = t;
         m_runtime.rh   = h;
-        m_runtime.dew  = (calculate_dew((m_runtime.temp * 0.1F), (m_runtime.rh * 0.1F)) * 10);
+        m_runtime.dew  = calculate_dew(t, h);
       }
 
-      if(m_callback) { m_callback((float)(m_runtime.dew * 0.1F)); }
+      // Cast away the volatile qualifier
+      if(m_callback) { m_callback((float)m_runtime.dew); }
     }
 
     inline void read(const callback_t func)
@@ -159,6 +164,7 @@ class DHT22
       m_callback = func;
 
       // Alerts the user of any consecutive sensor errors
+      // TODO keep a global error count above threshold var for nerd stats
       if (m_runtime.error_count > AMBIENT_SENSOR_ERROR_THRESHOLD) {
         LogLn::PGM(PSTR("W Ambient sensor reading error"));
         m_runtime.error_count = 0;
@@ -166,7 +172,10 @@ class DHT22
         m_ready = false;
 
         // Notify the callback function of the new state of the ambient sensor
-        if(m_callback) { m_callback((float)(m_runtime.dew * 0.1F)); }
+        // TODO does it make sense to callback when the value was actually not updated ?!
+        //
+        // Cast away the volatile qualifier
+        if(m_callback) { m_callback((float)m_runtime.dew); }
       }
 
       IO::set_as_output(AMBIENT_SENSOR_PIN);

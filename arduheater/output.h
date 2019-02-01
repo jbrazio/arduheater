@@ -54,8 +54,9 @@ class Output
     } config_ntc_t;
 
     typedef struct {
-      volatile float Pterm, Iterm, Dterm, u;
-      volatile float Ierror, Lerror;
+      volatile float   Pterm, Iterm, Dterm;
+      volatile float   Ierror, Lerror;
+      volatile int16_t u;
     } runtime_t;
 
   protected:
@@ -173,7 +174,7 @@ class Output
     inline void     set_nominal_value(const uint16_t &value)      { m_config_ntc.nominalval = value; }
     inline uint16_t nominal_value()                               { return m_config_ntc.nominalval;  }
 
-    float temperature(const bool &raw = false);
+    float temperature(const bool &calibrated = true);
     uint16_t invtemp(const float&);
 
   public:

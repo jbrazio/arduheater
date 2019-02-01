@@ -40,7 +40,7 @@ void Output::callback(const uint8_t& channel, const uint16_t& value)
   // store the averaged raw adc value
   set_sensor_value(value);
 
-  // calculate the edges
+  // calculate the edges which will make the raw value report the NTC as disconnected
   const static uint16_t min_edge = (0    + NTC_ERR_RAW_THRESHOLD);
   const static uint16_t max_edge = (1023 - NTC_ERR_RAW_THRESHOLD);
 
@@ -57,7 +57,7 @@ void Output::callback(const uint8_t& channel, const uint16_t& value)
   }
 
   else {
-    // No matter if the sensor return data is valid or not, we mark it as
+    // No matter if the sensor returns valid data or not, we mark it as
     // physically connected.
     if(!is_connected()) {
       sprintf_P(buffer, PSTR("I Thermistor-%i connected."), channel +1);
@@ -87,6 +87,7 @@ void Output::callback(const uint8_t& channel, const uint16_t& value)
 
         error_counter = 0;
         disable();
+
       } else { ++error_counter; }
     }
 
@@ -125,7 +126,7 @@ void Output::eval_pid()
   const float Dterm = m_config.Kd * ((error - m_runtime.Lerror) / dt);
 
   // calculate the output
-  const int16_t u = Pterm + Iterm + Dterm;
+  const int16_t u = (Pterm + Iterm + Dterm);
   set_output_value(constrain(u, m_config.min, m_config.max));
 
   // update runtime
@@ -138,7 +139,7 @@ void Output::eval_pid()
   m_runtime.u = u;
 }
 
-float Output::temperature(const bool &raw)
+float Output::temperature(const bool &calibrated)
 {
   if(!is_connected()) { return 0; }
 
@@ -152,7 +153,7 @@ float Output::temperature(const bool &raw)
   temp  = 1.0F / temp;                                  // invert
   temp -= 273.15F;                                      // convert to K to C
 
-  return (raw) ? (roundf(temp * 10) / 10) : ((roundf(temp * 10) / 10) + m_config.temp_offset);
+  return (calibrated) ? (temp + m_config.temp_offset) : (temp);
 }
 
 uint16_t Output::invtemp(const float& temp)

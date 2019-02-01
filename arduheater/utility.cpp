@@ -28,7 +28,7 @@ float calculate_dew(const float& t, const float& rh)
 {
   // Uncomment the following line to enable the NOAA dew function
   // otherwise a simpler calculating algorithm will be used.
-  //#define NOAA_DEW_FUNCTION
+  //#define USE_NOAA_DEW_FUNCTION
 
   #ifdef USE_NOAA_DEW_FUNCTION
     // dewPoint function NOAA
