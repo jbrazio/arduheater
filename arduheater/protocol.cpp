@@ -117,24 +117,14 @@ void protocol::process(const char *cmd) {
 
         // last one is missed due to the string not
         // having the last ',' separator.
-        args[n] = atol2(buffer);
+        args[n++] = atol2(buffer);
 
-        Output::config_t new_config = {
+        // really poor man's input validation
+        if(n != 9) { return; }
+
+        output[args[0]].import_config({
           (uint8_t)args[1], (uint8_t)args[2], (bool)args[3], ltof(args[4]), ltof(args[5]), ltof(args[6]), ltof(args[7]), ltof(args[8])
-        };
-/*
-        //LogLn::number(args[0]);
-        LogLn::number(new_config.min);
-        LogLn::number(new_config.max);
-        LogLn::number(new_config.autostart);
-        LogLn::number(new_config.temp_offset);
-        LogLn::number(new_config.setpoint_offset);
-        LogLn::number(new_config.Kp);
-        LogLn::number(new_config.Ki);
-        LogLn::number(new_config.Kd);
-        Log::eol();
-*/
-        output[args[0]].import_config(new_config);
+        });
       }
       break;
 
@@ -145,6 +135,50 @@ void protocol::process(const char *cmd) {
       sprintf_P(buffer, PSTR(":D%i,%i,%i,%i,%i#"), (uint8_t)(cmd[1] - '0'),
         ftol(channel->nominal_temp()), ftol(channel->resistor_value()), channel->bcoefficient_value(), channel->nominal_value()
       ); Log::string(buffer);
+      break;
+
+    case 'G': // Ambient config --------------------------------------------------------------------
+      // TODO this section needs to be better structured
+      if(strlen(cmd) < 3) {
+        sprintf_P(buffer, PSTR(":G%i,%i#"),
+          ftol(ambient.temp_offset()), ftol(ambient.rh_offset())
+        ); Log::string(buffer);
+      }
+
+      else {
+        memset(&buffer, 0, sizeof(buffer));
+        int16_t args[2] = { 0 };
+        int i = 0, n = 0;
+
+        while (*cmd)
+        {
+          char c = *cmd++;
+
+          switch(c)
+          {
+            case ',':
+              args[n++] = atol2(buffer);
+              memset(&buffer, 0, sizeof(buffer));
+              i = 0;
+              break;
+
+            default:
+              // only allows digits and negative sign
+              if(is_digit(c) || c == '-') { buffer[i++] = c; }
+          }
+        }
+
+        // last one is missed due to the string not
+        // having the last ',' separator.
+        args[n++] = atol2(buffer);
+
+        // really poor man's input validation
+        if(n != 2) { return; }
+
+        ambient.import_config({
+          ltof(args[0]), ltof(args[1])
+        });
+      }
       break;
 
     case 'V': // Version --------------------------------------------------------------------------

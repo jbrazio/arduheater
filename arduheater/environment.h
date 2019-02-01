@@ -30,11 +30,33 @@
 
 class Environment: public AMBIENT_SENSOR_TYPE {
   public:
+    typedef struct {
+      float temp_offset, rh_offset;
+    } config_t;
+
+  protected:
+    config_t m_config;
+
+  public:
+    Environment() {
+      memset(&m_config, 0, sizeof(m_config));
+    }
+
     inline bool is_connected()  { return (m_connected);    }
     inline bool is_ready()      { return (m_ready);        }
-    inline float temperature()  { return (m_runtime.temp); }
-    inline float humidity()     { return (m_runtime.rh);   }
-    inline float dew_point()    { return (m_runtime.dew);  }
+
+    inline float temperature(const bool &calibrated = true)  { return (calibrated) ? (m_runtime.temp + m_config.temp_offset) : (m_runtime.temp); }
+    inline float    humidity(const bool &calibrated = true)  { return (calibrated) ? (m_runtime.rh   + m_config.rh_offset)   : (m_runtime.rh);   }
+    inline float   dew_point()                               { return (calculate_dew(temperature(), humidity()));                                }
+
+    inline void  set_temp_offset(const float &value)        { m_config.temp_offset = value; }
+    inline float temp_offset()                              { return m_config.temp_offset;  }
+
+    inline void  set_rh_offset(const float &value)          { m_config.rh_offset = value; }
+    inline float rh_offset()                                { return m_config.rh_offset;  }
+
+    inline config_t& export_config()           { return m_config;   }
+    inline void import_config(config_t config) { m_config = config; }
 };
 
 extern Environment ambient;

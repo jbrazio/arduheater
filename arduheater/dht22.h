@@ -40,16 +40,16 @@ class DHT22
 {
   public:
     typedef struct {
-      volatile float    temp, rh, dew;
+      volatile float    temp, rh;
       volatile uint8_t  error_count, current_bit;
     } runtime_t;
 
   public:
-    typedef void (*callback_t)(const float&);
+    typedef void (*callback_t)();
 
   protected:
     callback_t m_callback;
-    runtime_t m_runtime = { 0, 0, 0, 0, 0 };
+    runtime_t m_runtime;
 
     volatile bool m_connected = false;
     volatile bool m_ready = false;
@@ -57,6 +57,10 @@ class DHT22
     volatile int8_t m_buffer[40] = { };
 
   public:
+    DHT22() {
+      memset(&m_runtime, 0, sizeof(m_runtime));
+    }
+
     inline void isr()
     {
       // report the sensor as connected
@@ -141,11 +145,9 @@ class DHT22
         // store data as floating point
         m_runtime.temp = t;
         m_runtime.rh   = h;
-        m_runtime.dew  = calculate_dew(t, h);
       }
 
-      // Cast away the volatile qualifier
-      if(m_callback) { m_callback((float)m_runtime.dew); }
+      if(m_callback) { m_callback(); }
     }
 
     inline void read(const callback_t func)
@@ -175,7 +177,7 @@ class DHT22
         // TODO does it make sense to callback when the value was actually not updated ?!
         //
         // Cast away the volatile qualifier
-        if(m_callback) { m_callback((float)m_runtime.dew); }
+        if(m_callback) { m_callback(); }
       }
 
       IO::set_as_output(AMBIENT_SENSOR_PIN);

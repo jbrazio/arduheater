@@ -33,13 +33,13 @@ inline void output_callback(const uint8_t& channel, const uint16_t& value) {
   if(&output[channel]) (&output[channel])->callback(channel, value);
 }
 
-inline void environment_calback(const float& dew) {
+inline void environment_calback() {
   char buffer[60];
 
   for(size_t i = 0; i < asizeof(output); i++) {
     if(ambient.is_connected()) {
       // Update the output setpoint as long as it is connected.
-      output[i].set_setpoint(dew);
+      output[i].set_setpoint(ambient.dew_point());
       //if(i == 1 || i == 3) output[i].set_setpoint_offset(10);
       //output[i].set_setpoint(40);
 
