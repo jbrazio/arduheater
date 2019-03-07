@@ -17,12 +17,31 @@
  *
  */
 
-#ifndef __VERSION_H__
-#define __VERSION_H__
+#ifndef __EEPROM_H__
+#define __EEPROM_H__
 
- // Program version and release
-#define ARDUHEATER_VERSION        "0.4a"
-#define ARDUHEATER_VERSION_BUILD  "20190307"
-#define ARDUHEATER_URL            "https://github.com/jbrazio/arduheater"
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <avr/eeprom.h>
+
+#include "version.h"
+#include "config.h"
+
+#include "type.h"
+extern eeprom_map_t eemap;
+
+#include "output.h"
+#include "environment.h"
+
+#define EEPROM_MAGIC_HEADER  0xab56
+#define EEPROM_START_ADDRESS 0x0000
+
+bool eeprom_init(eeprom_map_t *);
+void eeprom_load(eeprom_map_t *);
+void eeprom_save(eeprom_map_t *);
+
+void load_config();
+void save_config();
 
 #endif

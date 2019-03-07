@@ -26,15 +26,15 @@
 #include "version.h"
 #include "config.h"
 
-//#include <math.h>
-//#include <avr/wdt.h>
-//#include <avr/pgmspace.h>
-//#include <avr/interrupt.h>
-
-#include "analog.h"
 #include "io.h"
 #include "log.h"
-#include "environment.h"
+#include "analog.h"
 #include "protocol.h"
+#include "environment.h"
+
+#include "type.h"
+extern eeprom_map_t eemap;
+
+#include "eeprom.h"
 
 #endif

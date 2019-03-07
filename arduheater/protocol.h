@@ -34,6 +34,11 @@
 #include "utility.h"
 #include "environment.h"
 
+#include "type.h"
+extern eeprom_map_t eemap;
+
+#include "eeprom.h"
+
 namespace protocol {
   void process(const char*);
 };

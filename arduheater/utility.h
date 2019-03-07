@@ -83,11 +83,21 @@ inline int16_t atol2(const char *str)
   return (negative) ? l * -1 : l;
 }
 
+/**
+ * @brief [brief description]
+ * @details [long description]
+ *
+ */
 inline float ltof(const int16_t& l)
 {
   return (float)l * 0.1F;
 }
 
+/**
+ * @brief [brief description]
+ * @details [long description]
+ *
+ */
 inline int16_t ftol(const float& f)
 {
   return f * 10;

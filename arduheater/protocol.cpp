@@ -22,7 +22,7 @@
 void protocol::process(const char *cmd) {
   char buffer[64];
   Output *channel;
-  Output::runtime_t dump;
+  //struct runtime_t dump;
 
   switch (cmd[0]) {
     case 0:
@@ -70,13 +70,14 @@ void protocol::process(const char *cmd) {
     case 'C': // PID data -------------------------------------------------------------------------
       if((uint8_t)(cmd[1] - '0') > 3) { return; }
       channel = &output[(uint8_t)(cmd[1] - '0')];
-
+/*
       dump = channel->export_runtime();
 
       sprintf_P(buffer, PSTR(":C%i,%i,%i,%i,%i#"), (uint8_t)(cmd[1] - '0'),
         // Cast away the volatile qualifier
         ftol((float)dump.Pterm), ftol((float)dump.Iterm), ftol((float)dump.Dterm), dump.u
       ); Log::string(buffer);
+*/
       break;
 
     case 'D': // Output config --------------------------------------------------------------------
@@ -125,10 +126,13 @@ void protocol::process(const char *cmd) {
         output[args[0]].import_config({
           (uint8_t)args[1], (uint8_t)args[2], (bool)args[3], ltof(args[4]), ltof(args[5]), ltof(args[6]), ltof(args[7]), ltof(args[8])
         });
+
+        eemap.output[args[0]] = output[args[0]].export_config();
+        save_config();
       }
       break;
 
-    case 'F': // Sensor config --------------------------------------------------------------------
+    case 'F': // Sensor (NTC) config --------------------------------------------------------------------
       if((uint8_t)(cmd[1] - '0') > 3) { return; }
       channel = &output[(uint8_t)(cmd[1] - '0')];
 
@@ -178,6 +182,9 @@ void protocol::process(const char *cmd) {
         ambient.import_config({
           ltof(args[0]), ltof(args[1])
         });
+
+        eemap.ambient = ambient.export_config();
+        save_config();
       }
       break;
 

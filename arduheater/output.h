@@ -41,30 +41,18 @@
  */
 class Output
 {
-  public:
-    typedef struct {
-      uint8_t min, max;
-      bool    autostart;
-      float   temp_offset, setpoint_offset, Kp, Ki, Kd;
-    } config_t;
-
-    typedef struct {
-      float    nominaltemp;
-      uint16_t resistor, bcoefficient, nominalval;
-    } config_ntc_t;
-
+  protected:
     typedef struct {
       volatile float   Pterm, Iterm, Dterm;
       volatile float   Ierror, Lerror;
       volatile int16_t u;
     } runtime_t;
 
-  protected:
-    config_t m_config = {
+    output_config_t m_config = {
       0, 255, false, 0.0F, 0.0F, DEFAULT_Kp, DEFAULT_Ki, DEFAULT_Kd
     };
 
-    config_ntc_t m_config_ntc {
+    output_config_ntc_t m_config_ntc {
       nominaltemp: DEFAULT_NTC_NT, resistor: DEFAULT_NTC_SR,
       bcoefficient: DEFAULT_NTC_BC, nominalval: DEFAULT_NTC_NV
     };
@@ -175,15 +163,15 @@ class Output
     inline uint16_t nominal_value()                               { return m_config_ntc.nominalval;  }
 
     float temperature(const bool &calibrated = true);
-    uint16_t invtemp(const float&);
+    uint16_t  invtemp(const float&);
 
   public:
-    inline runtime_t&    export_runtime()    { return m_runtime;    }
-    inline config_t&     export_config()     { return m_config;     }
-    inline config_ntc_t& export_config_ntc() { return m_config_ntc; }
+    inline runtime_t&              export_runtime() { return m_runtime;    }
+    inline output_config_t&         export_config() { return m_config;     }
+    inline output_config_ntc_t& export_config_ntc() { return m_config_ntc; }
 
-    inline void import_config(config_t config)         { m_config = config; }
-    inline void import_config_ntc(config_ntc_t config) { m_config_ntc = config; }
+    inline void     import_config(const output_config_t &config)     { m_config = config;     }
+    inline void import_config_ntc(const output_config_ntc_t &config) { m_config_ntc = config; }
 };
 
 extern Output output[4];

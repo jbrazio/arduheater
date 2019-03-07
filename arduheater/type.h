@@ -23,11 +23,30 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "version.h"
-#include "config.h"
-
-typedef uint8_t pin_t;
-typedef uint8_t flag_t;
+typedef uint8_t  pin_t;
+typedef uint8_t  flag_t;
 typedef uint32_t micros_t;
+
+typedef struct {
+  uint8_t min, max;
+  bool    autostart;
+  float   temp_offset, setpoint_offset, Kp, Ki, Kd;
+} output_config_t;
+
+typedef struct {
+  float    nominaltemp;
+  uint16_t resistor, bcoefficient, nominalval;
+} output_config_ntc_t;
+
+typedef struct {
+  float temp_offset, rh_offset;
+} environment_config_t;
+
+typedef struct {
+  uint16_t                header;
+  output_config_t      output[4];
+  output_config_ntc_t     ntc[4];
+  environment_config_t   ambient;
+} eeprom_map_t;
 
 #endif

@@ -22,11 +22,11 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <avr/pgmspace.h>
 
 #include "version.h"
 #include "config.h"
 
-#include <avr/pgmspace.h>
 #include "type.h"
 
 #if ! defined (__AVR_ATmega328P__) && ! defined (__AVR_ATmega328PB__) && ! defined (__AVR_ATmega168__) && ! defined (__AVR_ATmega168P__)
@@ -42,8 +42,6 @@
     #endif
   #endif
 #endif
-
-
 
 #if !defined(CHANNEL1_OUTPUT) || !defined(CHANNEL2_OUTPUT) || !defined(CHANNEL3_OUTPUT) || !defined(CHANNEL4_OUTPUT)
   #error Missing the output pin configuration for one of the channels
@@ -81,6 +79,74 @@
     CHANNEL3_SENSOR,
     CHANNEL4_SENSOR
   };
+#endif
+
+// Channel 1 NTC settings
+#ifndef CHANNEL1_NTC_NT
+  #define CHANNEL1_NTC_NT DEFAULT_NTC_NT
+#endif
+
+#ifndef CHANNEL1_NTC_BC
+  #define CHANNEL1_NTC_BC DEFAULT_NTC_BC
+#endif
+
+#ifndef CHANNEL1_NTC_NV
+  #define CHANNEL1_NTC_NV DEFAULT_NTC_NV
+#endif
+
+#ifndef CHANNEL1_NTC_SR
+  #define CHANNEL1_NTC_SR DEFAULT_NTC_SR
+#endif
+
+// Channel 2 NTC settings
+#ifndef CHANNEL2_NTC_NT
+  #define CHANNEL2_NTC_NT DEFAULT_NTC_NT
+#endif
+
+#ifndef CHANNEL2_NTC_BC
+  #define CHANNEL2_NTC_BC DEFAULT_NTC_BC
+#endif
+
+#ifndef CHANNEL2_NTC_NV
+  #define CHANNEL2_NTC_NV DEFAULT_NTC_NV
+#endif
+
+#ifndef CHANNEL2_NTC_SR
+  #define CHANNEL2_NTC_SR DEFAULT_NTC_SR
+#endif
+
+// Channel 3 NTC settings
+#ifndef CHANNEL3_NTC_NT
+  #define CHANNEL3_NTC_NT DEFAULT_NTC_NT
+#endif
+
+#ifndef CHANNEL3_NTC_BC
+  #define CHANNEL3_NTC_BC DEFAULT_NTC_BC
+#endif
+
+#ifndef CHANNEL3_NTC_NV
+  #define CHANNEL3_NTC_NV DEFAULT_NTC_NV
+#endif
+
+#ifndef CHANNEL3_NTC_SR
+  #define CHANNEL3_NTC_SR DEFAULT_NTC_SR
+#endif
+
+// Channel 4 NTC settings
+#ifndef CHANNEL4_NTC_NT
+  #define CHANNEL4_NTC_NT DEFAULT_NTC_NT
+#endif
+
+#ifndef CHANNEL4_NTC_BC
+  #define CHANNEL4_NTC_BC DEFAULT_NTC_BC
+#endif
+
+#ifndef CHANNEL4_NTC_NV
+  #define CHANNEL4_NTC_NV DEFAULT_NTC_NV
+#endif
+
+#ifndef CHANNEL4_NTC_SR
+  #define CHANNEL4_NTC_SR DEFAULT_NTC_SR
 #endif
 
 #endif
