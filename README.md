@@ -1,6 +1,11 @@
 ![Image](https://github.com/jbrazio/arduheater/blob/master/doc/wiki/logo.png)
 
-[![Donate](https://img.shields.io/badge/buy_me-one_beer-red.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=D5XZ7QFLP8LXE) [![Build Status](https://travis-ci.org/jbrazio/arduheater.svg?branch=master)](https://travis-ci.org/jbrazio/arduheater) [![GitHub issues](https://img.shields.io/github/issues/jbrazio/arduheater.svg)](https://github.com/jbrazio/arduheater/issues) [![GitHub stars](https://img.shields.io/github/stars/jbrazio/arduheater.svg)](https://github.com/jbrazio/arduheater/stargazers) [![GitHub forks](https://img.shields.io/github/forks/jbrazio/arduheater.svg)](https://github.com/jbrazio/arduheater/network) [![Download beta](https://img.shields.io/badge/download-latest_beta-yellow.svg)](https://github.com/jbrazio/arduheater/archive/master.zip)
+[![Donate Patreon](https://img.shields.io/badge/Donate-Patreon-blue.svg?style=for-the-badge)](https://www.patreon.com/join/jbrazio?)
+[![Donate PayPal](https://img.shields.io/badge/Donate-Paypal-blue.svg?style=for-the-badge)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=D5XZ7QFLP8LXE)
+[![TravisCI Status](https://img.shields.io/travis/jbrazio/arduheater.svg?style=for-the-badge)](https://travis-ci.org/jbrazio/arduheater)
+[![Download beta](https://img.shields.io/github/release-pre/jbrazio/arduheater.svg?style=for-the-badge)](https://github.com/jbrazio/arduheater/archive/master.zip)
+[![GitHub stars](https://img.shields.io/github/stars/jbrazio/arduheater.svg?style=for-the-badge)](https://github.com/jbrazio/arduheater/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/jbrazio/arduheater.svg?style=for-the-badge)](https://github.com/jbrazio/arduheater/network)
 
 
 # Arduheater
