@@ -43,27 +43,22 @@ It was built on top of a standard ATmega 328 Arduino such as UNO, Pro or Nano; c
 
 ## BOM
 
-Qty | Value | Device | Size | Package
----: | :--- | :--- | :--- | :---
-1 | Nano 328P | Arduino |  |
-5 | 100nF | Capacitor Ceramic | 3216 | SMD
-2 | 10uF | Capacitor Polarized | "Ø5x11 |  2" | THT
-1 | 4.7uF | Capacitor Polarized | "Ø4x7 |  1.5" | THT
-4 | 4P | Connector |  | GX12
-4 | 1N4004 | Diode |  | DO41
-1 | ESP32 | ESP |  |
-1 | SPX1117 | LDO |  | SOT223
-4 | IRF3205 | N-MOSFET |  | TO220
-4 | 10K | NTC |  | THT
-4 | EL817 | Optocoupler |  | DIP4
-1 | AM2320 | Probe |  | THT
-10 | 10K | Resistor | 3216 | SMD
-5 | 1K | Resistor | 3216 | SMD
-8 | 220R | Resistor | 3216 | SMD
-1 | 2K | Resistor | 3216 | SMD
-5 | 2P | Screw Terminal | 5mm | THT
-4 | M+F kit | XLR | 12mm |
-1 | Shipping | Overhead |  |
+Qty  | Value     | Device              | Size   | Package
+---: | :-------- | :------------------ | :----- | :------
+1    | Nano 328P | Arduino             |        |
+1    | 10uF      | Capacitor Polarized | "Ø5x11 | THT
+1    | AM2320    | Probe               |        | THT
+4    | 100nF     | Capacitor Ceramic   | 3216   | SMD
+4    | 1K        | Resistor            | 3216   | SMD
+4    | 1N4004    | Diode               |        | DO41
+4    | IRF3205   | N-MOSFET            |        | TO220
+4    | EL817     | Optocoupler         |        | DIP4
+4    | Red       | LED 3mm             |        | THT
+4    | 10K       | NTC                 |        | THT
+4    | M+F kit   | XLR                 | 12mm   | GX12
+5    | 2P        | Screw Terminal      | 5mm    | THT
+8    | 220R      | Resistor            | 3216   | SMD
+9    | 10K       | Resistor            | 3216   | SMD
 
 Note: It is *very* important to have a inline fuse on the 12V feed line.
 
