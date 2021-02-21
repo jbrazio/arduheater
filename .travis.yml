@@ -16,17 +16,22 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-language: python
-python:
-  - "3.6"
-
 sudo: false
-cache:
-  directories:
-    - "~/.platformio"
+language: python
+
+python:
+    - "3.6"
+
+before_install:
+  - chmod +x ${TRAVIS_BUILD_DIR}/buildroot/bin/*
+  - export PATH=${TRAVIS_BUILD_DIR}/buildroot/bin/:${PATH}
 
 install:
   - pip install -U platformio
 
+before_script:
+  - cd ${TRAVIS_BUILD_DIR}
+
 script:
-  - platformio run
+  # Test default config
+  - platformio run -e debug
